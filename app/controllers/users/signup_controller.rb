@@ -1,6 +1,6 @@
-class Users::RegistrationsController < Devise::RegistrationsController
-  layout "application"
+# frozen_string_literal: true
 
+class Users::SignupController < Devise::RegistrationsController
   def new
     build_resource
     render inertia: "Auth/Signup"

@@ -1,9 +1,7 @@
 class DashboardController < ApplicationController
+  before_action :authenticate_user!
+
   def index
-    render inertia: "Dashboard/Index", props: {
-      user: {
-        email: current_user.email
-      }
-    }
+    render inertia: "Dashboard/Index"
   end
 end

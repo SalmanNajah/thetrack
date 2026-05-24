@@ -1,7 +1,7 @@
 import { usePage, Link } from "@inertiajs/react";
 
 export default function Index() {
-  const { auth:{ user } } = usePage<{ auth: { user: boolean } }>().props;
+  const { auth:{ user } } = usePage<{ auth: { user: { id: number; email: string } | null } }>().props;
   const isLoggedIn = !!user;
 
   return (

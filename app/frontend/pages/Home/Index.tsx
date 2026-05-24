@@ -1,8 +1,8 @@
 import { usePage, Link } from "@inertiajs/react";
 
 export default function Index() {
-  const { auth:{ user } } = usePage<{ auth: { user: { id: number; email: string } | null } }>().props;
-  const isLoggedIn = !!user;
+  const { auth } = usePage<{ auth?: { user: { id: number; email: string } } }>().props;
+  const isLoggedIn = !!auth?.user;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50">

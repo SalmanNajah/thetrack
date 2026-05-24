@@ -1,15 +1,31 @@
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 
-type Props = {
-  user: {
-    email: string
+type PageProps = {
+  auth: {
+    user: {
+      id: number
+      email: string
+      name: string | null
+    }
+  }
+  flash: {
+    notice: string | null
+    alert: string | null
   }
 }
 
-export default function Index({ user }: Props) {
+export default function Index() {
+  const { auth: { user }, flash } = usePage<PageProps>().props
+
   return (
     <div className="min-h-screen bg-zinc-50 p-10">
       <div className="mx-auto max-w-6xl">
+        {flash?.notice && (
+          <div className="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 ring-1 ring-emerald-200">
+            {flash.notice}
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold">

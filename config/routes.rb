@@ -1,7 +1,8 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: {
-    sessions: "users/sessions",
-    registrations: "users/registrations"
+    sessions: "users/login",
+    registrations: "users/signup",
+    omniauth_callbacks: "users/omniauth_callbacks"
   }
 
   # Redirect to localhost from 127.0.0.1 to use same IP address with Vite server

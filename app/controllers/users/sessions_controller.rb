@@ -1,6 +1,6 @@
-# frozen_string_literal: true
+class Users::SessionsController < Devise::SessionsController
+  layout "application"
 
-class Users::LoginController < Devise::SessionsController
   def new
     self.resource = resource_class.new(sign_in_params)
     render inertia: "Auth/Login"

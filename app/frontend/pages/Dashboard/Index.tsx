@@ -1,11 +1,11 @@
-import { Link, usePage, router } from '@inertiajs/react'
+import { usePage, router } from '@inertiajs/react'
 import { useState, useEffect, FormEvent } from 'react'
 import { toast } from 'sonner'
 import { BottomNavbar } from '@/components/BottomNavbar'
 import { formatCurrency, formatDate } from '@/lib/format'
 import { classNames } from '@/lib/utils'
 import type { Bucket, TransactionRecord, CurrencyOption, AuthUser } from '@/types'
-import { X, ArrowRight, ArrowLeftRight } from 'lucide-react'
+import { X, ArrowLeftRight } from 'lucide-react'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -117,25 +117,12 @@ export default function Index() {
           </p>
         </section>
 
-        <section className="border-t border-tt-border">
-          {buckets.map(bucket => (
-            <Link
-              key={bucket.id}
-              href={`/buckets/${bucket.slug}`}
-              className="group flex items-center justify-between border-b border-tt-border-subtle py-5 transition-all duration-150 ease-out active:scale-[0.98] hover:bg-tt-surface/50"
-            >
-              <span className="text-[15px] text-tt-text-secondary group-hover:text-tt-text transition-colors">
-                {bucket.name}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[15px] font-medium tracking-tight text-tt-text">
-                  {formatCurrency(bucket.balance, currency_symbol)}
-                </span>
-                <ArrowRight className="size-[14px] text-tt-text-tertiary opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
-              </div>
-            </Link>
-          ))}
-        </section>
+
+        {recent_transactions.length === 0 && onboarded && (
+          <div className="mt-4 text-center text-sm text-tt-text-tertiary">
+            no transactions yet — tap a bucket from the menu to get started
+          </div>
+        )}
 
         {/* Recent transactions — clean list */}
         {recent_transactions.length > 0 && (
@@ -177,11 +164,6 @@ export default function Index() {
           </section>
         )}
 
-        {recent_transactions.length === 0 && onboarded && (
-          <div className="mt-20 text-center text-sm text-tt-text-tertiary">
-            No transactions yet. Tap a bucket to start.
-          </div>
-        )}
       </main>
       <BottomNavbar />
     </div>

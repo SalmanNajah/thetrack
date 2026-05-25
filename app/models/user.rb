@@ -55,7 +55,13 @@ class User < ApplicationRecord
   end
 
   def ensure_default_buckets!
+    first_time = buckets.count.zero?
+
     DEFAULT_BUCKETS.each do |attrs|
+      # Always ensure non-deletable buckets exist (income, daily).
+      # Only seed deletable ones (parking) on first-time setup.
+      next if attrs[:deletable] && !first_time
+
       buckets.find_or_create_by!(slug: attrs[:slug]) do |b|
         b.assign_attributes(attrs)
       end

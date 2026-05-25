@@ -13,7 +13,7 @@ class BucketsController < ApplicationController
     )
 
     if bucket.save
-      redirect_to bucket_path(bucket.slug), notice: "#{bucket.name} created"
+      redirect_to bucket_path(bucket.slug), notice: "'#{bucket.name}' is live - and is all yours now!"
     else
       redirect_back fallback_location: dashboard_path, alert: bucket.errors.full_messages.first
     end
@@ -23,12 +23,12 @@ class BucketsController < ApplicationController
     bucket = current_user.buckets.find_by!(slug: params[:slug])
 
     unless bucket.deletable
-      redirect_back fallback_location: dashboard_path, alert: "#{bucket.name} cannot be deleted"
+      redirect_back fallback_location: dashboard_path, alert: "Nice try, but '#{bucket.name}' is non-deletable!"
       return
     end
 
     bucket.destroy!
-    redirect_to dashboard_path, notice: "#{bucket.name} deleted"
+    redirect_to dashboard_path, notice: "'#{bucket.name}' is deleted!"
   end
 
   def show

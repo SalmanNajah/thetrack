@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { BottomNavbar } from '@/components/BottomNavbar'
 import {
-  formatBalance, formatTxnAmount, formatCurrency, groupByDate, getBucketLabel,
+  formatTxnAmount, formatCurrency, groupByDate, getBucketLabel,
 } from '@/lib/format'
 import { classNames } from '@/lib/utils'
 import type { Bucket, TransactionRecord, AuthUser } from '@/types'
@@ -83,7 +83,7 @@ function BalanceDisplay({ balance, currencySymbol, bucketId }: {
   return (
     <button onClick={startEdit} className="group relative inline-block text-left" title="Edit balance">
       <span className="font-mono text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-        {formatBalance(balance, currencySymbol)}
+        {formatCurrency(balance, currencySymbol)}
       </span>
       <Pencil className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-0 transition-opacity group-hover:opacity-100" />
     </button>

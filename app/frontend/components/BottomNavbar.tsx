@@ -1,10 +1,22 @@
 import { Link, usePage, router } from '@inertiajs/react'
 import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { Toaster } from '@/components/ui/sonner'
-import { Menu, X, LayoutDashboard, Settings, Plus, Trash2, LogOut } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Settings, Plus, Trash2, LogOut, Wallet, CreditCard, Tag } from 'lucide-react'
 import { classNames } from '@/lib/utils'
 
 type NavBucket = { id: number; name: string; slug: string }
+
+/** Map well-known bucket slugs to a Lucide icon; fall back to Tag for custom buckets. */
+function BucketIcon({ slug, className }: { slug: string; className?: string }) {
+  switch (slug) {
+    case 'income':
+      return <Wallet className={className} />
+    case 'daily':
+      return <CreditCard className={className} />
+    default:
+      return <Tag className={className} />
+  }
+}
 
 export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
   const { nav_buckets } = usePage<{ nav_buckets: NavBucket[] }>().props
@@ -97,17 +109,17 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
 
                 if (isDeleting) {
                   return (
-                    <div key={b.id} className="flex items-center gap-1.5 rounded-xl px-3 py-2 bg-tt-negative/5">
-                      <span className="flex-1 text-[13px] text-tt-negative">Delete {b.name}?</span>
+                    <div key={b.id} className="flex items-center gap-1.5 rounded-xl px-3 py-2 bg-red-50">
+                      <span className="flex-1 text-[13px] text-red-600">Delete {b.name}?</span>
                       <button
                         onClick={() => handleDeleteBucket(b.slug)}
-                        className="text-[12px] font-medium text-tt-negative hover:underline"
+                        className="text-[12px] font-medium text-red-600 hover:underline focus:outline-none"
                       >
                         Yes
                       </button>
                       <button
                         onClick={() => setConfirmDelete(null)}
-                        className="text-[12px] text-tt-text-tertiary hover:underline"
+                        className="text-[12px] text-tt-text-tertiary hover:underline focus:outline-none"
                       >
                         No
                       </button>
@@ -116,21 +128,30 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                 }
 
                 return (
-                  <div key={b.id} className="group flex items-center">
+                  <div
+                    key={b.id}
+                    className={classNames(
+                      "group relative flex items-center rounded-xl transition-colors duration-100",
+                      isActive
+                        ? "bg-tt-bg"
+                        : "hover:bg-tt-bg"
+                    )}
+                  >
                     <Link
                       href={`/buckets/${b.slug}`}
                       onClick={close}
                       className={classNames(
-                        "flex flex-1 items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] transition-colors duration-100",
+                        "flex flex-1 items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] focus:outline-none",
                         isActive
-                          ? "text-tt-text font-medium bg-tt-bg"
-                          : "text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg"
+                          ? "text-tt-text font-medium"
+                          : "text-tt-text-secondary hover:text-tt-text"
                       )}
                     >
-                      <span
+                      <BucketIcon
+                        slug={b.slug}
                         className={classNames(
-                          "size-1.5 rounded-full",
-                          isActive ? "bg-tt-accent" : "bg-transparent"
+                          "size-3.5 shrink-0",
+                          isActive ? "text-tt-accent" : "text-tt-text-tertiary"
                         )}
                       />
                       {b.name}
@@ -138,7 +159,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                     {b.slug !== 'income' && b.slug !== 'daily' && (
                       <button
                         onClick={() => setConfirmDelete(b.slug)}
-                        className="mr-1.5 p-1 rounded-lg text-transparent group-hover:text-tt-text-tertiary hover:text-tt-negative! hover:bg-tt-negative/5! transition-colors"
+                        className="absolute right-1.5 p-1 rounded-lg text-transparent group-hover:text-red-400 hover:text-red-600! transition-colors focus:outline-none"
                       >
                         <Trash2 className="size-3" />
                       </button>
@@ -163,7 +184,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
               ) : (
                 <button
                   onClick={() => setAdding(true)}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-accent hover:bg-tt-bg transition-colors duration-100"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-accent hover:bg-tt-bg transition-colors duration-100 focus:outline-none"
                 >
                   <Plus className="size-3.5" />
                   Add bucket
@@ -178,7 +199,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                 href="/dashboard"
                 onClick={close}
                 className={classNames(
-                  "flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] transition-colors duration-100",
+                  "flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] transition-colors duration-100 focus:outline-none",
                   !currentSlug
                     ? "text-tt-text font-medium bg-tt-bg"
                     : "text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg"
@@ -190,7 +211,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
               <Link
                 href="/settings"
                 onClick={close}
-                className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg transition-colors duration-100"
+                className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg transition-colors duration-100 focus:outline-none"
               >
                 <Settings className="size-3.5" />
                 Settings
@@ -200,7 +221,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                 method="delete"
                 as="button"
                 onClick={close}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg transition-colors duration-100"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg transition-colors duration-100 focus:outline-none"
               >
                 <LogOut className="size-3.5" />
                 Log out
@@ -211,12 +232,14 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
 
         <button
           onClick={() => open ? close() : setOpen(true)}
-          className="relative flex items-center gap-4 rounded-xl border border-tt-text-tertiary/50 bg-tt-surface px-6 py-2.5 text-[15px] text-tt-text-secondary shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-all duration-180 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] active:scale-[0.96]"
+          className="flex items-center rounded-xl border border-tt-text-tertiary/50 bg-tt-surface text-[15px] text-tt-text-secondary shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-all duration-180 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] active:scale-[0.96] focus:outline-none focus-visible:outline-none overflow-hidden"
           style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
         >
-          {open ? <X className="size-4" /> : <Menu className="size-4" />}
-          <div className="absolute h-full w-px bg-tt-border border-dashed" />
-          <span className="font-medium">{label}</span>
+          <span className="flex items-center justify-center px-4 py-2.5">
+            {open ? <X className="size-4" /> : <Menu className="size-4" />}
+          </span>
+          <span className="h-full w-px border-l border-dashed border-tt-text-tertiary/40" />
+          <span className="px-5 py-2.5 font-medium">{label}</span>
         </button>
       </div>
       <Toaster position="top-center" richColors />

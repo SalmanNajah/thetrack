@@ -29,7 +29,7 @@ class SettingsController < ApplicationController
     if current_user.update(currency: params[:currency])
       redirect_to settings_path, notice: "Currency updated to #{params[:currency]}"
     else
-      redirect_to settings_path, alert: "Failed to update currency"
+      redirect_to settings_path, alert: "Failed to update currency, try again!"
     end
   end
 
@@ -41,13 +41,13 @@ class SettingsController < ApplicationController
       current_user.ensure_default_buckets!
     end
 
-    redirect_to dashboard_path, notice: "All data has been reset"
+    redirect_to dashboard_path, notice: "All data has been reset!"
   end
 
   def delete_account
     current_user.destroy!
     sign_out(current_user)
-    redirect_to root_path, notice: "Account deleted"
+    redirect_to root_path, notice: "Account deleted!"
   end
 
   private

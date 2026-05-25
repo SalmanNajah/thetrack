@@ -7,7 +7,7 @@ class TransactionsController < ApplicationController
 
     if parsed.nil?
       redirect_back fallback_location: bucket_path(bucket.slug),
-        alert: "Couldn't parse that — try something like '-20 chai' or '+500 salary'"
+        alert: "Couldn't make sense of that one — try something like '-20 chai' or '+500 salary'"
       return
     end
 

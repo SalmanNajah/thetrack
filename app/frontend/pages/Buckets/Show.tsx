@@ -305,13 +305,13 @@ function ChatInput({ bucketId }: { bucketId: number }) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-tt-border bg-tt-surface px-4 py-2 shadow-sm">
+    <div className="flex items-center gap-2 rounded-2xl border border-tt-border bg-tt-surface px-4 py-3 shadow-sm">
       <input
         type="text"
         value={input}
         onChange={e => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="200 chai..."
+        placeholder="-200 chai"
         disabled={submitting}
         className="flex-1 border-0 bg-transparent text-sm text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
       />
@@ -344,7 +344,7 @@ export default function Show() {
   const dateGroups = groupByDate(transactions)
 
   return (
-    <div className="flex min-h-screen flex-col bg-tt-bg pb-20">
+    <div className="flex min-h-screen flex-col bg-tt-bg pb-48">
       <header className="sticky top-0 z-30 bg-tt-bg/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-xl items-center justify-between px-6 py-4">
           <Link href="/dashboard" className="flex items-center gap-1.5 text-[13px] text-tt-text-tertiary hover:text-tt-text transition-colors">
@@ -382,7 +382,7 @@ export default function Show() {
         </div>
       </main>
 
-      <div className="fixed bottom-16 left-0 right-0 z-30">
+      <div className="fixed bottom-24 left-0 right-0 z-40">
         <div className="mx-auto max-w-xl px-6">
           <ChatInput bucketId={bucket.id} />
         </div>

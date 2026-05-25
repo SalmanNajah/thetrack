@@ -66,7 +66,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
       {open && (
         <div
           className={classNames(
-            "fixed inset-0 z-40 transition-opacity duration-180",
+            "fixed inset-0 z-42 transition-opacity duration-180",
             visible ? "opacity-100" : "opacity-0"
           )}
           style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
@@ -74,7 +74,10 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
         />
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-39 h-28 pointer-events-none bg-linear-to-t from-tt-bg via-tt-bg/60 to-transparent" />
+      <div className={classNames(
+        "fixed bottom-0 left-0 right-0 z-39 pointer-events-none bg-linear-to-t from-tt-bg via-tt-bg/60 to-transparent transition-all duration-200",
+        currentSlug ? "h-48" : "h-28"
+      )} />
 
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
         {open && (
@@ -208,10 +211,11 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
 
         <button
           onClick={() => open ? close() : setOpen(true)}
-          className="flex items-center gap-4 rounded-xl border border-dotted border-tt-text-tertiary/50 bg-tt-surface px-6 py-2.5 text-[15px] text-tt-text-secondary shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-all duration-180 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] active:scale-[0.96]"
+          className="relative flex items-center gap-4 rounded-xl border border-tt-text-tertiary/50 bg-tt-surface px-6 py-2.5 text-[15px] text-tt-text-secondary shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-all duration-180 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] active:scale-[0.96]"
           style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
         >
           {open ? <X className="size-4" /> : <Menu className="size-4" />}
+          <div className="absolute h-full w-px bg-tt-border border-dashed" />
           <span className="font-medium">{label}</span>
         </button>
       </div>

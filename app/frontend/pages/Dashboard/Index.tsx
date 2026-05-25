@@ -5,7 +5,7 @@ import { BottomNavbar } from '@/components/BottomNavbar'
 import { formatCurrency, formatDate } from '@/lib/format'
 import { classNames } from '@/lib/utils'
 import type { Bucket, TransactionRecord, CurrencyOption, AuthUser } from '@/types'
-import { X, ArrowRight, ArrowLeftRight, ArrowUp } from 'lucide-react'
+import { X, ArrowRight, ArrowLeftRight } from 'lucide-react'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -25,10 +25,8 @@ function OnboardingCard({ buckets, currencySymbol }: {
 }) {
   const [dismissed, setDismissed] = useState(false)
   const [amount, setAmount] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
   if (dismissed) return null
-
   const incomeBucket = buckets.find(b => b.slug === 'income')
   if (!incomeBucket) return null
 
@@ -36,12 +34,10 @@ function OnboardingCard({ buckets, currencySymbol }: {
     e.preventDefault()
     const val = parseFloat(amount)
     if (!val || val <= 0) return
-    setSubmitting(true)
     router.post('/onboarding/set_initial_balances', {
       balances: { [incomeBucket!.id]: amount },
     }, {
       preserveScroll: true,
-      onFinish: () => setSubmitting(false),
     })
   }
 
@@ -71,13 +67,6 @@ function OnboardingCard({ buckets, currencySymbol }: {
             autoFocus
             className="flex-1 border-0 bg-transparent p-1.5 font-mono text-lg tracking-tight text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
           />
-          <button
-            type="submit"
-            disabled={submitting || !amount || parseFloat(amount) <= 0}
-            className="shrink-0 rounded-lg bg-tt-text p-2 text-tt-bg transition-opacity disabled:opacity-20"
-          >
-            <ArrowUp className="size-3.5" />
-          </button>
         </div>
         <button type="button" onClick={handleSkip} className="mt-2.5 text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors">
           Skip for now
@@ -128,7 +117,6 @@ export default function Index() {
           </p>
         </section>
 
-        {/* Buckets — clean rows, not cards */}
         <section className="border-t border-tt-border">
           {buckets.map(bucket => (
             <Link

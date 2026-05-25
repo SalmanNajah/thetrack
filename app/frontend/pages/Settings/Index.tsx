@@ -1,0 +1,262 @@
+import { usePage, router, Link } from '@inertiajs/react'
+import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog'
+import { BottomNavbar } from '@/components/BottomNavbar'
+import type { AuthUser, CurrencyOption } from '@/types'
+import { ArrowLeft } from 'lucide-react'
+
+type PageProps = {
+  auth: { user: AuthUser }
+  flash: { notice: string | null; alert: string | null }
+  user: {
+    email: string
+    name: string | null
+    currency: string
+    created_at: string
+  }
+  currencies: CurrencyOption[]
+  stats: {
+    buckets_count: number
+    transactions_count: number
+  }
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between py-3.5 border-b border-tt-border-subtle last:border-0">
+      <span className="text-sm text-tt-text-secondary">{label}</span>
+      <div className="text-right">{children}</div>
+    </div>
+  )
+}
+
+function ProfileSection({ user }: { user: PageProps['user'] }) {
+  const [name, setName] = useState(user.name || '')
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  function handleSave() {
+    setSaving(true)
+    router.post('/settings/update_profile', { name }, {
+      preserveScroll: true,
+      onFinish: () => { setSaving(false); setEditing(false) },
+    })
+  }
+
+  return (
+    <section>
+      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+        Account
+      </h2>
+      <div>
+        <Field label="Email">
+          <span className="text-sm font-mono text-tt-text">{user.email}</span>
+        </Field>
+        <Field label="Name">
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSave()}
+                autoFocus
+                className="w-32 rounded-lg border border-tt-border bg-tt-bg px-2.5 py-1 text-sm text-tt-text text-right focus:outline-none focus:ring-1 focus:ring-tt-accent"
+              />
+              <button onClick={handleSave} disabled={saving} className="text-[12px] font-medium text-tt-accent">
+                {saving ? '…' : 'Save'}
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setEditing(true)} className="text-sm text-tt-text hover:text-tt-accent transition-colors">
+              {user.name || 'Add name'}
+            </button>
+          )}
+        </Field>
+        <Field label="Member since">
+          <span className="text-sm text-tt-text-tertiary">{user.created_at}</span>
+        </Field>
+      </div>
+    </section>
+  )
+}
+
+function CurrencySection({ currentCurrency, currencies }: {
+  currentCurrency: string
+  currencies: CurrencyOption[]
+}) {
+  const [saving, setSaving] = useState(false)
+
+  function handleChange(value: string) {
+    setSaving(true)
+    router.post('/settings/update_currency', { currency: value }, {
+      preserveScroll: true,
+      onFinish: () => setSaving(false),
+    })
+  }
+
+  return (
+    <section>
+      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+        Preferences
+      </h2>
+      <Field label="Currency">
+        <Select value={currentCurrency} onValueChange={handleChange} disabled={saving}>
+          <SelectTrigger className="w-28 h-8 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {currencies.map(c => (
+              <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+    </section>
+  )
+}
+
+function DangerZone({ stats }: { stats: PageProps['stats'] }) {
+  const [resetOpen, setResetOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [confirmText, setConfirmText] = useState('')
+  const [processing, setProcessing] = useState(false)
+
+  function handleReset() {
+    setProcessing(true)
+    router.delete('/settings/reset_all', {
+      preserveScroll: true,
+      onFinish: () => { setProcessing(false); setResetOpen(false) },
+    })
+  }
+
+  function handleDelete() {
+    if (confirmText !== 'DELETE') return
+    setProcessing(true)
+    router.delete('/settings/delete_account', {
+      onFinish: () => setProcessing(false),
+    })
+  }
+
+  return (
+    <section>
+      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-negative mb-1">
+        Danger Zone
+      </h2>
+      <div className="rounded-xl border border-dotted border-tt-negative/25 overflow-hidden">
+        <div className="flex items-center justify-between gap-4 px-4 py-3.5 border-b border-tt-negative/10">
+          <div>
+            <p className="text-sm text-tt-text">Reset all data</p>
+            <p className="text-[12px] text-tt-text-tertiary mt-0.5">
+              {stats.transactions_count} transactions · {stats.buckets_count} buckets
+            </p>
+          </div>
+          <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+            <DialogTrigger asChild>
+              <button className="shrink-0 text-[13px] font-medium text-tt-negative hover:underline">
+                Reset
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-[15px]">Reset all data?</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-tt-text-secondary">
+                This will permanently delete all your transactions and buckets. Default buckets will be recreated.
+              </p>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" onClick={() => setResetOpen(false)} className="flex-1">Cancel</Button>
+                <Button
+                  onClick={handleReset}
+                  disabled={processing}
+                  className="flex-1 bg-tt-negative hover:bg-tt-negative/90 text-white"
+                >
+                  {processing ? 'Resetting…' : 'Reset everything'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+          <div>
+            <p className="text-sm text-tt-text">Delete account</p>
+            <p className="text-[12px] text-tt-text-tertiary mt-0.5">This cannot be undone</p>
+          </div>
+          <Dialog open={deleteOpen} onOpenChange={v => { setDeleteOpen(v); setConfirmText('') }}>
+            <DialogTrigger asChild>
+              <button className="shrink-0 text-[13px] font-medium text-tt-negative hover:underline">
+                Delete
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-[15px]">Delete your account?</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-tt-text-secondary">
+                All data will be permanently lost. Type <span className="font-mono font-medium text-tt-text">DELETE</span> to confirm.
+              </p>
+              <Input
+                value={confirmText}
+                onChange={e => setConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                className="font-mono"
+              />
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDeleteOpen(false)} className="flex-1">Cancel</Button>
+                <Button
+                  onClick={handleDelete}
+                  disabled={processing || confirmText !== 'DELETE'}
+                  className="flex-1 bg-tt-negative hover:bg-tt-negative/90 text-white"
+                >
+                  {processing ? 'Deleting…' : 'Delete account'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export default function Index() {
+  const { flash, user, currencies, stats } = usePage<PageProps>().props
+
+  useEffect(() => {
+    if (flash?.notice) toast.success(flash.notice, { id: 'flash-notice' })
+    if (flash?.alert) toast.error(flash.alert, { id: 'flash-alert' })
+  }, [flash?.notice, flash?.alert])
+
+  return (
+    <div className="min-h-screen bg-tt-bg pb-20">
+      <header className="sticky top-0 z-30 bg-tt-bg/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-xl items-center px-6 py-4">
+          <Link href="/dashboard" className="flex items-center gap-1.5 text-[13px] text-tt-text-tertiary hover:text-tt-text transition-colors">
+            <ArrowLeft className="size-[14px]" />
+            Back
+          </Link>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-xl px-6">
+        <h1 className="text-lg font-semibold text-tt-text">Settings</h1>
+
+        <div className="mt-8 space-y-8">
+          <ProfileSection user={user} />
+          <CurrencySection currentCurrency={user.currency} currencies={currencies} />
+          <DangerZone stats={stats} />
+        </div>
+      </div>
+
+      <BottomNavbar />
+    </div>
+  )
+}

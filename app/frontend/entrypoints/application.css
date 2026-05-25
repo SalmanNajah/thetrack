@@ -1,5 +1,111 @@
 @import 'tailwindcss';
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+@custom-variant dark (&:is(.dark *));
 @source "../../views/**/*.erb";
 
 @plugin '@tailwindcss/typography';
 @plugin '@tailwindcss/forms';
+
+:root {
+  --tt-bg: #f7f7f5;
+  --tt-surface: #ffffff;
+  --tt-text: #18181b;
+  --tt-text-secondary: #71717a;
+  --tt-text-tertiary: #a1a1aa;
+  --tt-border: #e7e5e4;
+  --tt-border-subtle: #f0eeec;
+  --tt-positive: #059669;
+  --tt-negative: #92400e;
+  --tt-accent: #5b5bd6;
+
+  --background: #f7f7f5;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --primary: #18181b;
+  --primary-foreground: #fafaf9;
+  --secondary: #f5f5f3;
+  --secondary-foreground: #18181b;
+  --muted: #f5f5f3;
+  --muted-foreground: #71717a;
+  --accent: #f5f5f3;
+  --accent-foreground: #18181b;
+  --destructive: #92400e;
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --ring: #a1a1aa;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-tt-bg: var(--tt-bg);
+  --color-tt-surface: var(--tt-surface);
+  --color-tt-text: var(--tt-text);
+  --color-tt-text-secondary: var(--tt-text-secondary);
+  --color-tt-text-tertiary: var(--tt-text-tertiary);
+  --color-tt-border: var(--tt-border);
+  --color-tt-border-subtle: var(--tt-border-subtle);
+  --color-tt-positive: var(--tt-positive);
+  --color-tt-negative: var(--tt-negative);
+  --color-tt-accent: var(--tt-accent);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-tt-border outline-ring/50;
+  }
+  body {
+    @apply bg-tt-bg text-tt-text antialiased;
+  }
+  html {
+    @apply font-sans;
+  }
+}

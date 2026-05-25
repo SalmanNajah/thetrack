@@ -14,6 +14,7 @@ module InertiaRendering
     end
 
     inertia_share if: :user_signed_in? do
+      buckets = current_user.buckets.ordered
       {
         auth: {
           user: {
@@ -21,7 +22,8 @@ module InertiaRendering
             email: current_user.email,
             name: current_user.try(:name)
           }
-        }
+        },
+        nav_buckets: buckets.map { |b| { id: b.id, name: b.name, slug: b.slug } }
       }
     end
   end

@@ -13,6 +13,29 @@ Rails.application.routes.draw do
   root "home#index"
 
   get "/dashboard", to: "dashboard#index"
+
+  resources :buckets, only: [ :index, :show, :create, :destroy ], param: :slug
+
+  resources :transactions, only: [ :create ] do
+    collection do
+      post :transfer
+      post :adjust_balance
+    end
+  end
+
+  namespace :onboarding do
+    post :update_currency
+    post :set_initial_balances
+    post :complete
+  end
+
+  resource :settings, only: [ :show ] do
+    post :update_profile, on: :member
+    post :update_currency, on: :member
+    delete :reset_all, on: :member
+    delete :delete_account, on: :member
+  end
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

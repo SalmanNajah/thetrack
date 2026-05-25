@@ -10,15 +10,44 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_173511) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_24_200216) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "buckets", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "deletable", default: true, null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "slug"], name: "index_buckets_on_user_id_and_slug", unique: true
+    t.index ["user_id"], name: "index_buckets_on_user_id"
+  end
+
+  create_table "transactions", force: :cascade do |t|
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.bigint "bucket_id", null: false
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.datetime "occurred_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "transfer_group_id"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["bucket_id", "occurred_at"], name: "index_transactions_on_bucket_id_and_occurred_at"
+    t.index ["bucket_id"], name: "index_transactions_on_bucket_id"
+    t.index ["transfer_group_id"], name: "index_transactions_on_transfer_group_id"
+    t.index ["user_id"], name: "index_transactions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "currency", default: "INR"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "name"
+    t.boolean "onboarded", default: false, null: false
     t.string "provider"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
@@ -29,4 +58,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_173511) do
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "buckets", "users"
+  add_foreign_key "transactions", "buckets"
+  add_foreign_key "transactions", "users"
 end

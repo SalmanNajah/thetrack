@@ -1,20 +1,20 @@
 import { Link, usePage, router } from '@inertiajs/react'
 import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { Toaster } from '@/components/ui/sonner'
-import { Menu, X, LayoutDashboard, Settings, Plus, Trash2, LogOut, Wallet, CreditCard, Tag } from 'lucide-react'
+import { Menu, X, Home, Settings, Plus, Trash2, LogOut, Wallet, Banknote, CircleDollarSign } from 'lucide-react'
 import { classNames } from '@/lib/utils'
 
 type NavBucket = { id: number; name: string; slug: string }
 
-/** Map well-known bucket slugs to a Lucide icon; fall back to Tag for custom buckets. */
+/** Map well-known bucket slugs to a Lucide icon; fall back to CircleDollarSign for custom buckets. */
 function BucketIcon({ slug, className }: { slug: string; className?: string }) {
   switch (slug) {
     case 'income':
       return <Wallet className={className} />
     case 'daily':
-      return <CreditCard className={className} />
+      return <Banknote className={className} />
     default:
-      return <Tag className={className} />
+      return <CircleDollarSign className={className} />
   }
 }
 
@@ -205,7 +205,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                     : "text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg"
                 )}
               >
-                <LayoutDashboard className="size-3.5" />
+                <Home className="size-3.5" />
                 Dashboard
               </Link>
               <Link
@@ -238,7 +238,13 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
           <span className="flex items-center justify-center px-4 py-2.5">
             {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </span>
-          <span className="h-full w-px border-l border-dashed border-tt-text-tertiary/40" />
+          <span
+            className="self-stretch w-0"
+            style={{
+              borderLeft: '1px dashed var(--tt-text-tertiary)',
+              opacity: 0.35,
+            }}
+          />
           <span className="px-5 py-2.5 font-medium">{label}</span>
         </button>
       </div>

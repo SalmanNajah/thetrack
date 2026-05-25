@@ -65,7 +65,7 @@ function OnboardingCard({ buckets, currencySymbol }: {
             onChange={e => setAmount(e.target.value)}
             placeholder="0"
             autoFocus
-            className="flex-1 border-0 bg-transparent p-1.5 font-mono text-lg tracking-tight text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
+            className="flex-1 border-0 bg-transparent p-1.5 text-lg tracking-tight text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
           />
         </div>
         <button type="button" onClick={handleSkip} className="mt-2.5 text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors">
@@ -112,7 +112,7 @@ export default function Index() {
           <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
             Total Balance
           </p>
-          <p className="mt-2 font-mono text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
+          <p className="mt-2 text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
             {formatCurrency(total_balance, currency_symbol)}
           </p>
         </section>
@@ -152,7 +152,7 @@ export default function Index() {
                   </div>
                   <span
                     className={classNames(
-                      "ml-4 shrink-0 font-mono text-sm tracking-tight",
+                      "ml-4 shrink-0 text-sm tracking-tight",
                       isPositive ? "text-tt-positive" : "text-tt-negative"
                     )}
                   >

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class TransactionsController < ApplicationController
+  MAX_AMOUNT = BigDecimal("9_999_999_999.99")
   def create
     bucket = current_user.buckets.find(params[:bucket_id])
     parsed = parse_input(params[:raw_input])
@@ -12,6 +13,12 @@ class TransactionsController < ApplicationController
     end
 
     amount = parsed[:sign] == "+" ? parsed[:amount] : -parsed[:amount]
+
+    if parsed[:amount] > MAX_AMOUNT
+      redirect_back fallback_location: bucket_path(bucket.slug),
+        alert: "That number is way too large — keep it under 10 billion"
+      return
+    end
 
     transaction = bucket.transactions.build(
       user: current_user,
@@ -40,6 +47,12 @@ class TransactionsController < ApplicationController
       return
     end
 
+    if amount > MAX_AMOUNT
+      redirect_back fallback_location: bucket_path(from_bucket.slug),
+        alert: "That number is way too large — keep it under 10 billion"
+      return
+    end
+
     transfer_group_id = SecureRandom.uuid
 
     ActiveRecord::Base.transaction do
@@ -63,13 +76,21 @@ class TransactionsController < ApplicationController
     redirect_back fallback_location: bucket_path(from_bucket.slug),
       notice: "Transferred #{amount} to #{to_bucket.name}"
   rescue ActiveRecord::RecordInvalid => e
+    msg = e.record&.errors&.full_messages&.join(", ") || e.message.sub(/^Validation failed: /i, "")
     redirect_back fallback_location: bucket_path(from_bucket.slug),
-      alert: e.message
+      alert: msg
   end
 
   def adjust_balance
     bucket = current_user.buckets.find(params[:bucket_id])
     new_balance = BigDecimal(params[:new_balance].to_s)
+
+    if new_balance.abs > MAX_AMOUNT
+      redirect_back fallback_location: bucket_path(bucket.slug),
+        alert: "That number is way too large — keep it under 10 billion"
+      return
+    end
+
     current_balance = bucket.balance
     diff = new_balance - current_balance
 
@@ -99,18 +120,40 @@ class TransactionsController < ApplicationController
   def parse_input(raw)
     return nil if raw.blank?
 
-    trimmed = raw.strip
+    # Clean up trailing punctuation commonly typed at the end of statements (commas, periods, semicolons, etc.)
+    trimmed = raw.strip.gsub(/[.,;!]+$/, "").strip
     return nil if trimmed.blank?
 
-    # Match: optional sign, number (with optional decimals), then rest is description
-    match = trimmed.match(/^([+-])?\s*(\d+(?:\.\d{1,2})?)\s*(.*)$/i)
-    return nil unless match
+    sign = nil
+    amount_str = nil
+    description = ""
 
-    sign = match[1] == "+" ? "+" : "-"
-    amount = BigDecimal(match[2])
+    # 1. Match: just a number (e.g. "90", "-90", "+90.50")
+    if match = trimmed.match(/^([+-])?\s*(\d+(?:\.\d+)?)$/)
+      sign = match[1]
+      amount_str = match[2]
+      description = ""
+    # 2. Match: starts with a number followed by comma/space and description (e.g. "-90, coffee", "90 coffee")
+    elsif match = trimmed.match(/^([+-])?\s*(\d+(?:\.\d+)?)(?:\s*,\s*|\s+)(.*)$/i)
+      sign = match[1]
+      amount_str = match[2]
+      description = match[3]
+    # 3. Match: ends with a number, optionally preceded by comma/space (e.g. "coffee -90", "coffee, 90.50")
+    elsif match = trimmed.match(/^(.*?)(?:\s*,\s*|\s+)([+-])?\s*(\d+(?:\.\d+)?)$/i)
+      description = match[1]
+      sign = match[2]
+      amount_str = match[3]
+    else
+      return nil
+    end
+
+    amount = BigDecimal(amount_str)
     return nil if amount <= 0
 
-    description = match[3]&.strip || ""
+    # Default to "-" sign if not explicitly specified as "+"
+    resolved_sign = (sign == "+") ? "+" : "-"
+
+    description = description.strip
 
     # Parse date keywords from description
     occurred_at = extract_date(description)
@@ -118,7 +161,7 @@ class TransactionsController < ApplicationController
     description = description.gsub(/\b(today|yesterday)\b/i, "").strip if occurred_at
 
     {
-      sign: sign,
+      sign: resolved_sign,
       amount: amount,
       description: description,
       occurred_at: occurred_at

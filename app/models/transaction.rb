@@ -26,7 +26,7 @@ class Transaction < ApplicationRecord
     current_balance = bucket.balance
     projected = current_balance + amount
     if projected < 0
-      errors.add(:amount, "insufficient balance in #{bucket.name} (available: #{current_balance})")
+      errors.add(:base, "Not enough in #{bucket.name} — you only have #{current_balance} available")
     end
   end
 end

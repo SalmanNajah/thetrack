@@ -160,7 +160,7 @@ function DangerZone({ stats }: { stats: PageProps['stats'] }) {
           </div>
           <Dialog open={resetOpen} onOpenChange={setResetOpen}>
             <DialogTrigger asChild>
-              <button className="shrink-0 text-[13px] font-medium text-tt-negative hover:underline">
+              <button className="shrink-0 rounded-lg bg-tt-negative px-3 py-1.5 text-[13px] font-medium text-white hover:bg-tt-negative/85 transition-colors">
                 Reset
               </button>
             </DialogTrigger>
@@ -192,7 +192,7 @@ function DangerZone({ stats }: { stats: PageProps['stats'] }) {
           </div>
           <Dialog open={deleteOpen} onOpenChange={v => { setDeleteOpen(v); setConfirmText('') }}>
             <DialogTrigger asChild>
-              <button className="shrink-0 text-[13px] font-medium text-tt-negative hover:underline">
+              <button className="shrink-0 rounded-lg bg-tt-negative px-3 py-1.5 text-[13px] font-medium text-white hover:bg-tt-negative/85 transition-colors">
                 Delete
               </button>
             </DialogTrigger>
@@ -201,7 +201,10 @@ function DangerZone({ stats }: { stats: PageProps['stats'] }) {
                 <DialogTitle className="text-[15px]">Delete your account?</DialogTitle>
               </DialogHeader>
               <p className="text-sm text-tt-text-secondary">
-                All data will be permanently lost. Type <span className="font-mono font-medium text-tt-text">DELETE</span> to confirm.
+                We're sorry to see you go. Once your account is deleted, all your data — buckets, transactions, and settings — will be permanently erased. This action cannot be reversed or recovered.
+              </p>
+              <p className="text-sm text-tt-text-secondary mt-2">
+                Type <span className="font-mono font-medium text-tt-text">DELETE</span> below to confirm.
               </p>
               <Input
                 value={confirmText}

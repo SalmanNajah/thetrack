@@ -2,7 +2,6 @@ import { Link, usePage, router } from '@inertiajs/react'
 import { useState, useRef, useEffect, FormEvent, KeyboardEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
@@ -66,7 +65,7 @@ function BalanceDisplay({ balance, currencySymbol, bucketId }: {
   if (editing) {
     return (
       <div className="flex items-baseline gap-1">
-        <span className="font-mono text-3xl font-semibold text-tt-text-tertiary">{currencySymbol}</span>
+        <span className="text-3xl font-semibold text-tt-text-tertiary">{currencySymbol}</span>
         <input
           ref={inputRef}
           type="number" min="0" step="0.01"
@@ -74,7 +73,7 @@ function BalanceDisplay({ balance, currencySymbol, bucketId }: {
           onChange={e => setEditValue(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={handleKeyDown}
-          className="w-52 border-0 border-b border-tt-text bg-transparent p-0 font-mono text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text caret-tt-accent focus:outline-none focus:ring-0"
+          className="w-52 border-0 border-b border-tt-text bg-transparent p-0 text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text caret-tt-accent focus:outline-none focus:ring-0"
         />
       </div>
     )
@@ -82,45 +81,13 @@ function BalanceDisplay({ balance, currencySymbol, bucketId }: {
 
   return (
     <button onClick={startEdit} className="group relative inline-block text-left" title="Edit balance">
-      <span className="font-mono text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
+      <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
         {formatCurrency(balance, currencySymbol)}
       </span>
       <Pencil className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-0 transition-opacity group-hover:opacity-100" />
     </button>
   )
 }
-
-const StaticBucketDisplay = ({ name, balance, symbol }: { name: string; balance: string; symbol: string }) => (
-  <div className="rounded-xl border border-tt-border bg-tt-bg/30 px-3.5 py-2.5 text-sm text-tt-text flex justify-between items-center">
-    <span className="font-medium">{name}</span>
-    <span className="font-mono text-[13px] text-tt-text-secondary">
-      {formatCurrency(balance, symbol)}
-    </span>
-  </div>
-)
-
-const TargetBucketSelect = ({
-  value,
-  onChange,
-  buckets,
-  symbol,
-}: {
-  value: string
-  onChange: (v: string) => void
-  buckets: Bucket[]
-  symbol: string
-}) => (
-  <Select value={value} onValueChange={onChange}>
-    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-    <SelectContent>
-      {buckets.map(b => (
-        <SelectItem key={b.id} value={b.id.toString()}>
-          {b.name} ({formatCurrency(b.balance, symbol)})
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-)
 
 function TransferDialog({ bucket, otherBuckets, currencySymbol }: {
   bucket: Bucket
@@ -132,8 +99,8 @@ function TransferDialog({ bucket, otherBuckets, currencySymbol }: {
   const [amount, setAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [isReversed, setIsReversed] = useState(false)
+  const amountRef = useRef<HTMLInputElement>(null)
 
-  // Reset states when opening/closing
   useEffect(() => {
     if (!open) {
       setAmount('')
@@ -141,6 +108,14 @@ function TransferDialog({ bucket, otherBuckets, currencySymbol }: {
       if (otherBuckets[0]) setTargetBucketId(otherBuckets[0].id.toString())
     }
   }, [open, otherBuckets])
+
+  useEffect(() => {
+    if (open && amountRef.current) {
+      setTimeout(() => amountRef.current?.focus(), 100)
+    }
+  }, [open])
+
+  const targetBucket = otherBuckets.find(b => b.id.toString() === targetBucketId)
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -164,6 +139,86 @@ function TransferDialog({ bucket, otherBuckets, currencySymbol }: {
     })
   }
 
+  function renderFromCard() {
+    const bal = isReversed ? (targetBucket?.balance || '0') : bucket.balance
+    const name = isReversed ? (targetBucket?.name || '') : bucket.name
+    return (
+      <div className="rounded-xl bg-tt-bg px-4 py-3.5">
+        <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-2">From</p>
+        <div className="flex items-center justify-between">
+          {isReversed ? (
+            <Select value={targetBucketId} onValueChange={setTargetBucketId}>
+              <SelectTrigger className="w-auto gap-1.5 border-0 bg-transparent p-0 h-auto text-[15px] font-semibold text-tt-text shadow-none focus:ring-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {otherBuckets.map(ob => (
+                  <SelectItem key={ob.id} value={ob.id.toString()}>
+                    {ob.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="text-[15px] font-semibold text-tt-text">{name}</span>
+          )}
+          <div className="flex items-baseline gap-1">
+            <span className="text-tt-text-tertiary text-sm">{currencySymbol}</span>
+            <input
+              ref={amountRef}
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              placeholder="0"
+              className="w-24 border-0 bg-transparent p-0 text-right text-2xl font-semibold tracking-tight text-tt-text placeholder:text-tt-text-tertiary/25 focus:outline-none focus:ring-0"
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-tt-text-tertiary mt-1.5 text-right">
+          available {formatCurrency(bal, currencySymbol)}
+        </p>
+      </div>
+    )
+  }
+
+  function renderToCard() {
+    const bal = isReversed ? bucket.balance : (targetBucket?.balance || '0')
+    const name = isReversed ? bucket.name : (targetBucket?.name || '')
+    return (
+      <div className="rounded-xl bg-tt-bg px-4 py-3.5">
+        <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-2">To</p>
+        <div className="flex items-center justify-between">
+          {!isReversed ? (
+            <Select value={targetBucketId} onValueChange={setTargetBucketId}>
+              <SelectTrigger className="w-auto gap-1.5 border-0 bg-transparent p-0 h-auto text-[15px] font-semibold text-tt-text shadow-none focus:ring-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {otherBuckets.map(ob => (
+                  <SelectItem key={ob.id} value={ob.id.toString()}>
+                    {ob.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="text-[15px] font-semibold text-tt-text">{name}</span>
+          )}
+          <span className="text-2xl font-semibold tracking-tight text-tt-text-tertiary">
+            {amount && parseFloat(amount) > 0
+              ? formatCurrency(amount, currencySymbol)
+              : `${currencySymbol}0`}
+          </span>
+        </div>
+        <p className="text-[11px] text-tt-text-tertiary mt-1.5 text-right">
+          balance {formatCurrency(bal, currencySymbol)}
+        </p>
+      </div>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -175,52 +230,23 @@ function TransferDialog({ bucket, otherBuckets, currencySymbol }: {
         <DialogHeader>
           <DialogTitle className="text-[15px] font-semibold">Transfer</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          {/* FROM BUCKET */}
-          <div>
-            <p className="text-[13px] text-tt-text-tertiary mb-1.5">From</p>
-            {!isReversed ? (
-              <StaticBucketDisplay name={bucket.name} balance={bucket.balance} symbol={currencySymbol} />
-            ) : (
-              <TargetBucketSelect value={targetBucketId} onChange={setTargetBucketId} buckets={otherBuckets} symbol={currencySymbol} />
-            )}
-          </div>
-
-          {/* SWAP BUTTON */}
-          <div className="flex justify-center -my-2 relative z-10">
-            <button
-              type="button"
-              onClick={() => setIsReversed(!isReversed)}
-              className="p-1.5 rounded-full border border-tt-border bg-tt-surface hover:bg-tt-bg text-tt-text-secondary hover:text-tt-text transition-colors shadow-xs active:scale-95"
-              title="Swap direction"
-            >
-              <ArrowUpDown className="size-3.5" />
-            </button>
-          </div>
-
-          {/* TO BUCKET */}
-          <div>
-            <p className="text-[13px] text-tt-text-tertiary mb-1.5">To</p>
-            {isReversed ? (
-              <StaticBucketDisplay name={bucket.name} balance={bucket.balance} symbol={currencySymbol} />
-            ) : (
-              <TargetBucketSelect value={targetBucketId} onChange={setTargetBucketId} buckets={otherBuckets} symbol={currencySymbol} />
-            )}
-          </div>
-
-          {/* AMOUNT */}
-          <div>
-            <p className="text-[13px] text-tt-text-tertiary mb-1.5">Amount</p>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-tt-text-tertiary">{currencySymbol}</span>
-              <Input
-                type="number" min="0.01" step="0.01" placeholder="0.00"
-                value={amount} onChange={e => setAmount(e.target.value)}
-                className="pl-7 font-mono" autoFocus
-              />
+        <form onSubmit={handleSubmit} className="pt-1">
+          <div className="relative rounded-2xl border border-tt-border overflow-visible">
+            {renderFromCard()}
+            <div className="border-t border-tt-border" />
+            {renderToCard()}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+              <button
+                type="button"
+                onClick={() => setIsReversed(!isReversed)}
+                className="flex items-center justify-center size-9 rounded-full border-[3px] border-tt-surface bg-tt-bg text-tt-text-secondary hover:text-tt-text hover:bg-tt-border-subtle transition-all duration-150 active:scale-90"
+                title="Swap direction"
+              >
+                <ArrowUpDown className="size-3.5" />
+              </button>
             </div>
           </div>
-          <Button type="submit" disabled={submitting || !amount || parseFloat(amount) <= 0} className="w-full">
+          <Button type="submit" disabled={submitting || !amount || parseFloat(amount) <= 0} className="w-full mt-4">
             {submitting ? 'Transferring…' : 'Transfer'}
           </Button>
         </form>
@@ -257,7 +283,7 @@ function DateGroup({ date, transactions }: {
             </div>
             <span
               className={classNames(
-                "ml-4 shrink-0 font-mono text-sm tracking-tight",
+                "ml-4 shrink-0 text-sm tracking-tight",
                 isPositive ? "text-tt-positive" : "text-tt-negative"
               )}
             >
@@ -272,7 +298,7 @@ function DateGroup({ date, transactions }: {
         className="flex w-full items-center justify-between py-2.5 text-[12px] text-tt-text-tertiary hover:text-tt-text-secondary transition-colors"
       >
         <span>Total</span>
-        <span className="flex items-center gap-1 font-mono tracking-tight">
+        <span className="flex items-center gap-1 tracking-tight">
           {total >= 0 ? '+' : ''}{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           {collapsed ? <ChevronDown className="size-3" /> : <ChevronUp className="size-3" />}
         </span>
@@ -305,7 +331,7 @@ function ChatInput({ bucketId }: { bucketId: number }) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-tt-border bg-tt-surface px-4 py-3 shadow-sm">
+    <div className="flex items-center gap-3 rounded-2xl border border-tt-border bg-tt-surface px-5 py-3.5 shadow-sm">
       <input
         type="text"
         value={input}
@@ -313,14 +339,14 @@ function ChatInput({ bucketId }: { bucketId: number }) {
         onKeyDown={handleKeyDown}
         placeholder="-200 chai"
         disabled={submitting}
-        className="flex-1 border-0 bg-transparent text-sm text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
+        className="flex-1 min-w-0 border-0 bg-transparent text-[15px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
       />
       <button
         onClick={handleSubmit}
         disabled={submitting || !input.trim()}
-        className="shrink-0 rounded-full bg-tt-text p-2 text-tt-bg transition-all duration-150 disabled:opacity-20 disabled:scale-90"
+        className="shrink-0 rounded-full bg-tt-text p-2.5 text-tt-bg transition-all duration-150 disabled:opacity-20 disabled:scale-90"
       >
-        <ArrowUp className="size-3.5" />
+        <ArrowUp className="size-4" />
       </button>
     </div>
   )

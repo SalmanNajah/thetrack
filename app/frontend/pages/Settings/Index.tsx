@@ -75,7 +75,7 @@ function ProfileSection({ user }: { user: PageProps['user'] }) {
               </button>
             </div>
           ) : (
-            <button onClick={() => setEditing(true)} className="text-sm text-tt-text hover:text-tt-accent transition-colors">
+            <button onClick={() => setEditing(true)} className="text-sm text-tt-text border-b border-dashed border-tt-text-tertiary/40 hover:border-tt-accent hover:text-tt-accent cursor-pointer transition-colors">
               {user.name || 'Add name'}
             </button>
           )}

@@ -80,11 +80,11 @@ function BalanceDisplay({ balance, currencySymbol, bucketId }: {
   }
 
   return (
-    <button onClick={startEdit} className="group relative inline-block text-left" title="Edit balance">
+    <button onClick={startEdit} className="group relative inline-block text-left cursor-pointer" title="Tap to edit balance">
       <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
         {formatCurrency(balance, currencySymbol)}
       </span>
-      <Pencil className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-0 transition-opacity group-hover:opacity-100" />
+      <Pencil className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
     </button>
   )
 }
@@ -135,6 +135,16 @@ function TransferDialog({ bucket, otherBuckets, currencySymbol }: {
         setSubmitting(false)
         setAmount('')
         setOpen(false)
+        const toBucket = isReversed ? bucket : targetBucket
+        if (toBucket) {
+          toast.success(`Transferred to ${toBucket.name}`, {
+            id: 'transfer-success',
+            action: {
+              label: `Go to ${toBucket.name}`,
+              onClick: () => router.visit(`/buckets/${toBucket.slug}`),
+            },
+          })
+        }
       },
     })
   }

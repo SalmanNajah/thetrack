@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Users::SignupController < Devise::RegistrationsController
+  before_action :configure_permitted_parameters
+
   def new
     build_resource
     render inertia: "Auth/Signup"
@@ -22,5 +24,11 @@ class Users::SignupController < Devise::RegistrationsController
         alert: resource.errors.full_messages.to_sentence,
         inertia: { errors: resource.errors.to_hash(true) }
     end
+  end
+
+  protected
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.permit(:sign_up, keys: [ :name ])
   end
 end

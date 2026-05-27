@@ -14,6 +14,7 @@ export default function Signup() {
 
   const { data, setData, post, processing } = useForm({
     user: {
+      name: "",
       email: "",
       password: "",
       password_confirmation: "",
@@ -51,6 +52,30 @@ export default function Signup() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
+                htmlFor="name"
+                className="mb-1.5 block text-sm font-medium text-zinc-700"
+              >
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                autoComplete="name"
+                autoFocus
+                value={data.user.name}
+                onChange={(e) =>
+                  setData("user", { ...data.user, name: e.target.value })
+                }
+                className="block w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                placeholder="Your name"
+              />
+              {pageErrors?.name && (
+                <p className="mt-1.5 text-sm text-red-600">{pageErrors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <label
                 htmlFor="email"
                 className="mb-1.5 block text-sm font-medium text-zinc-700"
               >
@@ -60,7 +85,6 @@ export default function Signup() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                autoFocus
                 value={data.user.email}
                 onChange={(e) =>
                   setData("user", { ...data.user, email: e.target.value })

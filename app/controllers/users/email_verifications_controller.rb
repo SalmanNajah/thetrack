@@ -39,7 +39,7 @@ class Users::EmailVerificationsController < ApplicationController
     end
 
     code = @user.generate_otp!
-    OtpMailer.verification_code(@user, code).deliver_later
+    OtpMailer.verification_code(@user, code).deliver_now
 
     redirect_to verify_email_path(email: @user.email),
       notice: "A new verification code has been sent to your email."

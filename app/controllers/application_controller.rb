@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
     # Generate a new OTP if they don't have a pending one
     unless current_user.otp_sent_at.present? && !current_user.otp_expired?
       code = current_user.generate_otp!
-      OtpMailer.verification_code(current_user, code).deliver_later
+      OtpMailer.verification_code(current_user, code).deliver_now
     end
 
     email = current_user.email

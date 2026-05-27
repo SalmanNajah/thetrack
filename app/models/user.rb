@@ -8,6 +8,58 @@ class User < ApplicationRecord
   has_many :buckets, dependent: :destroy
   has_many :transactions, dependent: :destroy
 
+  OTP_LENGTH       = 6
+  OTP_EXPIRY       = 10.minutes
+  OTP_RESEND_COOLDOWN = 60.seconds
+  OTP_MAX_ATTEMPTS = 5
+
+  # Generate a new OTP, store its BCrypt hash and timestamp.
+  # Returns the plaintext code (to be sent via email).
+  def generate_otp!
+    code = SecureRandom.random_number(10**OTP_LENGTH).to_s.rjust(OTP_LENGTH, "0")
+    update!(
+      otp_code_digest: BCrypt::Password.create(code),
+      otp_sent_at: Time.current,
+      otp_attempts: 0
+    )
+    code
+  end
+
+  def verify_otp(code)
+    return false if otp_code_digest.blank? || otp_expired?
+    return false if otp_attempts >= OTP_MAX_ATTEMPTS
+
+    increment!(:otp_attempts)
+
+    if BCrypt::Password.new(otp_code_digest) == code
+      update!(email_verified_at: Time.current, otp_code_digest: nil, otp_sent_at: nil, otp_attempts: 0)
+      true
+    else
+      false
+    end
+  end
+
+  def otp_expired?
+    otp_sent_at.blank? || otp_sent_at < OTP_EXPIRY.ago
+  end
+
+  def otp_max_attempts_reached?
+    otp_attempts >= OTP_MAX_ATTEMPTS
+  end
+
+  def can_resend_otp?
+    otp_sent_at.blank? || otp_sent_at < OTP_RESEND_COOLDOWN.ago
+  end
+
+  def resend_cooldown_seconds
+    return 0 if can_resend_otp?
+    (otp_sent_at + OTP_RESEND_COOLDOWN - Time.current).ceil
+  end
+
+  def email_verified?
+    email_verified_at.present?
+  end
+
   DEFAULT_BUCKETS = [
     { name: "Income", slug: "income", deletable: false, position: 0 },
     { name: "Daily", slug: "daily", deletable: false, position: 1 },

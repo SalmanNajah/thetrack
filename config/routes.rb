@@ -5,6 +5,11 @@ Rails.application.routes.draw do
     omniauth_callbacks: "users/omniauth_callbacks"
   }
 
+  # Email OTP verification
+  get  "verify-email",        to: "users/email_verifications#show",   as: :verify_email
+  post "verify-email",        to: "users/email_verifications#verify", as: :verify_email_submit
+  post "verify-email/resend", to: "users/email_verifications#resend", as: :resend_verify_email
+
   # Redirect to localhost from 127.0.0.1 to use same IP address with Vite server
   constraints(host: "127.0.0.1") do
     get "(*path)", to: redirect { |params, req| "#{req.protocol}localhost:#{req.port}/#{params[:path]}" }

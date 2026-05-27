@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_200216) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_27_074653) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,9 +45,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_200216) do
     t.datetime "created_at", null: false
     t.string "currency", default: "INR"
     t.string "email", default: "", null: false
+    t.datetime "email_verified_at"
     t.string "encrypted_password", default: "", null: false
     t.string "name"
     t.boolean "onboarded", default: false, null: false
+    t.integer "otp_attempts", default: 0, null: false
+    t.string "otp_code_digest"
+    t.datetime "otp_sent_at"
     t.string "provider"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"

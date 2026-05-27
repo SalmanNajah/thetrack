@@ -7,6 +7,9 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
     @user = User.from_omniauth(request.env["omniauth.auth"])
 
     if @user.persisted?
+      # Google users have already verified their email with Google
+      @user.update!(email_verified_at: Time.current) unless @user.email_verified?
+
       flash[:notice] = I18n.t("devise.omniauth_callbacks.success", kind: "Google")
       sign_in_and_redirect @user, event: :authentication
     else

@@ -7,8 +7,10 @@
 one:
   email: one@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  email_verified_at: <%= Time.current %>
 
 two:
   email: two@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  email_verified_at: <%= Time.current %>
 

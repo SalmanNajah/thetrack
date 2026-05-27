@@ -11,19 +11,16 @@ class Users::SignupController < Devise::RegistrationsController
 
     resource.save
     if resource.persisted?
-      if resource.active_for_authentication?
-        set_flash_message!(:notice, :signed_up)
-        sign_up(resource_name, resource)
-        redirect_to after_sign_up_path_for(resource), status: :see_other
-      else
-        set_flash_message!(:notice, :"signed_up_but_#{resource.inactive_message}")
-        expire_data_after_sign_in!
-        redirect_to after_inactive_sign_up_path_for(resource), status: :see_other
-      end
+      # Don't sign in yet — require email verification first
+      code = resource.generate_otp!
+      OtpMailer.verification_code(resource, code).deliver_later
+      redirect_to verify_email_path(email: resource.email), status: :see_other
     else
       clean_up_passwords resource
       set_minimum_password_length
-      redirect_to new_user_registration_path, inertia: { errors: resource.errors.to_hash(true) }, status: :see_other
+      redirect_to new_user_registration_path,
+        alert: resource.errors.full_messages.to_sentence,
+        inertia: { errors: resource.errors.to_hash(true) }
     end
   end
 end

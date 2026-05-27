@@ -8,6 +8,14 @@ class User < ApplicationRecord
   has_many :buckets, dependent: :destroy
   has_many :transactions, dependent: :destroy
 
+  scope :admins, -> { where(admin: true) }
+
+  def self.admin_emails
+    ENV["ADMIN_EMAILS"].to_s.split(",").map(&:strip).map(&:downcase)
+  end
+
+  before_create :auto_set_admin
+
   OTP_LENGTH       = 6
   OTP_EXPIRY       = 10.minutes
   OTP_RESEND_COOLDOWN = 60.seconds
@@ -122,5 +130,14 @@ class User < ApplicationRecord
 
   def currency_symbol
     CURRENCIES[currency] || currency
+  end
+
+  private
+
+  def auto_set_admin
+    if self.class.admin_emails.include?(email.to_s.strip.downcase)
+      self.admin = true
+      self.onboarded = true
+    end
   end
 end

@@ -94,14 +94,14 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
         {open && (
           <div
             className={classNames(
-              "w-60 rounded-2xl border border-tt-border bg-tt-surface shadow-[0_16px_48px_-8px_rgba(0,0,0,0.14),0_6px_16px_-4px_rgba(0,0,0,0.06)] overflow-hidden origin-bottom transition-all duration-220",
+              "w-60 rounded-2xl border border-tt-border bg-tt-surface shadow-[0_16px_48px_-8px_rgba(0,0,0,0.05),0_6px_16px_-4px_rgba(0,0,0,0.06)] overflow-hidden origin-bottom transition-all duration-220",
               visible
                 ? "opacity-100 scale-100 translate-y-0"
                 : "opacity-0 scale-[0.92] translate-y-2"
             )}
             style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
           >
-            <div className="p-1.5">
+            <div className="px-1.5">
               {nav_buckets.map(b => {
                 const isActive = b.slug === currentSlug
                 const isDeleting = confirmDelete === b.slug
@@ -130,7 +130,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                   <div
                     key={b.id}
                     className={classNames(
-                      "group relative flex items-center rounded-xl transition-colors duration-100",
+                      "group relative flex items-center rounded-xl my-1.5",
                       isActive
                         ? "bg-tt-bg"
                         : "hover:bg-tt-bg"
@@ -231,7 +231,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
 
         <button
           onClick={() => open ? close() : setOpen(true)}
-          className="flex items-center rounded-xl border border-tt-text-tertiary/50 bg-tt-surface text-[15px] text-tt-text-secondary shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition-all duration-180 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] active:scale-[0.96] focus:outline-none focus-visible:outline-none overflow-hidden"
+          className="flex items-center rounded-xl border border-tt-text-tertiary/50 bg-tt-surface text-[15px] text-tt-text-secondary shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-180 hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)] active:scale-[0.96] focus:outline-none focus-visible:outline-none overflow-hidden"
           style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
         >
           <span className="flex items-center justify-center px-4 py-2.5">

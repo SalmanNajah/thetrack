@@ -92,12 +92,15 @@ production:
     <<: *primary_production
     url: <%= ENV.fetch("CACHE_DATABASE_URL", ENV["DATABASE_URL"]) %>
     migrations_paths: db/cache_migrate
+    schema_dump: db/cache_schema.rb
   queue:
     <<: *primary_production
     url: <%= ENV.fetch("QUEUE_DATABASE_URL", ENV["DATABASE_URL"]) %>
     migrations_paths: db/queue_migrate
+    schema_dump: db/queue_schema.rb
   cable:
     <<: *primary_production
     url: <%= ENV.fetch("CABLE_DATABASE_URL", ENV["DATABASE_URL"]) %>
     migrations_paths: db/cable_migrate
+    schema_dump: db/cable_schema.rb
 

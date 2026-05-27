@@ -70,8 +70,7 @@ class User < ApplicationRecord
 
   DEFAULT_BUCKETS = [
     { name: "Income", slug: "income", deletable: false, position: 0 },
-    { name: "Daily", slug: "daily", deletable: false, position: 1 },
-    { name: "Parking", slug: "parking", deletable: true, position: 2 }
+    { name: "Daily", slug: "daily", deletable: false, position: 1 }
   ].freeze
 
   CURRENCIES = {

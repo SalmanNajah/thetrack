@@ -48,7 +48,6 @@ export function groupByDate<T extends { occurred_at: string }>(items: T[]): [str
 export function getBucketLabel(slug: string): string {
   switch (slug) {
     case 'daily': return 'Left to spend'
-    case 'parking': return 'Parked'
     case 'income': return 'Income'
     default: return 'Balance'
   }

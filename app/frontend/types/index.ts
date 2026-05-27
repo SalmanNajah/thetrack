@@ -7,6 +7,8 @@ export type AuthUser = {
   id: number
   email: string
   name: string | null
+  admin: boolean
+  super_admin: boolean
 }
 
 export type Bucket = {
@@ -43,6 +45,7 @@ export type AdminUser = {
   currency: string
   currency_symbol: string
   admin: boolean
+  super_admin: boolean
   onboarded: boolean
   email_verified: boolean
   created_at: string

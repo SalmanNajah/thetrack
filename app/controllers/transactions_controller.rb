@@ -28,6 +28,7 @@ class TransactionsController < ApplicationController
     )
 
     if transaction.save
+      current_user.update!(onboarded: true) unless current_user.onboarded?
       redirect_back fallback_location: bucket_path(bucket.slug),
         notice: "Transaction added"
     else
@@ -73,6 +74,7 @@ class TransactionsController < ApplicationController
       )
     end
 
+    current_user.update!(onboarded: true) unless current_user.onboarded?
     redirect_back fallback_location: bucket_path(from_bucket.slug),
       notice: "Transferred #{amount} to #{to_bucket.name}"
   rescue ActiveRecord::RecordInvalid => e
@@ -107,6 +109,7 @@ class TransactionsController < ApplicationController
     )
 
     if transaction.save
+      current_user.update!(onboarded: true) unless current_user.onboarded?
       redirect_back fallback_location: bucket_path(bucket.slug),
         notice: "Balance updated"
     else

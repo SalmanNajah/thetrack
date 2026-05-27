@@ -22,7 +22,6 @@ export default function VerifyEmail() {
 
   const { processing } = useForm({});
 
-  // Cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
@@ -37,29 +36,24 @@ export default function VerifyEmail() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  // Reset cooldown when prop changes (after resend)
   useEffect(() => {
     setCooldown(resend_cooldown || 0);
   }, [resend_cooldown]);
 
-  // Auto-focus first input on mount
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
 
   function handleChange(index: number, value: string) {
-    // Only accept digits
     const digit = value.replace(/\D/g, "").slice(-1);
     const newOtp = [...otp];
     newOtp[index] = digit;
     setOtp(newOtp);
 
-    // Auto-advance to next input
     if (digit && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all digits are filled
     const fullCode = newOtp.join("");
     if (fullCode.length === OTP_LENGTH && newOtp.every((d) => d !== "")) {
       submitCode(fullCode);
@@ -68,7 +62,6 @@ export default function VerifyEmail() {
 
   function handleKeyDown(index: number, e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
-      // Move back on backspace when current input is empty
       const newOtp = [...otp];
       newOtp[index - 1] = "";
       setOtp(newOtp);
@@ -87,11 +80,9 @@ export default function VerifyEmail() {
     }
     setOtp(newOtp);
 
-    // Focus last filled input or the next empty one
     const lastIndex = Math.min(pastedData.length, OTP_LENGTH) - 1;
     inputRefs.current[lastIndex]?.focus();
 
-    // Auto-submit if full code was pasted
     if (pastedData.length === OTP_LENGTH) {
       submitCode(pastedData);
     }
@@ -116,7 +107,6 @@ export default function VerifyEmail() {
     });
   }
 
-  // Mask email: s***n@gmail.com
   function maskEmail(email: string) {
     const [local, domain] = email.split("@");
     if (local.length <= 2) return `${local[0]}***@${domain}`;
@@ -170,7 +160,6 @@ export default function VerifyEmail() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {/* OTP Input Grid */}
             <div className="mb-2 flex justify-center gap-2.5">
               {Array.from({ length: OTP_LENGTH }).map((_, i) => (
                 <input

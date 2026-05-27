@@ -47,7 +47,6 @@ export default function Login() {
             </div>
           )}
 
-          {/* Email / Password form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
@@ -135,7 +134,6 @@ export default function Login() {
             <div className="h-px flex-1 bg-zinc-200" />
           </div>
 
-          {/* Google Sign Up */}
           <form action="/users/auth/google_oauth2" method="post">
             <input
               type="hidden"

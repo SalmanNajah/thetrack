@@ -6,7 +6,6 @@ import { classNames } from '@/lib/utils'
 
 type NavBucket = { id: number; name: string; slug: string }
 
-/** Map well-known bucket slugs to a Lucide icon; fall back to CircleDollarSign for custom buckets. */
 function BucketIcon({ slug, className }: { slug: string; className?: string }) {
   switch (slug) {
     case 'income':

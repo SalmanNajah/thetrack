@@ -20,7 +20,9 @@ module InertiaRendering
           user: {
             id: current_user.id,
             email: current_user.email,
-            name: current_user.try(:name)
+            name: current_user.try(:name),
+            admin: current_user.admin?,
+            super_admin: current_user.try(:super_admin?) || false
           }
         },
         nav_buckets: buckets.map { |b| { id: b.id, name: b.name, slug: b.slug } }

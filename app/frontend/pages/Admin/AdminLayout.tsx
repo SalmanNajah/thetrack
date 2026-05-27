@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react'
 import { useState } from 'react'
 import { Toaster } from 'sonner'
 import type { AuthUser } from '@/types'
-import { Menu, X, ChevronLeft } from 'lucide-react'
+import { Menu, X, ChevronLeft, LogOut } from 'lucide-react'
 import { classNames } from '@/lib/utils'
 
 type AdminLayoutProps = {
@@ -89,6 +89,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <p className="text-[10px] text-[#666] truncate">{auth.user.email}</p>
             </div>
           </div>
+          <Link
+            href="/users/sign_out"
+            method="delete"
+            as="button"
+            className="mt-3 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-[#666] hover:text-[#ccc] hover:bg-[#222225] transition-colors"
+          >
+            <LogOut className="size-3.5" />
+            Log out
+          </Link>
         </div>
       </aside>
 

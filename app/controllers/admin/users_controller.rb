@@ -13,7 +13,8 @@ class Admin::UsersController < Admin::BaseController
     render inertia: "Admin/Users/Index", props: {
       users: result[:records].map { |u| serialize_user(u) },
       pagination: result[:pagination],
-      search: params[:search] || ""
+      search: params[:search] || "",
+      is_super_admin: current_user.super_admin?
     }
   end
 
@@ -45,12 +46,19 @@ class Admin::UsersController < Admin::BaseController
       user: serialize_user(user),
       buckets: buckets,
       recent_transactions: recent_transactions,
-      total_balance: user.buckets.sum { |b| b.balance }.to_s
+      total_balance: user.buckets.sum { |b| b.balance }.to_s,
+      is_super_admin: current_user.super_admin?
     }
   end
 
   def update
     user = User.find(params[:id])
+
+    # Only super admins can change admin status
+    if params.key?(:admin) && !current_user.super_admin?
+      redirect_to admin_user_path(user), alert: "Only super admins can change admin status"
+      return
+    end
 
     if user.update(user_params)
       redirect_to admin_user_path(user), notice: "User updated successfully"
@@ -60,10 +68,15 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def destroy
+    unless current_user.super_admin?
+      redirect_to admin_users_path, alert: "Only super admins can delete users"
+      return
+    end
+
     user = User.find(params[:id])
 
-    if user.admin?
-      redirect_to admin_users_path, alert: "Cannot delete an admin user from the dashboard"
+    if user.super_admin?
+      redirect_to admin_users_path, alert: "Cannot delete a super admin"
       return
     end
 

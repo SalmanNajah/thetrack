@@ -132,6 +132,10 @@ class User < ApplicationRecord
     CURRENCIES[currency] || currency
   end
 
+  def super_admin?
+    admin? && self.class.admin_emails.include?(email.to_s.strip.downcase)
+  end
+
   private
 
   def auto_set_admin

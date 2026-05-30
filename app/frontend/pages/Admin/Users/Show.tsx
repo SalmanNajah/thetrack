@@ -13,6 +13,7 @@ type PageProps = {
   recent_transactions: AdminTransaction[]
   total_balance: string
   is_super_admin: boolean
+  current_user_id: number
 }
 
 function formatDate(iso: string): string {
@@ -33,7 +34,8 @@ function formatShortDate(iso: string): string {
 }
 
 export default function Show() {
-  const { flash, user, buckets, recent_transactions, total_balance, is_super_admin } = usePage<PageProps>().props
+  const { flash, user, buckets, recent_transactions, total_balance, is_super_admin, current_user_id } = usePage<PageProps>().props
+  const isSelf = user.id === current_user_id
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [promoteConfirm, setPromoteConfirm] = useState(false)
 
@@ -83,7 +85,12 @@ export default function Show() {
                   {user.name || 'Unnamed User'}
                 </h1>
                 <p className="text-[13px] text-[#999] font-mono mt-0.5">{user.email}</p>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  {isSelf && (
+                    <span className="rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-200">
+                      This is you
+                    </span>
+                  )}
                   {user.super_admin && (
                     <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                       Super Admin
@@ -108,7 +115,7 @@ export default function Show() {
               </div>
             </div>
 
-            {is_super_admin && !user.super_admin && (
+            {is_super_admin && !isSelf && !user.super_admin && (
               <div className="flex items-center gap-2 shrink-0">
                 {user.admin ? (
                   <button

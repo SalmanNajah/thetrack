@@ -14,7 +14,8 @@ class Admin::UsersController < Admin::BaseController
       users: result[:records].map { |u| serialize_user(u) },
       pagination: result[:pagination],
       search: params[:search] || "",
-      is_super_admin: current_user.super_admin?
+      is_super_admin: current_user.super_admin?,
+      current_user_id: current_user.id
     }
   end
 
@@ -47,7 +48,8 @@ class Admin::UsersController < Admin::BaseController
       buckets: buckets,
       recent_transactions: recent_transactions,
       total_balance: user.buckets.sum { |b| b.balance }.to_s,
-      is_super_admin: current_user.super_admin?
+      is_super_admin: current_user.super_admin?,
+      current_user_id: current_user.id
     }
   end
 
@@ -58,6 +60,20 @@ class Admin::UsersController < Admin::BaseController
     if params.key?(:admin) && !current_user.super_admin?
       redirect_to admin_user_path(user), alert: "Only super admins can change admin status"
       return
+    end
+
+    # Prevent self-modification of admin status
+    if params.key?(:admin) && user.id == current_user.id
+      redirect_to admin_user_path(user), alert: "You cannot modify your own admin status"
+      return
+    end
+
+    # Prevent demoting the last admin
+    if params.key?(:admin) && params[:admin].to_s == "false" && user.admin?
+      if User.admins.count <= 1
+        redirect_to admin_user_path(user), alert: "Cannot remove the last admin — at least one admin must exist"
+        return
+      end
     end
 
     if user.update(user_params)
@@ -74,6 +90,11 @@ class Admin::UsersController < Admin::BaseController
     end
 
     user = User.find(params[:id])
+
+    if user.id == current_user.id
+      redirect_to admin_users_path, alert: "You cannot delete your own account from the admin panel"
+      return
+    end
 
     if user.super_admin?
       redirect_to admin_users_path, alert: "Cannot delete a super admin"
@@ -98,6 +119,7 @@ class Admin::UsersController < Admin::BaseController
       currency: user.currency,
       currency_symbol: user.currency_symbol,
       admin: user.admin?,
+      super_admin: user.super_admin?,
       onboarded: user.onboarded?,
       email_verified: user.email_verified?,
       created_at: user.created_at.iso8601,

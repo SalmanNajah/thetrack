@@ -13,6 +13,7 @@ type PageProps = {
   pagination: PaginationData
   search: string
   is_super_admin: boolean
+  current_user_id: number
 }
 
 function formatDate(iso: string): string {
@@ -24,7 +25,7 @@ function formatDate(iso: string): string {
 }
 
 export default function Index() {
-  const { flash, users, pagination, search: initialSearch, is_super_admin } = usePage<PageProps>().props
+  const { flash, users, pagination, search: initialSearch, is_super_admin, current_user_id } = usePage<PageProps>().props
   const [searchInput, setSearchInput] = useState(initialSearch)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
 
@@ -99,6 +100,11 @@ export default function Index() {
                       <Link href={`/admin/users/${user.id}`} className="block">
                         <p className="text-[13px] text-[#333] group-hover:text-black transition-colors">
                           {user.name || '—'}
+                          {user.id === current_user_id && (
+                            <span className="ml-1.5 inline-flex items-center rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-200">
+                              You
+                            </span>
+                          )}
                           {user.super_admin && (
                             <span className="ml-1.5 inline-flex items-center rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                               Super Admin
@@ -144,7 +150,7 @@ export default function Index() {
                         >
                           View
                         </Link>
-                        {is_super_admin && !user.super_admin && (
+                        {is_super_admin && !user.super_admin && user.id !== current_user_id && (
                           deleteConfirm === user.id ? (
                             <div className="flex items-center gap-1">
                               <button

@@ -8,7 +8,7 @@ import {
 } from '@/lib/format'
 import { classNames } from '@/lib/utils'
 import type { Bucket, TransactionRecord, AuthUser } from '@/types'
-import { ArrowLeft, Pencil, ArrowLeftRight, ChevronDown, ChevronUp, ArrowUp } from 'lucide-react'
+import { ArrowLeft, Pencil, ArrowLeftRight, ChevronDown, ChevronUp, ArrowUp, Trash2 } from 'lucide-react'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -192,11 +192,37 @@ export default function Show() {
   } = usePage<PageProps>().props
 
   useEffect(() => {
-    if (flash?.notice) toast.success(flash.notice, { id: 'flash-notice' })
+    if (flash?.notice) {
+      // Detect transfer notices and add CTA to navigate to target bucket
+      const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/)
+      if (transferMatch) {
+        const targetName = transferMatch[1]
+        const targetBucket = other_buckets.find(b => b.name === targetName)
+        toast.success(flash.notice, {
+          id: 'flash-notice',
+          ...(targetBucket && {
+            action: {
+              label: `Go to ${targetBucket.name}`,
+              onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
+            },
+          }),
+        })
+      } else {
+        toast.success(flash.notice, { id: 'flash-notice' })
+      }
+    }
     if (flash?.alert) toast.error(flash.alert, { id: 'flash-alert' })
   }, [flash?.notice, flash?.alert])
 
   const dateGroups = groupByDate(transactions)
+
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  function handleDeleteBucket() {
+    router.delete(`/buckets/${bucket.slug}`, {
+      onFinish: () => setConfirmDelete(false),
+    })
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-tt-bg pb-48">
@@ -206,13 +232,41 @@ export default function Show() {
             <ArrowLeft className="size-[14px]" />
             Back
           </Link>
-          {other_buckets.length > 0 && (
-            <TransferDialog
-              buckets={[bucket, ...other_buckets]}
-              currencySymbol={currency_symbol}
-              defaultFromBucketId={bucket.id.toString()}
-            />
-          )}
+          <div className="flex items-center gap-2">
+            {bucket.deletable && (
+              confirmDelete ? (
+                <div className="flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5">
+                  <span className="text-[12px] text-red-600">Delete?</span>
+                  <button
+                    onClick={handleDeleteBucket}
+                    className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-1 rounded-full border border-tt-border bg-tt-surface px-2.5 py-1.5 text-[12px] text-tt-text-tertiary hover:text-red-500 hover:border-red-200 transition-all active:scale-[0.97]"
+                >
+                  <Trash2 className="size-3" />
+                </button>
+              )
+            )}
+            {other_buckets.length > 0 && (
+              <TransferDialog
+                buckets={[bucket, ...other_buckets]}
+                currencySymbol={currency_symbol}
+                defaultFromBucketId={bucket.id.toString()}
+              />
+            )}
+          </div>
         </div>
       </header>
 

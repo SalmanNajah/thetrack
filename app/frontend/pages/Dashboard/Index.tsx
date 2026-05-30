@@ -325,7 +325,24 @@ export default function Index() {
   } = usePage<PageProps>().props;
 
   useEffect(() => {
-    if (flash?.notice) toast.success(flash.notice, { id: "flash-notice" });
+    if (flash?.notice) {
+      const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/)
+      if (transferMatch) {
+        const targetName = transferMatch[1]
+        const targetBucket = buckets.find(b => b.name === targetName)
+        toast.success(flash.notice, {
+          id: "flash-notice",
+          ...(targetBucket && {
+            action: {
+              label: `Go to ${targetBucket.name}`,
+              onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
+            },
+          }),
+        })
+      } else {
+        toast.success(flash.notice, { id: "flash-notice" })
+      }
+    }
     if (flash?.alert) toast.error(flash.alert, { id: "flash-alert" });
   }, [flash?.notice, flash?.alert]);
 

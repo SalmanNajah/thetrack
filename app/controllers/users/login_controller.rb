@@ -12,6 +12,7 @@ class Users::LoginController < Devise::SessionsController
     if resource
       if resource.email_verified?
         set_flash_message!(:notice, :signed_in)
+        resource.remember_me = true
         sign_in(resource_name, resource)
         redirect_to after_sign_in_path_for(resource), status: :see_other
       else

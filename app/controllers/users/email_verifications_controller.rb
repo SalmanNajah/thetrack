@@ -22,6 +22,7 @@ class Users::EmailVerificationsController < ApplicationController
 
     if @user.verify_otp(params[:otp])
       @user.ensure_default_buckets!
+      @user.remember_me = true
       sign_in(@user)
       redirect_to after_sign_in_path_for(@user), status: :see_other
     else

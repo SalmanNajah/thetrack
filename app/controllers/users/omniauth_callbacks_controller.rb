@@ -11,6 +11,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       @user.update!(email_verified_at: Time.current) unless @user.email_verified?
 
       flash[:notice] = I18n.t("devise.omniauth_callbacks.success", kind: "Google")
+      @user.remember_me = true
       sign_in_and_redirect @user, event: :authentication
     else
       flash[:alert] = I18n.t("devise.omniauth_callbacks.failure", kind: "Google", reason: "something went wrong")

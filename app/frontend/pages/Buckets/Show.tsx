@@ -1,95 +1,126 @@
-import { Link, usePage, router } from '@inertiajs/react'
-import { useState, useRef, useEffect, KeyboardEvent } from 'react'
-import { toast } from 'sonner'
-import { BottomNavbar } from '@/components/BottomNavbar'
-import { TransferDialog } from '@/components/TransferDialog'
+import { Link, usePage, router } from "@inertiajs/react";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { toast } from "sonner";
+import { BottomNavbar } from "@/components/BottomNavbar";
+import { TransferDialog } from "@/components/TransferDialog";
 import {
-  formatTxnAmount, formatCurrency, groupByDate, getBucketLabel,
-} from '@/lib/format'
-import { classNames } from '@/lib/utils'
-import type { Bucket, TransactionRecord, AuthUser } from '@/types'
-import { ArrowLeft, Pencil, ArrowLeftRight, ChevronDown, ChevronUp, ArrowUp, Trash2 } from 'lucide-react'
+  formatTxnAmount,
+  formatCurrency,
+  groupByDate,
+  getBucketLabel,
+} from "@/lib/format";
+import { classNames } from "@/lib/utils";
+import type { Bucket, TransactionRecord, AuthUser } from "@/types";
+import {
+  ArrowLeft,
+  Pencil,
+  ArrowLeftRight,
+  ChevronDown,
+  ChevronUp,
+  ArrowUp,
+  Trash2,
+} from "lucide-react";
 
 type PageProps = {
-  auth: { user: AuthUser }
-  flash: { notice: string | null; alert: string | null }
-  bucket: Bucket
-  transactions: TransactionRecord[]
-  other_buckets: Bucket[]
-  currency_symbol: string
-}
+  auth: { user: AuthUser };
+  flash: { notice: string | null; alert: string | null };
+  bucket: Bucket;
+  transactions: TransactionRecord[];
+  other_buckets: Bucket[];
+  currency_symbol: string;
+};
 
-function BalanceDisplay({ balance, currencySymbol, bucketId }: {
-  balance: string
-  currencySymbol: string
-  bucketId: number
+function BalanceDisplay({
+  balance,
+  currencySymbol,
+  bucketId,
+}: {
+  balance: string;
+  currencySymbol: string;
+  bucketId: number;
 }) {
-  const [editing, setEditing] = useState(false)
-  const [editValue, setEditValue] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editing && inputRef.current) {
-      inputRef.current.focus()
-      inputRef.current.select()
+      inputRef.current.focus();
+      inputRef.current.select();
     }
-  }, [editing])
+  }, [editing]);
 
   function startEdit() {
-    setEditValue(parseFloat(balance).toString())
-    setEditing(true)
+    setEditValue(parseFloat(balance).toString());
+    setEditing(true);
   }
 
   function commitEdit() {
-    setEditing(false)
-    const newBalance = parseFloat(editValue)
-    if (isNaN(newBalance) || newBalance < 0) return
-    if (newBalance.toString() === parseFloat(balance).toString()) return
-    router.post('/transactions/adjust_balance', {
-      bucket_id: bucketId,
-      new_balance: editValue,
-    }, { preserveScroll: true })
+    setEditing(false);
+    const newBalance = parseFloat(editValue);
+    if (isNaN(newBalance) || newBalance < 0) return;
+    if (newBalance.toString() === parseFloat(balance).toString()) return;
+    router.post(
+      "/transactions/adjust_balance",
+      {
+        bucket_id: bucketId,
+        new_balance: editValue,
+      },
+      { preserveScroll: true },
+    );
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter') commitEdit()
-    if (e.key === 'Escape') setEditing(false)
+    if (e.key === "Enter") commitEdit();
+    if (e.key === "Escape") setEditing(false);
   }
 
   if (editing) {
     return (
       <div className="flex items-baseline gap-1">
-        <span className="text-3xl font-semibold text-tt-text-tertiary">{currencySymbol}</span>
+        <span className="text-3xl font-semibold text-tt-text-tertiary">
+          {currencySymbol}
+        </span>
         <input
           ref={inputRef}
-          type="number" min="0" step="0.01"
+          type="number"
+          min="0"
+          step="0.01"
           value={editValue}
-          onChange={e => setEditValue(e.target.value)}
+          onChange={(e) => setEditValue(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={handleKeyDown}
           className="w-52 border-0 border-b border-tt-text bg-transparent p-0 text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text caret-tt-accent focus:outline-none focus:ring-0"
         />
       </div>
-    )
+    );
   }
 
   return (
-    <button onClick={startEdit} className="group relative inline-block text-left cursor-pointer" title="Tap to edit balance">
+    <button
+      onClick={startEdit}
+      className="group relative inline-block text-left cursor-pointer"
+      title="Tap to edit balance"
+    >
       <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
         {formatCurrency(balance, currencySymbol)}
       </span>
       <Pencil className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
     </button>
-  )
+  );
 }
 
-
-function DateGroup({ date, transactions }: {
-  date: string
-  transactions: TransactionRecord[]
+function DateGroup({
+  date,
+  transactions,
+  currencySymbol,
+}: {
+  date: string;
+  transactions: TransactionRecord[];
+  currencySymbol: string;
 }) {
-  const [collapsed, setCollapsed] = useState(false)
-  const total = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0)
+  const [collapsed, setCollapsed] = useState(false);
+  const total = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
   return (
     <div>
@@ -97,30 +128,46 @@ function DateGroup({ date, transactions }: {
         {date}
       </p>
 
-      {!collapsed && transactions.map(txn => {
-        const amount = parseFloat(txn.amount)
-        const isPositive = amount > 0
-        const isTransfer = !!txn.transfer_group_id
+      {!collapsed &&
+        transactions.map((txn) => {
+          const amount = parseFloat(txn.amount);
+          const isPositive = amount > 0;
+          const isTransfer = !!txn.transfer_group_id;
 
-        return (
-          <div key={txn.id} className="flex items-center justify-between py-3 border-b border-tt-border-subtle">
-            <div className="min-w-0 flex-1 flex items-center gap-1.5">
-              {isTransfer && <ArrowLeftRight className="size-3 shrink-0 text-tt-text-tertiary" />}
-              <p className="truncate text-sm text-tt-text">
-                {txn.description || (isTransfer ? 'Transfer' : 'Transaction')}
-              </p>
-            </div>
-            <span
-              className={classNames(
-                "ml-4 shrink-0 text-sm tracking-tight",
-                isPositive ? "text-tt-positive" : "text-tt-negative"
-              )}
+          return (
+            <div
+              key={txn.id}
+              className="flex items-center justify-between py-3 border-b border-tt-border-subtle"
             >
-              {formatTxnAmount(txn.amount)}
-            </span>
-          </div>
-        )
-      })}
+              <div className="min-w-0 flex-1 flex items-center gap-1.5">
+                {isTransfer && (
+                  <ArrowLeftRight className="size-3 shrink-0 text-tt-text-tertiary" />
+                )}
+                <p className="truncate text-sm text-tt-text">
+                  {txn.description || (isTransfer ? "Transfer" : "Transaction")}
+                </p>
+              </div>
+              <div className="ml-4 shrink-0 flex flex-col items-end">
+                <span
+                  className={classNames(
+                    "text-sm font-medium tracking-tight",
+                    isPositive ? "text-tt-positive" : "text-tt-negative",
+                  )}
+                >
+                  {formatTxnAmount(txn.amount)}
+                </span>
+                {txn.closing_balance && (
+                  <span className="mt-0.5 text-[11px] text-tt-text-tertiary">
+                    Closing balance:{" "}
+                    <span className="text-tt-text-secondary">
+                      {formatCurrency(txn.closing_balance, currencySymbol)}
+                    </span>
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
 
       <button
         onClick={() => setCollapsed(!collapsed)}
@@ -128,34 +175,46 @@ function DateGroup({ date, transactions }: {
       >
         <span>Total</span>
         <span className="flex items-center gap-1 tracking-tight">
-          {total >= 0 ? '+' : ''}{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-          {collapsed ? <ChevronDown className="size-3" /> : <ChevronUp className="size-3" />}
+          {total >= 0 ? "+" : ""}
+          {total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+          {collapsed ? (
+            <ChevronDown className="size-3" />
+          ) : (
+            <ChevronUp className="size-3" />
+          )}
         </span>
       </button>
     </div>
-  )
+  );
 }
 
 function ChatInput({ bucketId }: { bucketId: number }) {
-  const [input, setInput] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [input, setInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   function handleSubmit() {
-    if (!input.trim() || submitting) return
-    setSubmitting(true)
-    router.post('/transactions', {
-      bucket_id: bucketId,
-      raw_input: input.trim(),
-    }, {
-      preserveScroll: true,
-      onFinish: () => { setSubmitting(false); setInput('') },
-    })
+    if (!input.trim() || submitting) return;
+    setSubmitting(true);
+    router.post(
+      "/transactions",
+      {
+        bucket_id: bucketId,
+        raw_input: input.trim(),
+      },
+      {
+        preserveScroll: true,
+        onFinish: () => {
+          setSubmitting(false);
+          setInput("");
+        },
+      },
+    );
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit()
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   }
 
@@ -164,7 +223,7 @@ function ChatInput({ bucketId }: { bucketId: number }) {
       <input
         type="text"
         value={input}
-        onChange={e => setInput(e.target.value)}
+        onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="-200 chai or 'move 50 to daily'"
         disabled={submitting}
@@ -178,62 +237,60 @@ function ChatInput({ bucketId }: { bucketId: number }) {
         <ArrowUp className="size-4" />
       </button>
     </div>
-  )
+  );
 }
 
-
 export default function Show() {
-  const {
-    flash,
-    bucket,
-    transactions,
-    other_buckets,
-    currency_symbol,
-  } = usePage<PageProps>().props
+  const { flash, bucket, transactions, other_buckets, currency_symbol } =
+    usePage<PageProps>().props;
 
   useEffect(() => {
     if (flash?.notice) {
       // Detect transfer notices and add CTA to navigate to target bucket
-      const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/)
+      const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/);
       if (transferMatch) {
-        const targetName = transferMatch[1]
-        const targetBucket = other_buckets.find(b => b.name === targetName)
+        const targetName = transferMatch[1];
+        const targetBucket = other_buckets.find((b) => b.name === targetName);
         toast.success(flash.notice, {
-          id: 'flash-notice',
+          id: "flash-notice",
           ...(targetBucket && {
             action: {
               label: `Go to ${targetBucket.name}`,
               onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
             },
           }),
-        })
+        });
       } else {
-        toast.success(flash.notice, { id: 'flash-notice' })
+        toast.success(flash.notice, { id: "flash-notice" });
       }
     }
-    if (flash?.alert) toast.error(flash.alert, { id: 'flash-alert' })
-  }, [flash?.notice, flash?.alert])
+    if (flash?.alert) toast.error(flash.alert, { id: "flash-alert" });
+  }, [flash?.notice, flash?.alert]);
 
-  const dateGroups = groupByDate(transactions)
+  const dateGroups = groupByDate(transactions);
 
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   function handleDeleteBucket() {
     router.delete(`/buckets/${bucket.slug}`, {
       onFinish: () => setConfirmDelete(false),
-    })
+    });
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-tt-bg pb-48">
       <header className="sticky top-0 z-30 bg-tt-bg/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" className="flex items-center gap-1.5 text-[13px] text-tt-text-tertiary hover:text-tt-text transition-colors">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 text-[13px] text-tt-text-tertiary hover:text-tt-text transition-colors"
+          >
             <ArrowLeft className="size-[14px]" />
             Back
           </Link>
           <div className="flex items-center gap-2">
-            {other_buckets.length > 0 && (confirmDelete ? (
+            {other_buckets.length > 0 &&
+              (confirmDelete ? (
                 <div className="flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5">
                   <span className="text-[12px] text-red-600">Delete?</span>
                   <button
@@ -275,19 +332,28 @@ export default function Show() {
               {getBucketLabel(bucket.slug)}
             </p>
             <div className="mt-2">
-              <BalanceDisplay balance={bucket.balance} currencySymbol={currency_symbol} bucketId={bucket.id} />
+              <BalanceDisplay
+                balance={bucket.balance}
+                currencySymbol={currency_symbol}
+                bucketId={bucket.id}
+              />
             </div>
           </section>
 
           {dateGroups.length > 0 ? (
             <section>
               {dateGroups.map(([date, txns]) => (
-                <DateGroup key={date} date={date} transactions={txns} />
+                <DateGroup
+                  key={date}
+                  date={date}
+                  transactions={txns}
+                  currencySymbol={currency_symbol}
+                />
               ))}
             </section>
           ) : (
             <div className="py-20 text-center text-sm text-tt-text-tertiary">
-              No transactions yet. 
+              No transactions yet.
             </div>
           )}
         </div>
@@ -301,5 +367,5 @@ export default function Show() {
 
       <BottomNavbar currentSlug={bucket.slug} />
     </div>
-  )
+  );
 }

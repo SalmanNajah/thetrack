@@ -33,7 +33,7 @@ class BucketsController < ApplicationController
   def show
     current_user.ensure_default_buckets!
     bucket = current_user.buckets.find_by!(slug: params[:slug])
-    transactions = bucket.transactions.recent.limit(50)
+    transactions = bucket.transactions.with_closing_balance.recent.limit(50)
     other_buckets = current_user.buckets.where.not(id: bucket.id).ordered
 
     render inertia: "Buckets/Show", props: {
@@ -64,7 +64,8 @@ class BucketsController < ApplicationController
       occurred_at: txn.occurred_at.iso8601,
       transfer_group_id: txn.transfer_group_id,
       bucket: { id: txn.bucket.id, name: txn.bucket.name, slug: txn.bucket.slug },
-      paired_bucket: paired ? { id: paired.bucket.id, name: paired.bucket.name, slug: paired.bucket.slug } : nil
+      paired_bucket: paired ? { id: paired.bucket.id, name: paired.bucket.name, slug: paired.bucket.slug } : nil,
+      closing_balance: txn.respond_to?(:closing_balance) ? txn.closing_balance.to_s : nil
     }
   end
 end

@@ -16,7 +16,7 @@ class DashboardController < ApplicationController
       },
       total_balance: buckets.sum(&:balance).to_s,
       recent_transactions: current_user.transactions
-        .includes(:bucket).recent.limit(10)
+        .with_closing_balance.includes(:bucket).recent.limit(10)
         .map { |t|
           {
             id: t.id,
@@ -24,7 +24,8 @@ class DashboardController < ApplicationController
             amount: t.amount.to_s,
             occurred_at: t.occurred_at.iso8601,
             transfer_group_id: t.transfer_group_id,
-            bucket: { id: t.bucket.id, name: t.bucket.name, slug: t.bucket.slug }
+            bucket: { id: t.bucket.id, name: t.bucket.name, slug: t.bucket.slug },
+            closing_balance: t.closing_balance.to_s
           }
         },
       currency_symbol: current_user.currency_symbol,

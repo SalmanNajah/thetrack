@@ -187,7 +187,6 @@ function OnboardingCard({
   );
 }
 
-
 function BucketCards({
   buckets,
   currencySymbol,
@@ -238,7 +237,11 @@ function BucketCards({
           Buckets
         </p>
         {buckets.length > 1 && (
-          <TransferDialog buckets={buckets} currencySymbol={currencySymbol} size="sm" />
+          <TransferDialog
+            buckets={buckets}
+            currencySymbol={currencySymbol}
+            size="sm"
+          />
         )}
       </div>
       <div className="flex gap-3.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
@@ -326,10 +329,10 @@ export default function Index() {
 
   useEffect(() => {
     if (flash?.notice) {
-      const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/)
+      const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/);
       if (transferMatch) {
-        const targetName = transferMatch[1]
-        const targetBucket = buckets.find(b => b.name === targetName)
+        const targetName = transferMatch[1];
+        const targetBucket = buckets.find((b) => b.name === targetName);
         toast.success(flash.notice, {
           id: "flash-notice",
           ...(targetBucket && {
@@ -338,9 +341,9 @@ export default function Index() {
               onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
             },
           }),
-        })
+        });
       } else {
-        toast.success(flash.notice, { id: "flash-notice" })
+        toast.success(flash.notice, { id: "flash-notice" });
       }
     }
     if (flash?.alert) toast.error(flash.alert, { id: "flash-alert" });
@@ -423,15 +426,30 @@ export default function Index() {
                           {txn.bucket.name} · {formatDate(txn.occurred_at)}
                         </p>
                       </div>
-                      <span
-                        className={classNames(
-                          "ml-4 shrink-0 text-sm tracking-tight",
-                          isPositive ? "text-tt-positive" : "text-tt-negative",
+                      <div className="ml-4 shrink-0 flex flex-col items-end">
+                        <span
+                          className={classNames(
+                            "text-sm font-medium tracking-tight",
+                            isPositive
+                              ? "text-tt-positive"
+                              : "text-tt-negative",
+                          )}
+                        >
+                          {isPositive ? "+" : "-"}
+                          {formatCurrency(txn.amount, currency_symbol)}
+                        </span>
+                        {txn.closing_balance && (
+                          <span className="mt-0.5 text-[11px] text-tt-text-tertiary">
+                            Closing balance:{" "}
+                            <span className="text-tt-text-secondary">
+                              {formatCurrency(
+                                txn.closing_balance,
+                                currency_symbol,
+                              )}
+                            </span>
+                          </span>
                         )}
-                      >
-                        {isPositive ? "+" : "-"}
-                        {formatCurrency(txn.amount, currency_symbol)}
-                      </span>
+                      </div>
                     </div>
                   );
                 })}

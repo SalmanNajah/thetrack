@@ -26,6 +26,7 @@ export type TransactionRecord = {
   transfer_group_id: string | null
   bucket: { id: number; name: string; slug: string }
   paired_bucket?: { id: number; name: string; slug: string } | null
+  closing_balance?: string
 }
 
 export type Currency = "INR" | "USD" | "EUR" | "GBP" | "JPY" | "AED" | "CAD" | "AUD" | "SGD" | "CHF" | "CNY" | "KRW" | "SAR" | "BRL" | "ZAR"

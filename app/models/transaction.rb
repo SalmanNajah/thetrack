@@ -9,6 +9,12 @@ class Transaction < ApplicationRecord
   validate :bucket_balance_must_not_go_negative, if: -> { amount&.negative? }
 
   scope :recent, -> { order(occurred_at: :desc, created_at: :desc) }
+  scope :with_closing_balance, -> {
+    select(
+      "transactions.*",
+      "SUM(amount) OVER (PARTITION BY bucket_id ORDER BY occurred_at ASC, id ASC) AS closing_balance"
+    )
+  }
 
   def transfer?
     transfer_group_id.present?

@@ -440,7 +440,7 @@ export default function Index() {
           </>
         )}
       </main>
-      <BottomNavbar />
+      {onboarded && <BottomNavbar />}
     </div>
   );
 }

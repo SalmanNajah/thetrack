@@ -11,6 +11,7 @@ import type {
   AuthUser,
 } from "@/types";
 import { ArrowLeftRight, ChevronRight, Plus } from "lucide-react";
+import { TransferDialog } from "@/components/TransferDialog";
 
 type PageProps = {
   auth: { user: AuthUser };
@@ -186,6 +187,7 @@ function OnboardingCard({
   );
 }
 
+
 function BucketCards({
   buckets,
   currencySymbol,
@@ -230,28 +232,33 @@ function BucketCards({
   if (buckets.length === 0) return null;
 
   return (
-    <section className="pb-2">
-      <p className="mb-3 text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
-        Buckets
-      </p>
-      <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+    <section className="pt-2 pb-2">
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
+          Buckets
+        </p>
+        {buckets.length > 1 && (
+          <TransferDialog buckets={buckets} currencySymbol={currencySymbol} size="sm" />
+        )}
+      </div>
+      <div className="flex gap-3.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {buckets.map((bucket) => (
           <Link
             key={bucket.id}
             href={`/buckets/${bucket.slug}`}
-            className="group shrink-0 min-w-[140px] rounded-xl border border-tt-border bg-tt-surface px-4 py-3.5 transition-all duration-150 hover:border-tt-text-tertiary/40 hover:shadow-sm active:scale-[0.97]"
+            className="group shrink-0 min-w-[140px] rounded-xl border border-tt-border bg-tt-surface px-5 py-4 transition-all duration-150 hover:border-tt-text-tertiary/40 hover:shadow-sm active:scale-[0.97]"
           >
             <p className="text-[12px] text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors">
               {bucket.name}
             </p>
-            <p className="mt-1.5 text-[17px] font-semibold tracking-tight text-tt-text">
+            <p className="mt-2.5 text-[17px] font-semibold tracking-tight text-tt-text">
               {formatCurrency(bucket.balance, currencySymbol)}
             </p>
           </Link>
         ))}
         {isAdding ? (
           <div
-            className="shrink-0 min-w-[140px] rounded-xl border border-tt-text/20 bg-tt-surface px-4 py-3.5 flex flex-col justify-between"
+            className="shrink-0 min-w-[140px] rounded-xl border border-tt-text/20 bg-tt-surface px-5 py-4 flex flex-col justify-between"
             onBlur={(e) => {
               if (!e.currentTarget.contains(e.relatedTarget as Node)) {
                 setIsAdding(false);
@@ -291,7 +298,7 @@ function BucketCards({
         ) : (
           <button
             onClick={() => setIsAdding(true)}
-            className="group shrink-0 min-w-[140px] rounded-xl border border-dashed border-tt-text-tertiary/30 px-4 py-3.5 flex flex-col items-center justify-center transition-all duration-150 hover:border-tt-text-tertiary/60 active:scale-[0.97] focus:outline-none"
+            className="group shrink-0 min-w-[140px] rounded-xl border border-dashed border-tt-text-tertiary/30 px-5 py-4 flex flex-col items-center justify-center transition-all duration-150 hover:border-tt-text-tertiary/60 active:scale-[0.97] focus:outline-none"
           >
             <Plus className="size-5 text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors" />
             <p className="mt-1 text-[11px] text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors">

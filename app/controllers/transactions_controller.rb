@@ -4,6 +4,58 @@ class TransactionsController < ApplicationController
   MAX_AMOUNT = BigDecimal("9_999_999_999.99")
   def create
     bucket = current_user.buckets.find(params[:bucket_id])
+
+    if transfer_data = parse_transfer(params[:raw_input], current_user)
+      other_bucket = transfer_data[:other_bucket]
+      amount = transfer_data[:amount]
+      direction = transfer_data[:direction]
+
+      if other_bucket.id == bucket.id
+        redirect_back fallback_location: bucket_path(bucket.slug),
+          alert: "Can't transfer from a bucket to itself!"
+        return
+      end
+
+      if amount > MAX_AMOUNT
+        redirect_back fallback_location: bucket_path(bucket.slug),
+          alert: "That number is way too large — keep it under 10 billion"
+        return
+      end
+
+      from_bucket = direction == :to ? bucket : other_bucket
+      to_bucket = direction == :to ? other_bucket : bucket
+      transfer_group_id = SecureRandom.uuid
+
+      begin
+        ActiveRecord::Base.transaction do
+          from_bucket.transactions.create!(
+            user: current_user,
+            amount: -amount,
+            description: "Transfer to #{to_bucket.name}",
+            transfer_group_id: transfer_group_id,
+            occurred_at: Time.current
+          )
+
+          to_bucket.transactions.create!(
+            user: current_user,
+            amount: amount,
+            description: "Transfer from #{from_bucket.name}",
+            transfer_group_id: transfer_group_id,
+            occurred_at: Time.current
+          )
+        end
+
+        current_user.update!(onboarded: true) unless current_user.onboarded?
+        redirect_back fallback_location: bucket_path(bucket.slug),
+          notice: "Transferred #{amount} to #{to_bucket.name}"
+      rescue ActiveRecord::RecordInvalid => e
+        msg = e.record&.errors&.full_messages&.join(", ") || e.message.sub(/^Validation failed: /i, "")
+        redirect_back fallback_location: bucket_path(bucket.slug),
+          alert: msg
+      end
+      return
+    end
+
     parsed = parse_input(params[:raw_input])
 
     if parsed.nil?
@@ -119,6 +171,44 @@ class TransactionsController < ApplicationController
   end
 
   private
+
+  def parse_transfer(raw, current_user)
+    return nil if raw.blank?
+
+    trimmed = raw.strip.downcase
+
+    if match = trimmed.match(/^(?:move|transfer|send)?\s*(\d+(?:\.\d+)?)\s+to\s+(.+)$/)
+      amount_str = match[1]
+      target_name = match[2].strip
+      direction = :to
+    elsif match = trimmed.match(/^(?:move|transfer|send)?\s*(\d+(?:\.\d+)?)\s+from\s+(.+)$/)
+      amount_str = match[1]
+      target_name = match[2].strip
+      direction = :from
+    elsif match = trimmed.match(/^(?:->|to)\s+(.+?)\s+(\d+(?:\.\d+)?)$/)
+      target_name = match[1].strip
+      amount_str = match[2]
+      direction = :to
+    elsif match = trimmed.match(/^(.+?)\s*(?:<-|from)\s+(\d+(?:\.\d+)?)$/)
+      target_name = match[1].strip
+      amount_str = match[2]
+      direction = :from
+    else
+      return nil
+    end
+
+    amount = BigDecimal(amount_str) rescue nil
+    return nil if amount.nil? || amount <= 0
+
+    other_bucket = current_user.buckets.find { |b| b.slug == target_name || b.name.downcase == target_name }
+    return nil if other_bucket.nil?
+
+    {
+      amount: amount,
+      other_bucket: other_bucket,
+      direction: direction
+    }
+  end
 
   def parse_input(raw)
     return nil if raw.blank?

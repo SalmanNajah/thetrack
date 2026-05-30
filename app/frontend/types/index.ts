@@ -16,7 +16,6 @@ export type Bucket = {
   name: string
   slug: string
   balance: string
-  deletable: boolean
 }
 
 export type TransactionRecord = {
@@ -91,7 +90,6 @@ export type AdminBucket = {
   name: string
   slug: string
   balance: string
-  deletable: boolean
   transactions_count: number
 }
 

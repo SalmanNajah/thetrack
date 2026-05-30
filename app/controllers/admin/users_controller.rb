@@ -27,7 +27,6 @@ class Admin::UsersController < Admin::BaseController
         name: b.name,
         slug: b.slug,
         balance: b.balance.to_s,
-        deletable: b.deletable,
         transactions_count: b.transactions.count
       }
     }

@@ -233,8 +233,7 @@ export default function Show() {
             Back
           </Link>
           <div className="flex items-center gap-2">
-            {bucket.deletable && (
-              confirmDelete ? (
+            {other_buckets.length > 0 && (confirmDelete ? (
                 <div className="flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5">
                   <span className="text-[12px] text-red-600">Delete?</span>
                   <button
@@ -257,8 +256,7 @@ export default function Show() {
                 >
                   <Trash2 className="size-3" />
                 </button>
-              )
-            )}
+              ))}
             {other_buckets.length > 0 && (
               <TransferDialog
                 buckets={[bucket, ...other_buckets]}

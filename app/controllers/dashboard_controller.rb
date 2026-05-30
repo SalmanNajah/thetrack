@@ -11,8 +11,7 @@ class DashboardController < ApplicationController
           id: b.id,
           name: b.name,
           slug: b.slug,
-          balance: b.balance.to_s,
-          deletable: b.deletable
+          balance: b.balance.to_s
         }
       },
       total_balance: buckets.sum(&:balance).to_s,

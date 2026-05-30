@@ -114,7 +114,7 @@ if Rails.env.development?
       end
 
     EXTRA_BUCKET_NAMES.sample(extra_count).each_with_index do |bname, bi|
-      user.buckets.create!(name: bname, deletable: true, position: 3 + bi)
+      user.buckets.create!(name: bname, position: 3 + bi)
     end
 
     buckets = user.buckets.reload

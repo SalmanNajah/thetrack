@@ -216,11 +216,6 @@ export default function Show() {
                     <p className="text-[13px] font-medium text-[#333]">{bucket.name}</p>
                     <p className="text-[11px] text-[#bbb] font-mono mt-0.5">{bucket.slug}</p>
                   </div>
-                  {!bucket.deletable && (
-                    <span className="text-[9px] font-medium tracking-wider uppercase text-[#aaa] bg-[#f0ede7] rounded px-1.5 py-0.5">
-                      System
-                    </span>
-                  )}
                 </div>
                 <div className="mt-3 flex items-baseline justify-between">
                   <p className="text-lg font-semibold font-mono text-[#333] tracking-tight">

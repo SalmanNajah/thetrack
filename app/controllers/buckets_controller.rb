@@ -8,7 +8,6 @@ class BucketsController < ApplicationController
   def create
     bucket = current_user.buckets.new(
       name: params[:name],
-      deletable: true,
       position: current_user.buckets.count
     )
 
@@ -22,8 +21,8 @@ class BucketsController < ApplicationController
   def destroy
     bucket = current_user.buckets.find_by!(slug: params[:slug])
 
-    unless bucket.deletable
-      redirect_back fallback_location: dashboard_path, alert: "Nice try, but '#{bucket.name}' is non-deletable!"
+    if current_user.buckets.count <= 1
+      redirect_back fallback_location: dashboard_path, alert: "You need at least one bucket!"
       return
     end
 
@@ -52,8 +51,7 @@ class BucketsController < ApplicationController
       id: bucket.id,
       name: bucket.name,
       slug: bucket.slug,
-      balance: bucket.balance.to_s,
-      deletable: bucket.deletable
+      balance: bucket.balance.to_s
     }
   end
 

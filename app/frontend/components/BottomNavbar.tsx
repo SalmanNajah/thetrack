@@ -155,7 +155,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                       />
                       {b.name}
                     </Link>
-                    {b.slug !== 'income' && b.slug !== 'daily' && (
+                    {nav_buckets.length > 1 && (
                       <button
                         onClick={() => setConfirmDelete(b.slug)}
                         className="absolute right-1.5 p-1 rounded-lg text-red-300/60 hover:text-red-600 transition-colors focus:outline-none"

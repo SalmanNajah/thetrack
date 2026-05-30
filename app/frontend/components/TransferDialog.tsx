@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, FormEvent } from 'react'
 import { router } from '@inertiajs/react'
-import { toast } from 'sonner'
 import { ArrowLeftRight, ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -79,15 +78,6 @@ export function TransferDialog({
         setSubmitting(false)
         setAmount('')
         setOpen(false)
-        if (toBucket) {
-          toast.success(`Transferred to ${toBucket.name}`, {
-            id: 'transfer-success',
-            action: {
-              label: `Go to ${toBucket.name}`,
-              onClick: () => router.visit(`/buckets/${toBucket.slug}`),
-            },
-          })
-        }
       },
     })
   }

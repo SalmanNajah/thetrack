@@ -8,6 +8,8 @@ class User < ApplicationRecord
 
   scope :admins, -> { where(admin: true) }
 
+  attribute :unsigned_adds, :boolean, default: false
+
   def self.admin_emails
     ENV["ADMIN_EMAILS"].to_s.split(",").map(&:strip).map(&:downcase)
   end

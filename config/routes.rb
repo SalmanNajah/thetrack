@@ -37,6 +37,7 @@ Rails.application.routes.draw do
   resource :settings, only: [ :show ] do
     post :update_profile, on: :member
     post :update_currency, on: :member
+    post :update_sign_convention, on: :member
     delete :reset_all, on: :member
     delete :delete_account, on: :member
   end

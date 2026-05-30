@@ -7,6 +7,7 @@ class SettingsController < ApplicationController
         email: current_user.email,
         name: current_user.name,
         currency: current_user.currency,
+        unsigned_adds: current_user.unsigned_adds,
         created_at: current_user.created_at.strftime("%B %d, %Y")
       },
       currencies: User::CURRENCIES.map { |code, symbol| { code: code, symbol: symbol, label: "#{symbol} #{code}" } },
@@ -30,6 +31,16 @@ class SettingsController < ApplicationController
       redirect_to settings_path, notice: "Currency updated to #{params[:currency]}"
     else
       redirect_to settings_path, alert: "Failed to update currency, try again!"
+    end
+  end
+
+  def update_sign_convention
+    value = ActiveModel::Type::Boolean.new.cast(params[:unsigned_adds])
+    if current_user.update(unsigned_adds: value)
+      label = value ? "adds money" : "subtracts money"
+      redirect_to settings_path, notice: "Unsigned amounts now #{label}"
+    else
+      redirect_to settings_path, alert: "Failed to update sign preference"
     end
   end
 

@@ -20,6 +20,7 @@ type PageProps = {
     email: string
     name: string | null
     currency: string
+    unsigned_adds: boolean
     created_at: string
   }
   currencies: CurrencyOption[]
@@ -119,6 +120,60 @@ function CurrencySection({ currentCurrency, currencies }: {
           </SelectContent>
         </Select>
       </Field>
+    </section>
+  )
+}
+
+function SignConventionSection({ unsignedAdds }: { unsignedAdds: boolean }) {
+  const [saving, setSaving] = useState(false)
+
+  function handleToggle(value: boolean) {
+    setSaving(true)
+    router.post('/settings/update_sign_convention', { unsigned_adds: value }, {
+      preserveScroll: true,
+      onFinish: () => setSaving(false),
+    })
+  }
+
+  return (
+    <section>
+      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+        Input Behavior
+      </h2>
+      <div>
+        <Field label="Unsigned amounts">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => handleToggle(false)}
+              disabled={saving}
+              className={`px-2.5 py-1 text-[12px] font-medium rounded-l-md border transition-all ${
+                !unsignedAdds
+                  ? 'bg-tt-text text-tt-bg border-tt-text'
+                  : 'bg-tt-bg text-tt-text-secondary border-tt-border hover:text-tt-text'
+              }`}
+            >
+              − Subtract
+            </button>
+            <button
+              onClick={() => handleToggle(true)}
+              disabled={saving}
+              className={`px-2.5 py-1 text-[12px] font-medium rounded-r-md border transition-all ${
+                unsignedAdds
+                  ? 'bg-tt-text text-tt-bg border-tt-text'
+                  : 'bg-tt-bg text-tt-text-secondary border-tt-border hover:text-tt-text'
+              }`}
+            >
+              + Add
+            </button>
+          </div>
+        </Field>
+        <p className="text-[11px] text-tt-text-tertiary mt-1.5 leading-relaxed px-0">
+          {unsignedAdds
+            ? <>Typing <span className="font-mono text-tt-text-secondary">50 chai</span> will <span className="text-tt-positive font-medium">add</span> ₹50. Use <span className="font-mono text-tt-text-secondary">-50</span> to subtract.</>
+            : <>Typing <span className="font-mono text-tt-text-secondary">50 chai</span> will <span className="text-tt-negative font-medium">subtract</span> ₹50. Use <span className="font-mono text-tt-text-secondary">+50</span> to add.</>
+          }
+        </p>
+      </div>
     </section>
   )
 }
@@ -255,6 +310,7 @@ export default function Index() {
         <div className="mt-8 space-y-8">
           <ProfileSection user={user} />
           <CurrencySection currentCurrency={user.currency} currencies={currencies} />
+          <SignConventionSection unsignedAdds={user.unsigned_adds} />
           <DangerZone stats={stats} />
         </div>
       </div>

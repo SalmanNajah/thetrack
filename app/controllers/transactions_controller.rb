@@ -243,8 +243,16 @@ class TransactionsController < ApplicationController
     amount = BigDecimal(amount_str)
     return nil if amount <= 0
 
-    # Default to "-" sign if not explicitly specified as "+"
-    resolved_sign = (sign == "+") ? "+" : "-"
+    # Resolve sign based on user's preference:
+    # When unsigned_adds is false (default): unsigned → "-" (expense)
+    # When unsigned_adds is true: unsigned → "+" (income)
+    if sign == "+"
+      resolved_sign = "+"
+    elsif sign == "-"
+      resolved_sign = "-"
+    else
+      resolved_sign = current_user.unsigned_adds? ? "+" : "-"
+    end
 
     description = description.strip
 

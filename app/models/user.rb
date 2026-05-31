@@ -21,29 +21,40 @@ class User < ApplicationRecord
   OTP_RESEND_COOLDOWN = 60.seconds
   OTP_MAX_ATTEMPTS = 5
 
-  # Generate a new OTP, store its BCrypt hash and timestamp.
+  # Generate a new OTP, store its SHA-256 HMAC and timestamp.
   # Returns the plaintext code (to be sent via email).
   def generate_otp!
     code = SecureRandom.random_number(10**OTP_LENGTH).to_s.rjust(OTP_LENGTH, "0")
     update!(
-      otp_code_digest: BCrypt::Password.create(code),
+      otp_code_digest: hash_otp(code),
       otp_sent_at: Time.current,
       otp_attempts: 0
     )
     code
   end
 
-  def verify_otp(code)
-    return false if otp_code_digest.blank? || otp_expired?
-    return false if otp_attempts >= OTP_MAX_ATTEMPTS
+  # Perform verification with row-level locks and safe HMAC checks
+  def verify_otp!(code)
+    # Serialize requests on this user row to prevent concurrency races
+    with_lock do
+      return :max_attempts_reached if otp_attempts >= OTP_MAX_ATTEMPTS
+      return :expired if otp_expired?
+      return :invalid if otp_code_digest.blank?
 
-    increment!(:otp_attempts)
+      # Increment attempts count immediately on read
+      increment!(:otp_attempts)
 
-    if BCrypt::Password.new(otp_code_digest) == code
-      update!(email_verified_at: Time.current, otp_code_digest: nil, otp_sent_at: nil, otp_attempts: 0)
-      true
-    else
-      false
+      if ActiveSupport::SecurityUtils.secure_compare(otp_code_digest, hash_otp(code))
+        update!(
+          email_verified_at: Time.current,
+          otp_code_digest: nil,
+          otp_sent_at: nil,
+          otp_attempts: 0
+        )
+        :success
+      else
+        otp_attempts >= OTP_MAX_ATTEMPTS ? :max_attempts_reached : :invalid
+      end
     end
   end
 
@@ -138,5 +149,10 @@ class User < ApplicationRecord
       self.admin = true
       self.onboarded = true
     end
+  end
+
+  def hash_otp(code)
+    secret = Rails.application.credentials.secret_key_base || ENV.fetch("SECRET_KEY_BASE", "dummy_secret_for_tests")
+    OpenSSL::HMAC.hexdigest("SHA256", secret, code.to_s)
   end
 end

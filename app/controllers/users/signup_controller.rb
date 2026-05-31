@@ -15,8 +15,9 @@ class Users::SignupController < Devise::RegistrationsController
     if resource.persisted?
       # Don't sign in yet — require email verification first
       code = resource.generate_otp!
-      OtpMailer.verification_code(resource, code).deliver_now
-      redirect_to verify_email_path(email: resource.email), status: :see_other
+      OtpMailer.verification_code(resource, code).deliver_later
+      session[:pending_verification_email] = resource.email
+      redirect_to verify_email_path, status: :see_other
     else
       clean_up_passwords resource
       set_minimum_password_length

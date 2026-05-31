@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_30_172443) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_31_053555) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -60,6 +60,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_172443) do
     t.boolean "unsigned_adds", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["email_verified_at", "created_at"], name: "index_users_on_email_verified_at_and_created_at"
+    t.index ["email_verified_at"], name: "index_users_on_email_verified_at"
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

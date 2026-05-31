@@ -4,7 +4,7 @@ require "test_helper"
 class User
   def generate_otp!
     update!(
-      otp_code_digest: BCrypt::Password.create("123456"),
+      otp_code_digest: hash_otp("123456"),
       otp_sent_at: Time.current,
       otp_attempts: 0
     )
@@ -35,13 +35,12 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
         password_confirmation: "securepassword"
       }
     }
-    assert_redirected_to verify_email_path(email: "new_user@example.com")
+    assert_redirected_to verify_email_path
     follow_redirect!
     assert_response :success
 
     # Post correct OTP to verify and sign in
     post verify_email_submit_path, params: {
-      email: "new_user@example.com",
       otp: "123456"
     }
     assert_redirected_to dashboard_path

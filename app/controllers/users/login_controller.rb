@@ -16,10 +16,13 @@ class Users::LoginController < Devise::SessionsController
         sign_in(resource_name, resource)
         redirect_to after_sign_in_path_for(resource), status: :see_other
       else
-        # User exists but hasn't verified email — send new OTP and redirect
-        code = resource.generate_otp!
-        OtpMailer.verification_code(resource, code).deliver_now
-        redirect_to verify_email_path(email: resource.email), status: :see_other
+        # User exists but hasn't verified email — send new OTP with cooldown check and redirect
+        if resource.can_resend_otp?
+          code = resource.generate_otp!
+          OtpMailer.verification_code(resource, code).deliver_later
+        end
+        session[:pending_verification_email] = resource.email
+        redirect_to verify_email_path, status: :see_other
       end
     else
       redirect_to new_user_session_path,

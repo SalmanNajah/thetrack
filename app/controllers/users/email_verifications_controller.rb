@@ -2,9 +2,9 @@
 
 class Users::EmailVerificationsController < ApplicationController
   skip_before_action :authenticate_user!
-  before_action :find_user_by_email
+  before_action :find_pending_user
 
-  # GET /verify-email?email=...
+  # GET /verify-email
   def show
     render inertia: "Auth/VerifyEmail", props: {
       email: @user.email,
@@ -14,47 +14,60 @@ class Users::EmailVerificationsController < ApplicationController
 
   # POST /verify-email
   def verify
-    if @user.otp_max_attempts_reached?
-      redirect_to verify_email_path(email: @user.email),
-        inertia: { errors: { otp: "Too many attempts. Please request a new code." } }
-      return
-    end
+    result = @user.verify_otp!(params[:otp])
 
-    if @user.verify_otp(params[:otp])
+    case result
+    when :success
+      session.delete(:pending_verification_email)
       @user.ensure_default_buckets!
       @user.remember_me = true
       sign_in(@user)
       redirect_to after_sign_in_path_for(@user), status: :see_other
+    when :max_attempts_reached
+      redirect_to verify_email_path,
+        alert: "Too many failed attempts. Please request a new code.",
+        inertia: { errors: { otp: "Too many failed attempts. Please request a new code." } },
+        status: :see_other
+    when :expired
+      redirect_to verify_email_path,
+        alert: "Verification code has expired. Please request a new one.",
+        inertia: { errors: { otp: "Verification code has expired. Please request a new one." } },
+        status: :see_other
     else
-      message = @user.otp_expired? ? "Code has expired. Please request a new one." : "Invalid verification code. Please try again."
-      redirect_to verify_email_path(email: @user.email),
-        inertia: { errors: { otp: message } }
+      redirect_to verify_email_path,
+        alert: "Invalid verification code. Please try again.",
+        inertia: { errors: { otp: "Invalid verification code. Please try again." } },
+        status: :see_other
     end
   end
 
   # POST /verify-email/resend
   def resend
     unless @user.can_resend_otp?
-      redirect_to verify_email_path(email: @user.email),
-        inertia: { errors: { otp: "Please wait before requesting a new code." } }
+      redirect_to verify_email_path,
+        alert: "Please wait before requesting a new code.",
+        inertia: { errors: { otp: "Please wait before requesting a new code." } },
+        status: :see_other
       return
     end
 
     code = @user.generate_otp!
-    OtpMailer.verification_code(@user, code).deliver_now
+    OtpMailer.verification_code(@user, code).deliver_later
 
-    redirect_to verify_email_path(email: @user.email),
-      notice: "A new verification code has been sent to your email."
+    redirect_to verify_email_path,
+      notice: "A new verification code has been sent.",
+      status: :see_other
   end
 
   private
 
-  def find_user_by_email
-    @user = User.find_by(email: params[:email])
+  def find_pending_user
+    email = session[:pending_verification_email]
+    @user = User.find_by(email: email) if email.present?
 
-    unless @user
+    if @user.nil? || @user.email_verified?
       redirect_to new_user_registration_path,
-        alert: "Could not find an account with that email."
+        alert: "Please sign up to continue."
     end
   end
 

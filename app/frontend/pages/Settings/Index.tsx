@@ -1,4 +1,4 @@
-import { usePage, router, Link } from '@inertiajs/react'
+import { usePage, router, Link, useForm } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,7 @@ type PageProps = {
     name: string | null
     currency: string
     unsigned_adds: boolean
+    provider: string | null
     created_at: string
   }
   currencies: CurrencyOption[]
@@ -285,6 +286,130 @@ function DangerZone({ stats }: { stats: PageProps['stats'] }) {
   )
 }
 
+function SecuritySection({ user }: { user: PageProps['user'] }) {
+  const [open, setOpen] = useState(false)
+  const isGoogleUser = !!user.provider
+
+  const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
+  })
+
+  function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    clearErrors()
+
+    post('/settings/update_password', {
+      preserveScroll: true,
+      onSuccess: () => {
+        setOpen(false)
+        reset()
+      },
+    })
+  }
+
+  return (
+    <section>
+      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+        Security
+      </h2>
+      <div>
+        <Field label="Password">
+          <Dialog open={open} onOpenChange={v => {
+            setOpen(v)
+            if (!v) {
+              reset()
+              clearErrors()
+            }
+          }}>
+            <DialogTrigger asChild>
+              <button className="text-sm text-tt-text border-b border-dashed border-tt-text-tertiary/40 hover:border-tt-accent hover:text-tt-accent cursor-pointer transition-colors">
+                {isGoogleUser ? 'Set password' : 'Change password'}
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-[15px]">
+                  {isGoogleUser ? 'Set Account Password' : 'Change Password'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSave} className="space-y-4 pt-2">
+                {isGoogleUser ? (
+                  <p className="text-sm text-tt-text-secondary leading-relaxed">
+                    Set a password to enable email & password sign-in alongside Google. Your Google login remains fully active.
+                  </p>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-medium text-tt-text-secondary mb-1.5">
+                      Current Password
+                    </label>
+                    <Input
+                      type="password"
+                      value={data.current_password}
+                      onChange={e => setData('current_password', e.target.value)}
+                      placeholder="••••••••"
+                      className={errors.current_password ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                    />
+                    {errors.current_password && (
+                      <p className="mt-1.5 text-[11px] font-medium text-red-600 leading-normal">{errors.current_password}</p>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-medium text-tt-text-secondary mb-1.5">
+                    New Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={data.password}
+                    onChange={e => setData('password', e.target.value)}
+                    placeholder="••••••••"
+                    className={errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  />
+                  {errors.password && (
+                    <p className="mt-1.5 text-[11px] font-medium text-red-600 leading-normal">{errors.password}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-tt-text-secondary mb-1.5">
+                    Confirm New Password
+                  </label>
+                  <Input
+                    type="password"
+                    value={data.password_confirmation}
+                    onChange={e => setData('password_confirmation', e.target.value)}
+                    placeholder="••••••••"
+                    className={errors.password_confirmation ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  />
+                  {errors.password_confirmation && (
+                    <p className="mt-1.5 text-[11px] font-medium text-red-600 leading-normal">{errors.password_confirmation}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={processing}
+                    className="flex-1 bg-tt-text hover:bg-tt-text/90 text-tt-bg font-medium"
+                  >
+                    {processing ? 'Saving…' : (isGoogleUser ? 'Set password' : 'Update password')}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </Field>
+      </div>
+    </section>
+  )
+}
+
 export default function Index() {
   const { flash, user, currencies, stats } = usePage<PageProps>().props
 
@@ -311,6 +436,7 @@ export default function Index() {
           <ProfileSection user={user} />
           <CurrencySection currentCurrency={user.currency} currencies={currencies} />
           <SignConventionSection unsignedAdds={user.unsigned_adds} />
+          <SecuritySection user={user} />
           <DangerZone stats={stats} />
         </div>
       </div>

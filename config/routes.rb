@@ -2,7 +2,8 @@ Rails.application.routes.draw do
   devise_for :users, controllers: {
     sessions: "users/login",
     registrations: "users/signup",
-    omniauth_callbacks: "users/omniauth_callbacks"
+    omniauth_callbacks: "users/omniauth_callbacks",
+    passwords: "users/passwords"
   }
 
   # Email OTP verification
@@ -38,6 +39,7 @@ Rails.application.routes.draw do
     post :update_profile, on: :member
     post :update_currency, on: :member
     post :update_sign_convention, on: :member
+    post :update_password, on: :member
     delete :reset_all, on: :member
     delete :delete_account, on: :member
   end

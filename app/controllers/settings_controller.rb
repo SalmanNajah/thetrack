@@ -8,6 +8,7 @@ class SettingsController < ApplicationController
         name: current_user.name,
         currency: current_user.currency,
         unsigned_adds: current_user.unsigned_adds,
+        provider: current_user.provider,
         created_at: current_user.created_at.strftime("%B %d, %Y")
       },
       currencies: User::CURRENCIES.map { |code, symbol| { code: code, symbol: symbol, label: "#{symbol} #{code}" } },
@@ -61,9 +62,37 @@ class SettingsController < ApplicationController
     redirect_to root_path, notice: "Account deleted!"
   end
 
+  def update_password
+    if current_user.provider.present?
+      # Google OAuth user: no current password check required
+      if current_user.update(password_params_without_current)
+        bypass_sign_in(current_user)
+        redirect_to settings_path, notice: "Password set successfully"
+      else
+        redirect_to settings_path, alert: current_user.errors.full_messages.to_sentence
+      end
+    else
+      # Regular user: requires current password verification
+      if current_user.update_with_password(password_params_with_current)
+        bypass_sign_in(current_user)
+        redirect_to settings_path, notice: "Password updated successfully"
+      else
+        redirect_to settings_path, alert: current_user.errors.full_messages.to_sentence
+      end
+    end
+  end
+
   private
 
   def profile_params
     params.permit(:name)
+  end
+
+  def password_params_without_current
+    params.permit(:password, :password_confirmation)
+  end
+
+  def password_params_with_current
+    params.permit(:current_password, :password, :password_confirmation)
   end
 end

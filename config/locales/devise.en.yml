@@ -63,3 +63,24 @@ en:
       not_saved:
         one: "1 error prohibited this %{resource} from being saved:"
         other: "%{count} errors prohibited this %{resource} from being saved:"
+
+  activerecord:
+    attributes:
+      user:
+        reset_password_token: "This password reset link"
+        email: "Email address"
+    errors:
+      models:
+        user:
+          attributes:
+            reset_password_token:
+              invalid: "is expired, invalid, or has already been used. For your security, please request a new link."
+            email:
+              blank: "cannot be blank. Please enter your email address."
+              invalid: "does not look like a valid email address."
+              not_found: "is not registered in our system. Please check your spelling or sign up."
+            password:
+              too_short: "is too short. It must be at least %{count} characters long."
+              blank: "cannot be blank."
+            password_confirmation:
+              confirmation: "does not match the new password."

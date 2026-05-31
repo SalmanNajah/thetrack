@@ -31,19 +31,10 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Use Resend SMTP for sending emails in development (for OTP verification)
+  # Use Resend HTTP API for sending emails in development if key is present (avoids SMTP local port/firewall issues)
   if ENV["RESEND_API_KEY"].present?
     config.action_mailer.raise_delivery_errors = true
-    config.action_mailer.delivery_method = :smtp
-    config.action_mailer.smtp_settings = {
-      address: "smtp.resend.com",
-      port: 587,
-      user_name: "resend",
-      password: ENV["RESEND_API_KEY"],
-      authentication: :plain,
-      enable_starttls_auto: true,
-      openssl_verify_mode: "none"
-    }
+    config.action_mailer.delivery_method = :resend
   else
     config.action_mailer.raise_delivery_errors = false
     config.action_mailer.delivery_method = :test

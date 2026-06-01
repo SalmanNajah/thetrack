@@ -28,6 +28,14 @@ class TransactionsController < ApplicationController
 
       begin
         ActiveRecord::Base.transaction do
+          [ from_bucket, to_bucket ].sort_by(&:id).each(&:lock!)
+
+          if from_bucket.balance < amount
+            redirect_back fallback_location: bucket_path(bucket.slug),
+              alert: "Not enough in #{from_bucket.name} — you only have #{from_bucket.balance} available"
+            return
+          end
+
           from_bucket.transactions.create!(
             user: current_user,
             amount: -amount,
@@ -72,21 +80,29 @@ class TransactionsController < ApplicationController
       return
     end
 
-    transaction = bucket.transactions.build(
-      user: current_user,
-      amount: amount,
-      description: parsed[:description].presence,
-      occurred_at: parsed[:occurred_at] || Time.current
-    )
+    ActiveRecord::Base.transaction do
+      bucket.lock!
 
-    if transaction.save
-      current_user.update!(onboarded: true) unless current_user.onboarded?
-      redirect_back fallback_location: bucket_path(bucket.slug),
-        notice: "Transaction added"
-    else
-      redirect_back fallback_location: bucket_path(bucket.slug),
-        alert: transaction.errors.full_messages.join(", ")
+      if amount.negative? && (bucket.balance + amount) < 0
+        redirect_back fallback_location: bucket_path(bucket.slug),
+          alert: "Not enough in #{bucket.name} — you only have #{bucket.balance} available"
+        return
+      end
+
+      bucket.transactions.create!(
+        user: current_user,
+        amount: amount,
+        description: parsed[:description].presence,
+        occurred_at: parsed[:occurred_at] || Time.current
+      )
     end
+
+    current_user.update!(onboarded: true) unless current_user.onboarded?
+    redirect_back fallback_location: bucket_path(bucket.slug),
+      notice: "Transaction added"
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: bucket_path(bucket.slug),
+      alert: e.record&.errors&.full_messages&.join(", ") || e.message
   end
 
   def transfer
@@ -109,6 +125,14 @@ class TransactionsController < ApplicationController
     transfer_group_id = SecureRandom.uuid
 
     ActiveRecord::Base.transaction do
+      [ from_bucket, to_bucket ].sort_by(&:id).each(&:lock!)
+
+      if from_bucket.balance < amount
+        redirect_back fallback_location: bucket_path(from_bucket.slug),
+          alert: "Not enough in #{from_bucket.name} — you only have #{from_bucket.balance} available"
+        return
+      end
+
       from_bucket.transactions.create!(
         user: current_user,
         amount: -amount,
@@ -145,29 +169,37 @@ class TransactionsController < ApplicationController
       return
     end
 
-    current_balance = bucket.balance
-    diff = new_balance - current_balance
+    ActiveRecord::Base.transaction do
+      bucket.lock!
 
-    if diff.zero?
-      redirect_back fallback_location: bucket_path(bucket.slug)
-      return
+      current_balance = bucket.balance
+      diff = new_balance - current_balance
+
+      if diff.zero?
+        redirect_back fallback_location: bucket_path(bucket.slug)
+        return
+      end
+
+      if diff.negative? && (current_balance + diff) < 0
+        redirect_back fallback_location: bucket_path(bucket.slug),
+          alert: "Not enough in #{bucket.name} — you only have #{current_balance} available"
+        return
+      end
+
+      bucket.transactions.create!(
+        user: current_user,
+        amount: diff,
+        description: diff.positive? ? "Balance adjustment (added)" : "Balance adjustment (removed)",
+        occurred_at: Time.current
+      )
     end
 
-    transaction = bucket.transactions.build(
-      user: current_user,
-      amount: diff,
-      description: diff.positive? ? "Balance adjustment (added)" : "Balance adjustment (removed)",
-      occurred_at: Time.current
-    )
-
-    if transaction.save
-      current_user.update!(onboarded: true) unless current_user.onboarded?
-      redirect_back fallback_location: bucket_path(bucket.slug),
-        notice: "Balance updated"
-    else
-      redirect_back fallback_location: bucket_path(bucket.slug),
-        alert: transaction.errors.full_messages.join(", ")
-    end
+    current_user.update!(onboarded: true) unless current_user.onboarded?
+    redirect_back fallback_location: bucket_path(bucket.slug),
+      notice: "Balance updated"
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: bucket_path(bucket.slug),
+      alert: e.record&.errors&.full_messages&.join(", ") || e.message
   end
 
   private

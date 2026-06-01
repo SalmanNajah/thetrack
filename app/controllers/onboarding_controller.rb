@@ -26,6 +26,7 @@ class OnboardingController < ApplicationController
         next if amount <= 0
 
         bucket = current_user.buckets.find(bucket_id)
+        bucket.lock!
         bucket.transactions.create!(
           user: current_user,
           amount: amount,

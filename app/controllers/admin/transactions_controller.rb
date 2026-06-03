@@ -5,7 +5,8 @@ class Admin::TransactionsController < Admin::BaseController
     scope = Transaction.includes(:user, :bucket).order(occurred_at: :desc, created_at: :desc)
 
     if params[:search].present?
-      scope = scope.joins(:user).where("users.email ILIKE ?", "%#{params[:search]}%")
+      sanitized = ActiveRecord::Base.sanitize_sql_like(params[:search])
+      scope = scope.joins(:user).where("users.email ILIKE ?", "%#{sanitized}%")
     end
 
     result = paginate(scope)

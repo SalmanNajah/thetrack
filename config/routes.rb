@@ -11,6 +11,11 @@ Rails.application.routes.draw do
   post "verify-email",        to: "users/email_verifications#verify", as: :verify_email_submit
   post "verify-email/resend", to: "users/email_verifications#resend", as: :resend_verify_email
 
+  # OAuth account linking (GitHub-style password confirmation)
+  get  "link-accounts",        to: "users/link_accounts#show",   as: :link_accounts
+  post "link-accounts",        to: "users/link_accounts#create", as: :link_accounts_confirm
+  delete "link-accounts",      to: "users/link_accounts#cancel", as: :link_accounts_cancel
+
   # Redirect to localhost from 127.0.0.1 to use same IP address with Vite server
   constraints(host: "127.0.0.1") do
     get "(*path)", to: redirect { |params, req| "#{req.protocol}localhost:#{req.port}/#{params[:path]}" }

@@ -5,7 +5,8 @@ class Admin::UsersController < Admin::BaseController
     scope = User.order(created_at: :desc)
 
     if params[:search].present?
-      scope = scope.where("email ILIKE ?", "%#{params[:search]}%")
+      sanitized = ActiveRecord::Base.sanitize_sql_like(params[:search])
+      scope = scope.where("email ILIKE ?", "%#{sanitized}%")
     end
 
     result = paginate(scope)
@@ -107,7 +108,11 @@ class Admin::UsersController < Admin::BaseController
   private
 
   def user_params
-    params.permit(:name, :currency, :admin)
+    if current_user.super_admin?
+      params.permit(:name, :currency, :admin)
+    else
+      params.permit(:name, :currency)
+    end
   end
 
   def serialize_user(user)

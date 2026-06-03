@@ -69,3 +69,4 @@ gem "omniauth-google-oauth2", "~> 1.2"
 gem "omniauth-rails_csrf_protection", "~> 1.0"
 
 gem "resend", "~> 1.3"
+gem "rack-attack", "~> 6.7"

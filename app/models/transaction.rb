@@ -8,6 +8,15 @@ class Transaction < ApplicationRecord
   validates :occurred_at, presence: true
   validate :bucket_balance_must_not_go_negative, if: -> { amount&.negative? }
 
+  enum :kind, {
+    manual: "manual",
+    transfer: "transfer",
+    adjustment: "adjustment",
+    initial: "initial",
+    reversal: "reversal",
+    recurring: "recurring"
+  }, prefix: true
+
   scope :recent, -> { order(occurred_at: :desc, created_at: :desc) }
   scope :with_closing_balance, -> {
     select(
@@ -17,7 +26,7 @@ class Transaction < ApplicationRecord
   }
 
   def transfer?
-    transfer_group_id.present?
+    kind_transfer? || transfer_group_id.present?
   end
 
   def paired_transaction

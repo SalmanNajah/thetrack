@@ -30,6 +30,7 @@ class OnboardingController < ApplicationController
           user: current_user,
           amount: amount,
           description: "Initial balance",
+          kind: :initial,
           occurred_at: Time.current
         )
       end

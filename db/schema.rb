@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_04_074946) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_04_111558) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -92,8 +92,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_074946) do
     t.check_constraint "otp_attempts >= 0", name: "chk_users_otp_attempts_nonneg"
   end
 
-  add_foreign_key "audit_logs", "users", column: "actor_id"
-  add_foreign_key "audit_logs", "users", column: "target_user_id"
+  add_foreign_key "audit_logs", "users", column: "actor_id", on_delete: :nullify
+  add_foreign_key "audit_logs", "users", column: "target_user_id", on_delete: :nullify
   add_foreign_key "buckets", "users"
   add_foreign_key "transactions", "buckets"
   add_foreign_key "transactions", "users"

@@ -90,8 +90,8 @@ export function TransferDialog({
 
   const isSm = size === 'sm'
   const buttonClass = isSm
-    ? "flex items-center gap-1.2 rounded-full border border-tt-border bg-tt-surface px-2.5 py-1 text-[11px] font-semibold text-tt-text-secondary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-colors focus:outline-none shadow-xs active:scale-[0.97] cursor-pointer"
-    : "flex items-center gap-1.5 rounded-full border border-tt-border bg-tt-surface px-3.5 py-1.5 text-[13px] font-medium text-tt-text-secondary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-colors focus:outline-none shadow-xs active:scale-[0.97] cursor-pointer"
+    ? "flex items-center gap-1.2 rounded-full border border-tt-border bg-tt-surface px-2.5 py-1 text-[11px] font-semibold text-tt-text-secondary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-colors focus:outline-none shadow-xs active:scale-[0.97] cursor-pointer gap-2"
+    : "flex items-center gap-1.5 rounded-full border border-tt-border bg-tt-surface px-3.5 py-1.5 text-[13px] font-medium text-tt-text-secondary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-colors focus:outline-none shadow-xs active:scale-[0.97] cursor-pointer gap-2"
 
   const iconClass = isSm ? "size-3 text-tt-text-tertiary" : "size-3.5 text-tt-text-tertiary"
 

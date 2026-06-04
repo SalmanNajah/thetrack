@@ -57,7 +57,26 @@ class SettingsController < ApplicationController
   end
 
   def delete_account
-    current_user.destroy!
+    ActiveRecord::Base.transaction do
+      audit!("user.account.delete", target_user: current_user, metadata: { email: current_user.email })
+
+      current_user.buckets.destroy_all
+      current_user.transactions.destroy_all
+
+      current_user.update!(
+        email: "deleted-#{current_user.id}@deleted.thetrack.app",
+        name: nil,
+        provider: nil,
+        uid: nil,
+        otp_code_digest: nil,
+        otp_sent_at: nil,
+        email_verified_at: nil,
+        encrypted_password: "",
+        admin: false,
+        onboarded: false
+      )
+    end
+
     sign_out(current_user)
     redirect_to root_path, notice: "Account deleted!"
   end

@@ -2,15 +2,15 @@
 
 class Admin::DashboardController < Admin::BaseController
   def index
-    total_users = User.count
-    new_users_7d = User.where("created_at >= ?", 7.days.ago).count
+    total_users = User.active.count
+    new_users_7d = User.active.where("created_at >= ?", 7.days.ago).count
     total_transactions = Transaction.count
     total_volume = Transaction.where("amount > 0").sum(:amount)
     active_users_7d = Transaction.where("created_at >= ?", 7.days.ago)
                                   .distinct.count(:user_id)
 
     recent_users = UserSerializer.collection(
-      User.order(created_at: :desc).limit(10),
+      User.active.order(created_at: :desc).limit(10),
       summary: true
     )
 

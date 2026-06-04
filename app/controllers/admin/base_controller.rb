@@ -18,16 +18,6 @@ class Admin::BaseController < ApplicationController
     redirect_back fallback_location: admin_root_path, alert: "You are not authorized to perform this action."
   end
 
-  def audit!(action, target_user: nil, metadata: {})
-    AuditLog.record!(
-      action: action,
-      actor: current_user,
-      target_user: target_user,
-      metadata: metadata,
-      ip_address: request.remote_ip
-    )
-  end
-
   def paginate(scope, per_page: 25)
     page = [ params[:page].to_i, 1 ].max
     total = scope.count

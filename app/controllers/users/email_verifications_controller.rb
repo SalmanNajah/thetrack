@@ -19,7 +19,6 @@ class Users::EmailVerificationsController < ApplicationController
     case result
     when :success
       session.delete(:pending_verification_email)
-      @user.ensure_default_buckets!
       @user.remember_me = true
       sign_in(@user)
       redirect_to after_sign_in_path_for(@user), status: :see_other

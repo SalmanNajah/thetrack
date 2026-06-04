@@ -2,7 +2,7 @@
 
 class Admin::UsersController < Admin::BaseController
   def index
-    scope = User.order(created_at: :desc)
+    scope = User.active.order(created_at: :desc)
 
     if params[:search].present?
       sanitized = ActiveRecord::Base.sanitize_sql_like(params[:search])
@@ -21,7 +21,7 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def show
-    user = User.find(params[:id])
+    user = User.active.find(params[:id])
 
     render inertia: "Admin/Users/Show", props: {
       user: UserSerializer.new(user, admin: true).as_json,
@@ -37,7 +37,7 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def update
-    user = User.find(params[:id])
+    user = User.active.find(params[:id])
     authorize user
 
     if params.key?(:admin)
@@ -50,7 +50,7 @@ class Admin::UsersController < Admin::BaseController
     end
 
     if user.update(user_params)
-      audit!("admin.user.update", target_user: user, metadata: { changes: user.previous_changes.except("updated_at") })
+      audit!("admin.user.update", target_user: user, metadata: { email: user.email, changes: user.previous_changes.except("updated_at") })
       redirect_to admin_user_path(user), notice: "User updated successfully"
     else
       redirect_to admin_user_path(user), alert: user.errors.full_messages.first
@@ -58,7 +58,7 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def destroy
-    user = User.find(params[:id])
+    user = User.active.find(params[:id])
     authorize user
 
     if user.admin? && User.admins.count <= 1
@@ -68,7 +68,22 @@ class Admin::UsersController < Admin::BaseController
 
     ActiveRecord::Base.transaction do
       audit!("admin.user.delete", target_user: user, metadata: { email: user.email })
-      user.destroy!
+
+      user.buckets.destroy_all
+      user.transactions.destroy_all
+
+      user.update!(
+        email: "deleted-#{user.id}@deleted.thetrack.app",
+        name: nil,
+        provider: nil,
+        uid: nil,
+        otp_code_digest: nil,
+        otp_sent_at: nil,
+        email_verified_at: nil,
+        encrypted_password: "",
+        admin: false,
+        onboarded: false
+      )
     end
     redirect_to admin_users_path, notice: "'#{user.email}' has been deleted"
   end

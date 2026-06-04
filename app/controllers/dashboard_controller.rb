@@ -2,7 +2,6 @@
 
 class DashboardController < ApplicationController
   def index
-    current_user.ensure_default_buckets!
     buckets = current_user.buckets.ordered
 
     render inertia: "Dashboard/Index", props: {

@@ -54,6 +54,7 @@ Rails.application.routes.draw do
     root to: "dashboard#index"
     resources :users, only: [ :index, :show, :update, :destroy ]
     resources :transactions, only: [ :index, :destroy ]
+    resources :audit_logs, only: [ :index ]
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

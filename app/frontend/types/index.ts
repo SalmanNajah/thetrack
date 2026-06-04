@@ -101,3 +101,13 @@ export type PaginationData = {
   total_pages: number
 }
 
+export type AuditLogEntry = {
+  id: number
+  action: string
+  description: string
+  actor_email: string | null
+  target_email: string | null
+  ip_address: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}

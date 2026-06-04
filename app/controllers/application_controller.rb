@@ -29,4 +29,14 @@ class ApplicationController < ActionController::Base
     sign_out(current_user)
     redirect_to verify_email_path, status: :see_other
   end
+
+  def audit!(action, target_user: nil, metadata: {})
+    AuditLog.record!(
+      action: action,
+      actor: current_user,
+      target_user: target_user,
+      metadata: metadata,
+      ip_address: request.remote_ip
+    )
+  end
 end

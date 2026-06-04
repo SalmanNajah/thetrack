@@ -9,10 +9,14 @@ type AdminLayoutProps = {
   children: React.ReactNode
 }
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin' },
   { label: 'Users', href: '/admin/users' },
   { label: 'Transactions', href: '/admin/transactions' },
+]
+
+const SUPER_ADMIN_NAV_ITEMS = [
+  { label: 'Audit Logs', href: '/admin/audit_logs' },
 ]
 
 function isActive(href: string, currentPath: string): boolean {
@@ -28,6 +32,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+  const navItems = auth.user.super_admin
+    ? [...BASE_NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS]
+    : BASE_NAV_ITEMS
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -58,7 +65,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(item.href, currentPath)
             return (
               <Link

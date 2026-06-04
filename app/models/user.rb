@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :transactions, dependent: :destroy
 
   scope :admins, -> { where(admin: true) }
+  scope :active, -> { where.not("email LIKE ?", "%@deleted.thetrack.app") }
 
   attribute :unsigned_adds, :boolean, default: false
 
@@ -15,6 +16,7 @@ class User < ApplicationRecord
   end
 
   before_create :auto_set_admin
+  after_create :ensure_default_buckets!
 
   OTP_LENGTH       = 6
   OTP_EXPIRY       = 10.minutes
@@ -84,23 +86,8 @@ class User < ApplicationRecord
     { name: "Daily", slug: "daily", position: 1 }
   ].freeze
 
-  CURRENCIES = {
-    "INR" => "₹",
-    "USD" => "$",
-    "EUR" => "€",
-    "GBP" => "£",
-    "JPY" => "¥",
-    "AED" => "د.إ",
-    "CAD" => "C$",
-    "AUD" => "A$",
-    "SGD" => "S$",
-    "CHF" => "CHF",
-    "CNY" => "¥",
-    "KRW" => "₩",
-    "SAR" => "﷼",
-    "BRL" => "R$",
-    "ZAR" => "R"
-  }.freeze
+  CURRENCIES = ::CURRENCIES
+
 
   def self.from_omniauth(auth)
     user = find_by(provider: auth.provider, uid: auth.uid)

@@ -1,111 +1,20 @@
 # frozen_string_literal: true
 
 class TransactionsController < ApplicationController
-  MAX_AMOUNT = BigDecimal("9_999_999_999.99")
   def create
     bucket = current_user.buckets.find(params[:bucket_id])
 
-    if transfer_data = parse_transfer(params[:raw_input], current_user)
-      other_bucket = transfer_data[:other_bucket]
-      amount = transfer_data[:amount]
-      direction = transfer_data[:direction]
+    result = Transactions::CreateFromInput.new(
+      user: current_user,
+      bucket: bucket,
+      raw_input: params[:raw_input]
+    ).call
 
-      if other_bucket.id == bucket.id
-        redirect_back fallback_location: bucket_path(bucket.slug),
-          alert: "Can't transfer from a bucket to itself!"
-        return
-      end
-
-      if amount > MAX_AMOUNT
-        redirect_back fallback_location: bucket_path(bucket.slug),
-          alert: "That number is way too large — keep it under 10 billion"
-        return
-      end
-
-      from_bucket = direction == :to ? bucket : other_bucket
-      to_bucket = direction == :to ? other_bucket : bucket
-      transfer_group_id = SecureRandom.uuid
-
-      begin
-        ActiveRecord::Base.transaction do
-          [ from_bucket, to_bucket ].sort_by(&:id).each(&:lock!)
-
-          if from_bucket.balance < amount
-            redirect_back fallback_location: bucket_path(bucket.slug),
-              alert: "Not enough in #{from_bucket.name} — you only have #{from_bucket.balance} available"
-            return
-          end
-
-          from_bucket.transactions.create!(
-            user: current_user,
-            amount: -amount,
-            description: "Transfer to #{to_bucket.name}",
-            transfer_group_id: transfer_group_id,
-            kind: :transfer,
-            occurred_at: Time.current
-          )
-
-          to_bucket.transactions.create!(
-            user: current_user,
-            amount: amount,
-            description: "Transfer from #{from_bucket.name}",
-            transfer_group_id: transfer_group_id,
-            kind: :transfer,
-            occurred_at: Time.current
-          )
-        end
-
-        current_user.update!(onboarded: true) unless current_user.onboarded?
-        redirect_back fallback_location: bucket_path(bucket.slug),
-          notice: "Transferred #{amount} to #{to_bucket.name}"
-      rescue ActiveRecord::RecordInvalid => e
-        msg = e.record&.errors&.full_messages&.join(", ") || e.message.sub(/^Validation failed: /i, "")
-        redirect_back fallback_location: bucket_path(bucket.slug),
-          alert: msg
-      end
-      return
+    if result.success?
+      redirect_back fallback_location: bucket_path(bucket.slug), notice: result.message
+    else
+      redirect_back fallback_location: bucket_path(bucket.slug), alert: result.message
     end
-
-    parsed = parse_input(params[:raw_input])
-
-    if parsed.nil?
-      redirect_back fallback_location: bucket_path(bucket.slug),
-        alert: "Couldn't make sense of that one — try something like '-20 chai' or '+500 salary'"
-      return
-    end
-
-    amount = parsed[:sign] == "+" ? parsed[:amount] : -parsed[:amount]
-
-    if parsed[:amount] > MAX_AMOUNT
-      redirect_back fallback_location: bucket_path(bucket.slug),
-        alert: "That number is way too large — keep it under 10 billion"
-      return
-    end
-
-    ActiveRecord::Base.transaction do
-      bucket.lock!
-
-      if amount.negative? && (bucket.balance + amount) < 0
-        redirect_back fallback_location: bucket_path(bucket.slug),
-          alert: "Not enough in #{bucket.name} — you only have #{bucket.balance} available"
-        return
-      end
-
-      bucket.transactions.create!(
-        user: current_user,
-        amount: amount,
-        description: parsed[:description].presence,
-        kind: :manual,
-        occurred_at: parsed[:occurred_at] || Time.current
-      )
-    end
-
-    current_user.update!(onboarded: true) unless current_user.onboarded?
-    redirect_back fallback_location: bucket_path(bucket.slug),
-      notice: "Transaction added"
-  rescue ActiveRecord::RecordInvalid => e
-    redirect_back fallback_location: bucket_path(bucket.slug),
-      alert: e.record&.errors&.full_messages&.join(", ") || e.message
   end
 
   def transfer
@@ -113,208 +22,36 @@ class TransactionsController < ApplicationController
     to_bucket = current_user.buckets.find(params[:to_bucket_id])
     amount = BigDecimal(params[:amount].to_s)
 
-    if amount <= 0
-      redirect_back fallback_location: bucket_path(from_bucket.slug),
-        alert: "Transfer amount must be positive"
-      return
+    result = Transactions::CreateTransfer.new(
+      user: current_user,
+      from_bucket: from_bucket,
+      to_bucket: to_bucket,
+      amount: amount
+    ).call
+
+    if result.success?
+      redirect_back fallback_location: bucket_path(from_bucket.slug), notice: result.message
+    else
+      redirect_back fallback_location: bucket_path(from_bucket.slug), alert: result.message
     end
-
-    if amount > MAX_AMOUNT
-      redirect_back fallback_location: bucket_path(from_bucket.slug),
-        alert: "That number is way too large — keep it under 10 billion"
-      return
-    end
-
-    transfer_group_id = SecureRandom.uuid
-
-    ActiveRecord::Base.transaction do
-      [ from_bucket, to_bucket ].sort_by(&:id).each(&:lock!)
-
-      if from_bucket.balance < amount
-        redirect_back fallback_location: bucket_path(from_bucket.slug),
-          alert: "Not enough in #{from_bucket.name} — you only have #{from_bucket.balance} available"
-        return
-      end
-
-      from_bucket.transactions.create!(
-        user: current_user,
-        amount: -amount,
-        description: "Transfer to #{to_bucket.name}",
-        transfer_group_id: transfer_group_id,
-        kind: :transfer,
-        occurred_at: Time.current
-      )
-
-      to_bucket.transactions.create!(
-        user: current_user,
-        amount: amount,
-        description: "Transfer from #{from_bucket.name}",
-        transfer_group_id: transfer_group_id,
-        kind: :transfer,
-        occurred_at: Time.current
-      )
-    end
-
-    current_user.update!(onboarded: true) unless current_user.onboarded?
-    redirect_back fallback_location: bucket_path(from_bucket.slug),
-      notice: "Transferred #{amount} to #{to_bucket.name}"
-  rescue ActiveRecord::RecordInvalid => e
-    msg = e.record&.errors&.full_messages&.join(", ") || e.message.sub(/^Validation failed: /i, "")
-    redirect_back fallback_location: bucket_path(from_bucket.slug),
-      alert: msg
   end
 
   def adjust_balance
     bucket = current_user.buckets.find(params[:bucket_id])
     new_balance = BigDecimal(params[:new_balance].to_s)
 
-    if new_balance.abs > MAX_AMOUNT
-      redirect_back fallback_location: bucket_path(bucket.slug),
-        alert: "That number is way too large — keep it under 10 billion"
-      return
-    end
+    result = Transactions::AdjustBalance.new(
+      user: current_user,
+      bucket: bucket,
+      new_balance: new_balance
+    ).call
 
-    ActiveRecord::Base.transaction do
-      bucket.lock!
-
-      current_balance = bucket.balance
-      diff = new_balance - current_balance
-
-      if diff.zero?
-        redirect_back fallback_location: bucket_path(bucket.slug)
-        return
-      end
-
-      if diff.negative? && (current_balance + diff) < 0
-        redirect_back fallback_location: bucket_path(bucket.slug),
-          alert: "Not enough in #{bucket.name} — you only have #{current_balance} available"
-        return
-      end
-
-      bucket.transactions.create!(
-        user: current_user,
-        amount: diff,
-        description: diff.positive? ? "Balance adjustment (added)" : "Balance adjustment (removed)",
-        kind: :adjustment,
-        occurred_at: Time.current
-      )
-    end
-
-    current_user.update!(onboarded: true) unless current_user.onboarded?
-    redirect_back fallback_location: bucket_path(bucket.slug),
-      notice: "Balance updated"
-  rescue ActiveRecord::RecordInvalid => e
-    redirect_back fallback_location: bucket_path(bucket.slug),
-      alert: e.record&.errors&.full_messages&.join(", ") || e.message
-  end
-
-  private
-
-  def parse_transfer(raw, current_user)
-    return nil if raw.blank?
-
-    trimmed = raw.strip.downcase
-
-    if match = trimmed.match(/^(?:move|transfer|send)?\s*(\d+(?:\.\d+)?)\s+to\s+(.+)$/)
-      amount_str = match[1]
-      target_name = match[2].strip
-      direction = :to
-    elsif match = trimmed.match(/^(?:move|transfer|send)?\s*(\d+(?:\.\d+)?)\s+from\s+(.+)$/)
-      amount_str = match[1]
-      target_name = match[2].strip
-      direction = :from
-    elsif match = trimmed.match(/^(?:->|to)\s+(.+?)\s+(\d+(?:\.\d+)?)$/)
-      target_name = match[1].strip
-      amount_str = match[2]
-      direction = :to
-    elsif match = trimmed.match(/^(.+?)\s*(?:<-|from)\s+(\d+(?:\.\d+)?)$/)
-      target_name = match[1].strip
-      amount_str = match[2]
-      direction = :from
+    if result.message.nil?
+      redirect_back fallback_location: bucket_path(bucket.slug)
+    elsif result.success?
+      redirect_back fallback_location: bucket_path(bucket.slug), notice: result.message
     else
-      return nil
-    end
-
-    amount = BigDecimal(amount_str) rescue nil
-    return nil if amount.nil? || amount <= 0
-
-    other_bucket = current_user.buckets.find { |b| b.slug == target_name || b.name.downcase == target_name }
-    return nil if other_bucket.nil?
-
-    {
-      amount: amount,
-      other_bucket: other_bucket,
-      direction: direction
-    }
-  end
-
-  def parse_input(raw)
-    return nil if raw.blank?
-
-    # Clean up trailing punctuation commonly typed at the end of statements (commas, periods, semicolons, etc.)
-    trimmed = raw.strip.gsub(/[.,;!]+$/, "").strip
-    return nil if trimmed.blank?
-
-    sign = nil
-    amount_str = nil
-    description = ""
-
-    # 1. Match: just a number (e.g. "90", "-90", "+90.50")
-    if match = trimmed.match(/^([+-])?\s*(\d+(?:\.\d+)?)$/)
-      sign = match[1]
-      amount_str = match[2]
-      description = ""
-    # 2. Match: starts with a number followed by comma/space and description (e.g. "-90, coffee", "90 coffee")
-    elsif match = trimmed.match(/^([+-])?\s*(\d+(?:\.\d+)?)(?:\s*,\s*|\s+)(.*)$/i)
-      sign = match[1]
-      amount_str = match[2]
-      description = match[3]
-    # 3. Match: ends with a number, optionally preceded by comma/space (e.g. "coffee -90", "coffee, 90.50")
-    elsif match = trimmed.match(/^(.*?)(?:\s*,\s*|\s+)([+-])?\s*(\d+(?:\.\d+)?)$/i)
-      description = match[1]
-      sign = match[2]
-      amount_str = match[3]
-    else
-      return nil
-    end
-
-    amount = BigDecimal(amount_str)
-    return nil if amount <= 0
-
-    # Resolve sign based on user's preference:
-    # When unsigned_adds is false (default): unsigned → "-" (expense)
-    # When unsigned_adds is true: unsigned → "+" (income)
-    if sign == "+"
-      resolved_sign = "+"
-    elsif sign == "-"
-      resolved_sign = "-"
-    else
-      resolved_sign = current_user.unsigned_adds? ? "+" : "-"
-    end
-
-    description = description.strip
-
-    # Parse date keywords from description
-    occurred_at = extract_date(description)
-    # Remove date keywords from description
-    description = description.gsub(/\b(today|yesterday)\b/i, "").strip if occurred_at
-
-    {
-      sign: resolved_sign,
-      amount: amount,
-      description: description,
-      occurred_at: occurred_at
-    }
-  end
-
-  def extract_date(text)
-    return nil if text.blank?
-
-    case text.downcase
-    when /\byesterday\b/
-      1.day.ago.beginning_of_day
-    when /\btoday\b/
-      Time.current.beginning_of_day
+      redirect_back fallback_location: bucket_path(bucket.slug), alert: result.message
     end
   end
 end

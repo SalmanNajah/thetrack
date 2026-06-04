@@ -1,7 +1,7 @@
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :omniauthable, omniauth_providers: [ :google_oauth2 ]
+         :omniauthable, :lockable, omniauth_providers: [ :google_oauth2 ]
 
   has_many :buckets, dependent: :destroy
   has_many :transactions, dependent: :destroy
@@ -103,18 +103,12 @@ class User < ApplicationRecord
   }.freeze
 
   def self.from_omniauth(auth)
-    # First try to find by provider + uid (returning Google user)
     user = find_by(provider: auth.provider, uid: auth.uid)
     return user if user
 
-    # Then try to find by email (link Google to existing account)
-    user = find_by(email: auth.info.email)
-    if user
-      user.update!(provider: auth.provider, uid: auth.uid, name: auth.info.name)
-      return user
-    end
+    existing = find_by(email: auth.info.email)
+    return nil if existing
 
-    # Otherwise create a new user
     create!(
       email: auth.info.email,
       name: auth.info.name,
@@ -122,6 +116,10 @@ class User < ApplicationRecord
       uid: auth.uid,
       password: Devise.friendly_token[0, 20]
     )
+  end
+
+  def link_oauth!(auth_data)
+    update!(provider: auth_data[:provider], uid: auth_data[:uid])
   end
 
   def ensure_default_buckets!

@@ -29,11 +29,9 @@ class Users::PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("devise.passwords.send_instructions"), flash[:notice]
   end
 
-  test "should fail to send reset password instructions for invalid email" do
+  test "should behave identically for invalid email (paranoid mode)" do
     post user_password_url, params: { user: { email: "nonexistent@example.com" } }
-    # Redirect back with alert
-    assert_redirected_to new_user_password_url
-    assert_not_nil flash[:alert]
+    assert_redirected_to new_user_session_url
   end
 
   test "should get reset password page with valid token" do

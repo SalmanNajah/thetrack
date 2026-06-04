@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class Admin::BaseController < ApplicationController
+  include Pundit::Authorization
+
   before_action :require_admin!
+  rescue_from Pundit::NotAuthorizedError, with: :handle_unauthorized
 
   private
 
@@ -9,6 +12,20 @@ class Admin::BaseController < ApplicationController
     unless current_user&.admin?
       redirect_to dashboard_path, alert: "You don't have access to that area."
     end
+  end
+
+  def handle_unauthorized
+    redirect_back fallback_location: admin_root_path, alert: "You are not authorized to perform this action."
+  end
+
+  def audit!(action, target_user: nil, metadata: {})
+    AuditLog.record!(
+      action: action,
+      actor: current_user,
+      target_user: target_user,
+      metadata: metadata,
+      ip_address: request.remote_ip
+    )
   end
 
   def paginate(scope, per_page: 25)

@@ -54,28 +54,19 @@ class Admin::UsersController < Admin::BaseController
 
   def update
     user = User.find(params[:id])
+    authorize user
 
-    # Only super admins can change admin status
-    if params.key?(:admin) && !current_user.super_admin?
-      redirect_to admin_user_path(user), alert: "Only super admins can change admin status"
-      return
-    end
+    if params.key?(:admin)
+      authorize user, :toggle_admin?
 
-    # Prevent self-modification of admin status
-    if params.key?(:admin) && user.id == current_user.id
-      redirect_to admin_user_path(user), alert: "You cannot modify your own admin status"
-      return
-    end
-
-    # Prevent demoting the last admin
-    if params.key?(:admin) && params[:admin].to_s == "false" && user.admin?
-      if User.admins.count <= 1
+      if params[:admin].to_s == "false" && user.admin? && User.admins.count <= 1
         redirect_to admin_user_path(user), alert: "Cannot remove the last admin — at least one admin must exist"
         return
       end
     end
 
     if user.update(user_params)
+      audit!("admin.user.update", target_user: user, metadata: { changes: user.previous_changes.except("updated_at") })
       redirect_to admin_user_path(user), notice: "User updated successfully"
     else
       redirect_to admin_user_path(user), alert: user.errors.full_messages.first
@@ -83,23 +74,10 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def destroy
-    unless current_user.super_admin?
-      redirect_to admin_users_path, alert: "Only super admins can delete users"
-      return
-    end
-
     user = User.find(params[:id])
+    authorize user
 
-    if user.id == current_user.id
-      redirect_to admin_users_path, alert: "You cannot delete your own account from the admin panel"
-      return
-    end
-
-    if user.super_admin?
-      redirect_to admin_users_path, alert: "Cannot delete a super admin"
-      return
-    end
-
+    audit!("admin.user.delete", target_user: user, metadata: { email: user.email })
     user.destroy!
     redirect_to admin_users_path, notice: "'#{user.email}' has been deleted"
   end

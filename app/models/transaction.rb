@@ -7,6 +7,15 @@ class Transaction < ApplicationRecord
   validates :amount, presence: true, numericality: { other_than: 0 }
   validates :occurred_at, presence: true
 
+  enum :kind, {
+    manual: "manual",
+    transfer: "transfer",
+    adjustment: "adjustment",
+    initial: "initial",
+    reversal: "reversal",
+    recurring: "recurring"
+  }, prefix: true
+
   scope :recent, -> { order(occurred_at: :desc, created_at: :desc) }
   scope :with_closing_balance, -> {
     select(
@@ -16,7 +25,7 @@ class Transaction < ApplicationRecord
   }
 
   def transfer?
-    transfer_group_id.present?
+    kind_transfer? || transfer_group_id.present?
   end
 
   def paired_transaction

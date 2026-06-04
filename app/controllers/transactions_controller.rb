@@ -41,6 +41,7 @@ class TransactionsController < ApplicationController
             amount: -amount,
             description: "Transfer to #{to_bucket.name}",
             transfer_group_id: transfer_group_id,
+            kind: :transfer,
             occurred_at: Time.current
           )
 
@@ -49,6 +50,7 @@ class TransactionsController < ApplicationController
             amount: amount,
             description: "Transfer from #{from_bucket.name}",
             transfer_group_id: transfer_group_id,
+            kind: :transfer,
             occurred_at: Time.current
           )
         end
@@ -93,6 +95,7 @@ class TransactionsController < ApplicationController
         user: current_user,
         amount: amount,
         description: parsed[:description].presence,
+        kind: :manual,
         occurred_at: parsed[:occurred_at] || Time.current
       )
     end
@@ -138,6 +141,7 @@ class TransactionsController < ApplicationController
         amount: -amount,
         description: "Transfer to #{to_bucket.name}",
         transfer_group_id: transfer_group_id,
+        kind: :transfer,
         occurred_at: Time.current
       )
 
@@ -146,6 +150,7 @@ class TransactionsController < ApplicationController
         amount: amount,
         description: "Transfer from #{from_bucket.name}",
         transfer_group_id: transfer_group_id,
+        kind: :transfer,
         occurred_at: Time.current
       )
     end
@@ -190,6 +195,7 @@ class TransactionsController < ApplicationController
         user: current_user,
         amount: diff,
         description: diff.positive? ? "Balance adjustment (added)" : "Balance adjustment (removed)",
+        kind: :adjustment,
         occurred_at: Time.current
       )
     end

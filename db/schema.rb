@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_162857) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_170750) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_162857) do
     t.bigint "bucket_id", null: false
     t.datetime "created_at", null: false
     t.string "description", default: ""
+    t.string "kind", default: "manual", null: false
     t.datetime "occurred_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.uuid "transfer_group_id"
     t.datetime "updated_at", null: false
@@ -38,11 +39,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_162857) do
     t.index ["bucket_id", "amount"], name: "idx_transactions_bucket_amount"
     t.index ["bucket_id", "occurred_at"], name: "index_transactions_on_bucket_id_and_occurred_at"
     t.index ["bucket_id"], name: "index_transactions_on_bucket_id"
+    t.index ["kind"], name: "index_transactions_on_kind"
     t.index ["transfer_group_id"], name: "idx_transactions_transfer_partial", where: "(transfer_group_id IS NOT NULL)"
     t.index ["user_id", "occurred_at", "created_at"], name: "idx_transactions_user_recent", order: { occurred_at: :desc, created_at: :desc }
     t.index ["user_id"], name: "index_transactions_on_user_id"
     t.check_constraint "amount <> 0::numeric", name: "chk_transactions_amount_nonzero"
     t.check_constraint "amount >= '-9999999999.99'::numeric AND amount <= 9999999999.99", name: "chk_transactions_amount_range"
+    t.check_constraint "kind::text = ANY (ARRAY['manual'::character varying, 'transfer'::character varying, 'adjustment'::character varying, 'initial'::character varying, 'reversal'::character varying, 'recurring'::character varying]::text[])", name: "chk_transactions_kind_valid"
   end
 
   create_table "users", force: :cascade do |t|

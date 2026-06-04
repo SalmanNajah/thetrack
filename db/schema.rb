@@ -10,9 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_170750) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_04_074946) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_id"
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.jsonb "metadata", default: {}
+    t.bigint "target_user_id"
+    t.datetime "updated_at", null: false
+    t.index ["action"], name: "index_audit_logs_on_action"
+    t.index ["actor_id"], name: "index_audit_logs_on_actor_id"
+    t.index ["created_at"], name: "index_audit_logs_on_created_at"
+    t.index ["target_user_id"], name: "index_audit_logs_on_target_user_id"
+  end
 
   create_table "buckets", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -78,6 +92,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_170750) do
     t.check_constraint "otp_attempts >= 0", name: "chk_users_otp_attempts_nonneg"
   end
 
+  add_foreign_key "audit_logs", "users", column: "actor_id"
+  add_foreign_key "audit_logs", "users", column: "target_user_id"
   add_foreign_key "buckets", "users"
   add_foreign_key "transactions", "buckets"
   add_foreign_key "transactions", "users"

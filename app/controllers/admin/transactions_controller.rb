@@ -20,7 +20,14 @@ class Admin::TransactionsController < Admin::BaseController
 
   def destroy
     transaction = Transaction.find(params[:id])
+    authorize transaction
+
     user_email = transaction.user.email
+    audit!("admin.transaction.delete", target_user: transaction.user, metadata: {
+      transaction_id: transaction.id,
+      amount: transaction.amount.to_s,
+      bucket: transaction.bucket.name
+    })
     transaction.destroy!
     redirect_to admin_transactions_path, notice: "Transaction ##{params[:id]} from #{user_email} deleted"
   end

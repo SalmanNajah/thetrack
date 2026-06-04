@@ -70,3 +70,4 @@ gem "omniauth-rails_csrf_protection", "~> 1.0"
 
 gem "resend", "~> 1.3"
 gem "rack-attack", "~> 6.7"
+gem "pundit", "~> 2.4"

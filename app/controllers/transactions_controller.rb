@@ -20,7 +20,9 @@ class TransactionsController < ApplicationController
   def transfer
     from_bucket = current_user.buckets.find(params[:from_bucket_id])
     to_bucket = current_user.buckets.find(params[:to_bucket_id])
-    amount = BigDecimal(params[:amount].to_s)
+    amount = parse_decimal(params[:amount])
+
+    return redirect_back(fallback_location: dashboard_path, alert: "Invalid amount") if amount.nil?
 
     result = Transactions::CreateTransfer.new(
       user: current_user,
@@ -38,7 +40,9 @@ class TransactionsController < ApplicationController
 
   def adjust_balance
     bucket = current_user.buckets.find(params[:bucket_id])
-    new_balance = BigDecimal(params[:new_balance].to_s)
+    new_balance = parse_decimal(params[:new_balance])
+
+    return redirect_back(fallback_location: bucket_path(bucket.slug), alert: "Invalid amount") if new_balance.nil?
 
     result = Transactions::AdjustBalance.new(
       user: current_user,
@@ -53,5 +57,14 @@ class TransactionsController < ApplicationController
     else
       redirect_back fallback_location: bucket_path(bucket.slug), alert: result.message
     end
+  end
+
+  private
+
+  def parse_decimal(value)
+    return nil if value.blank?
+    BigDecimal(value.to_s)
+  rescue ArgumentError, TypeError
+    nil
   end
 end

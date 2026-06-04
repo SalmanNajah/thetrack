@@ -22,34 +22,38 @@ module Transactions
 
       transfer_group_id = SecureRandom.uuid
 
-      ActiveRecord::Base.transaction do
-        [ @from_bucket, @to_bucket ].sort_by(&:id).each(&:lock!)
+      result = catch(:abort_with_result) do
+        ActiveRecord::Base.transaction do
+          [ @from_bucket, @to_bucket ].sort_by(&:id).each(&:lock!)
 
-        if @from_bucket.balance < @amount
-          return ServiceResult.new(success: false, message: "Not enough in #{@from_bucket.name} — you only have #{@from_bucket.balance} available")
+          if @from_bucket.balance < @amount
+            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@from_bucket.name} — you only have #{@from_bucket.balance} available")
+          end
+
+          @from_bucket.transactions.create!(
+            user: @user,
+            amount: -@amount,
+            description: "Transfer to #{@to_bucket.name}",
+            transfer_group_id: transfer_group_id,
+            kind: :transfer,
+            occurred_at: Time.current
+          )
+
+          @to_bucket.transactions.create!(
+            user: @user,
+            amount: @amount,
+            description: "Transfer from #{@from_bucket.name}",
+            transfer_group_id: transfer_group_id,
+            kind: :transfer,
+            occurred_at: Time.current
+          )
+
+          @user.update!(onboarded: true) unless @user.onboarded?
+          ServiceResult.new(success: true, message: "Transferred #{@amount} to #{@to_bucket.name}")
         end
-
-        @from_bucket.transactions.create!(
-          user: @user,
-          amount: -@amount,
-          description: "Transfer to #{@to_bucket.name}",
-          transfer_group_id: transfer_group_id,
-          kind: :transfer,
-          occurred_at: Time.current
-        )
-
-        @to_bucket.transactions.create!(
-          user: @user,
-          amount: @amount,
-          description: "Transfer from #{@from_bucket.name}",
-          transfer_group_id: transfer_group_id,
-          kind: :transfer,
-          occurred_at: Time.current
-        )
       end
 
-      @user.update!(onboarded: true) unless @user.onboarded?
-      ServiceResult.new(success: true, message: "Transferred #{@amount} to #{@to_bucket.name}")
+      result
     rescue ActiveRecord::RecordInvalid => e
       msg = e.record&.errors&.full_messages&.join(", ") || e.message.sub(/^Validation failed: /i, "")
       ServiceResult.new(success: false, message: msg)

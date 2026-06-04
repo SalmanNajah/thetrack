@@ -61,8 +61,15 @@ class Admin::UsersController < Admin::BaseController
     user = User.find(params[:id])
     authorize user
 
-    audit!("admin.user.delete", target_user: user, metadata: { email: user.email })
-    user.destroy!
+    if user.admin? && User.admins.count <= 1
+      redirect_to admin_user_path(user), alert: "Cannot delete the last admin — at least one admin must exist"
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      audit!("admin.user.delete", target_user: user, metadata: { email: user.email })
+      user.destroy!
+    end
     redirect_to admin_users_path, notice: "'#{user.email}' has been deleted"
   end
 

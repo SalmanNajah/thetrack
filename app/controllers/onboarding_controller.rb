@@ -22,7 +22,14 @@ class OnboardingController < ApplicationController
 
     ActiveRecord::Base.transaction do
       balances.each do |bucket_id, amount_str|
-        amount = BigDecimal(amount_str.to_s)
+        next if amount_str.blank?
+
+        begin
+          amount = BigDecimal(amount_str.to_s)
+        rescue ArgumentError, TypeError
+          next
+        end
+
         next if amount <= 0
 
         bucket = current_user.buckets.find(bucket_id)

@@ -26,24 +26,28 @@ module Transactions
         return ServiceResult.new(success: false, message: "That number is way too large — keep it under 10 billion")
       end
 
-      ActiveRecord::Base.transaction do
-        @bucket.lock!
+      result = catch(:abort_with_result) do
+        ActiveRecord::Base.transaction do
+          @bucket.lock!
 
-        if amount.negative? && (@bucket.balance + amount) < 0
-          return ServiceResult.new(success: false, message: "Not enough in #{@bucket.name} — you only have #{@bucket.balance} available")
+          if amount.negative? && (@bucket.balance + amount) < 0
+            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@bucket.name} — you only have #{@bucket.balance} available")
+          end
+
+          transaction = @bucket.transactions.create!(
+            user: @user,
+            amount: amount,
+            description: parsed.description.presence,
+            kind: :manual,
+            occurred_at: parsed.occurred_at || Time.current
+          )
+
+          @user.update!(onboarded: true) unless @user.onboarded?
+          ServiceResult.new(success: true, message: "Transaction added", record: transaction)
         end
-
-        transaction = @bucket.transactions.create!(
-          user: @user,
-          amount: amount,
-          description: parsed.description.presence,
-          kind: :manual,
-          occurred_at: parsed.occurred_at || Time.current
-        )
-
-        @user.update!(onboarded: true) unless @user.onboarded?
-        ServiceResult.new(success: true, message: "Transaction added", record: transaction)
       end
+
+      result
     rescue ActiveRecord::RecordInvalid => e
       ServiceResult.new(success: false, message: e.record&.errors&.full_messages&.join(", ") || e.message)
     end

@@ -6,28 +6,12 @@ class DashboardController < ApplicationController
     buckets = current_user.buckets.ordered
 
     render inertia: "Dashboard/Index", props: {
-      buckets: buckets.map { |b|
-        {
-          id: b.id,
-          name: b.name,
-          slug: b.slug,
-          balance: b.balance.to_s
-        }
-      },
+      buckets: BucketSerializer.collection(buckets),
       total_balance: buckets.sum(&:balance).to_s,
-      recent_transactions: current_user.transactions
-        .with_closing_balance.includes(:bucket).recent.limit(10)
-        .map { |t|
-          {
-            id: t.id,
-            description: t.description,
-            amount: t.amount.to_s,
-            occurred_at: t.occurred_at.iso8601,
-            transfer_group_id: t.transfer_group_id,
-            bucket: { id: t.bucket.id, name: t.bucket.name, slug: t.bucket.slug },
-            closing_balance: t.closing_balance.to_s
-          }
-        },
+      recent_transactions: TransactionSerializer.collection(
+        current_user.transactions.with_closing_balance.includes(:bucket).recent.limit(10),
+        closing_balance: true
+      ),
       currency_symbol: current_user.currency_symbol,
       currency: current_user.currency,
       onboarded: current_user.onboarded,

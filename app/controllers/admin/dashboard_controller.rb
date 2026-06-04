@@ -9,7 +9,10 @@ class Admin::DashboardController < Admin::BaseController
     active_users_7d = Transaction.where("created_at >= ?", 7.days.ago)
                                   .distinct.count(:user_id)
 
-    recent_users = User.order(created_at: :desc).limit(10).map { |u| serialize_user_summary(u) }
+    recent_users = UserSerializer.collection(
+      User.order(created_at: :desc).limit(10),
+      summary: true
+    )
 
     db_info = {
       total_users: total_users,
@@ -40,18 +43,5 @@ class Admin::DashboardController < Admin::BaseController
     result.first["pg_size_pretty"]
   rescue StandardError
     "N/A"
-  end
-
-  def serialize_user_summary(user)
-    {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      currency: user.currency,
-      admin: user.admin?,
-      created_at: user.created_at.iso8601,
-      buckets_count: user.buckets.count,
-      transactions_count: user.transactions.count
-    }
   end
 end

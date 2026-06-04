@@ -7,17 +7,20 @@ class TransactionSerializer
   end
 
   def as_json
+    is_super = !@options[:admin] || @options[:current_user]&.super_admin?
+    should_redact = @options[:admin] && !is_super
+
     data = {
       id: @txn.id,
-      description: @txn.description,
-      amount: @txn.amount.to_s,
+      description: should_redact ? "•••" : @txn.description,
+      amount: should_redact ? "•••" : @txn.amount.to_s,
       occurred_at: @txn.occurred_at.iso8601,
       transfer_group_id: @txn.transfer_group_id,
       bucket: { id: @txn.bucket.id, name: @txn.bucket.name, slug: @txn.bucket.slug }
     }
 
     if @options[:closing_balance] && @txn.respond_to?(:closing_balance)
-      data[:closing_balance] = @txn.closing_balance.to_s
+      data[:closing_balance] = should_redact ? "•••" : @txn.closing_balance.to_s
     end
 
     if @options[:paired_bucket]

@@ -11,7 +11,8 @@ class Admin::DashboardController < Admin::BaseController
 
     recent_users = UserSerializer.collection(
       User.active.order(created_at: :desc).limit(10),
-      summary: true
+      summary: true,
+      current_user: current_user
     )
 
     db_info = {

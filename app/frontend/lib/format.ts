@@ -1,4 +1,10 @@
+export function isRedacted(value: string | null | undefined): boolean {
+  if (!value) return false
+  return value === '•••' || value === '[redacted]'
+}
+
 export function formatCurrency(amount: string, symbol: string): string {
+  if (isRedacted(amount)) return '•••'
   const num = parseFloat(amount)
   const formatted = Math.abs(num).toLocaleString('en-IN', {
     minimumFractionDigits: num % 1 !== 0 ? 2 : 0,
@@ -8,6 +14,7 @@ export function formatCurrency(amount: string, symbol: string): string {
 }
 
 export function formatBalance(amount: string, symbol: string): string {
+  if (isRedacted(amount)) return '•••'
   const num = parseFloat(amount)
   const sign = num > 0 ? '+' : num < 0 ? '-' : ''
   const formatted = Math.abs(num).toLocaleString('en-IN', {
@@ -18,6 +25,7 @@ export function formatBalance(amount: string, symbol: string): string {
 }
 
 export function formatTxnAmount(amount: string): string {
+  if (isRedacted(amount)) return '•••'
   const num = parseFloat(amount)
   const sign = num > 0 ? '+' : ''
   return `${sign}${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`

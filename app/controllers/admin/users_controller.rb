@@ -12,7 +12,7 @@ class Admin::UsersController < Admin::BaseController
     result = paginate(scope)
 
     render inertia: "Admin/Users/Index", props: {
-      users: UserSerializer.collection(result[:records], admin: true),
+      users: UserSerializer.collection(result[:records], admin: true, current_user: current_user),
       pagination: result[:pagination],
       search: params[:search] || "",
       is_super_admin: current_user.super_admin?,
@@ -24,13 +24,14 @@ class Admin::UsersController < Admin::BaseController
     user = User.active.find(params[:id])
 
     render inertia: "Admin/Users/Show", props: {
-      user: UserSerializer.new(user, admin: true).as_json,
-      buckets: BucketSerializer.collection(user.buckets.ordered, admin: true),
+      user: UserSerializer.new(user, admin: true, current_user: current_user).as_json,
+      buckets: BucketSerializer.collection(user.buckets.ordered, admin: true, current_user: current_user),
       recent_transactions: TransactionSerializer.collection(
         user.transactions.includes(:bucket).recent.limit(50),
-        admin: true
+        admin: true,
+        current_user: current_user
       ),
-      total_balance: user.buckets.sum(&:balance).to_s,
+      total_balance: current_user.super_admin? ? user.buckets.sum(&:balance).to_s : "•••",
       is_super_admin: current_user.super_admin?,
       current_user_id: current_user.id
     }

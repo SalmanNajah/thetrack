@@ -52,11 +52,12 @@ class UserSerializer
   end
 
   def admin_json
+    is_super = @options[:current_user]&.super_admin?
     base_json.merge(
       super_admin: @user.super_admin?,
       buckets_count: @user.buckets.count,
       transactions_count: @user.transactions.count,
-      total_balance: @user.buckets.sum(&:balance).to_s
+      total_balance: is_super ? @user.buckets.sum(&:balance).to_s : "•••"
     )
   end
 end

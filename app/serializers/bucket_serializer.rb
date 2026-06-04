@@ -7,11 +7,13 @@ class BucketSerializer
   end
 
   def as_json
+    is_super = !@options[:admin] || @options[:current_user]&.super_admin?
+
     data = {
       id: @bucket.id,
       name: @bucket.name,
       slug: @bucket.slug,
-      balance: @bucket.balance.to_s
+      balance: is_super ? @bucket.balance.to_s : "•••"
     }
 
     if @options[:admin]

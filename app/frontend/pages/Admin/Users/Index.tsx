@@ -5,6 +5,8 @@ import { AdminLayout } from '../AdminLayout'
 import { Pagination } from '@/components/Pagination'
 import type { AdminUser, PaginationData, AuthUser } from '@/types'
 import { Search } from 'lucide-react'
+import { isRedacted } from '@/lib/format'
+import { RedactBar } from '@/components/RedactBar'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -123,7 +125,11 @@ export default function Index() {
                       {user.currency_symbol} {user.currency}
                     </td>
                     <td className="px-4 py-2.5 text-right text-[13px] font-mono text-[#555] hidden md:table-cell">
-                      {user.currency_symbol}{parseFloat(user.total_balance).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                      {isRedacted(user.total_balance) ? (
+                        <RedactBar width="w-12" height="h-3" />
+                      ) : (
+                        `${user.currency_symbol}${parseFloat(user.total_balance).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+                      )}
                     </td>
                     <td className="px-4 py-2.5 text-right text-[12px] text-[#777] font-mono hidden md:table-cell">
                       {user.buckets_count}

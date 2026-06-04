@@ -12,7 +12,7 @@ class Admin::TransactionsController < Admin::BaseController
     result = paginate(scope)
 
     render inertia: "Admin/Transactions/Index", props: {
-      transactions: TransactionSerializer.collection(result[:records], admin: true),
+      transactions: TransactionSerializer.collection(result[:records], admin: true, current_user: current_user),
       pagination: result[:pagination],
       search: params[:search] || ""
     }

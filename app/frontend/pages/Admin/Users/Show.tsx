@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { AdminLayout } from '../AdminLayout'
 import type { AdminUser, AdminBucket, AdminTransaction, AuthUser } from '@/types'
 import { ArrowLeft, ArrowLeftRight } from 'lucide-react'
+import { isRedacted } from '@/lib/format'
+import { RedactBar } from '@/components/RedactBar'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -183,7 +185,11 @@ export default function Show() {
             <div>
               <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Balance</p>
               <p className="text-[14px] font-mono text-[#333] mt-0.5">
-                {user.currency_symbol}{parseFloat(total_balance).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                {isRedacted(total_balance) ? (
+                  <RedactBar width="w-16" height="h-3" />
+                ) : (
+                  `${user.currency_symbol}${parseFloat(total_balance).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+                )}
               </p>
             </div>
             <div>
@@ -219,7 +225,11 @@ export default function Show() {
                 </div>
                 <div className="mt-3 flex items-baseline justify-between">
                   <p className="text-lg font-semibold font-mono text-[#333] tracking-tight">
-                    {user.currency_symbol}{parseFloat(bucket.balance).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                    {isRedacted(bucket.balance) ? (
+                      <RedactBar width="w-16" height="h-3.5" />
+                    ) : (
+                      `${user.currency_symbol}${parseFloat(bucket.balance).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+                    )}
                   </p>
                   <p className="text-[11px] text-[#bbb]">{bucket.transactions_count} txns</p>
                 </div>
@@ -247,7 +257,8 @@ export default function Show() {
               </thead>
               <tbody>
                 {recent_transactions.map((txn) => {
-                  const amount = parseFloat(txn.amount)
+                  const isAmtRedacted = isRedacted(txn.amount)
+                  const amount = isAmtRedacted ? 0 : parseFloat(txn.amount)
                   const isPositive = amount > 0
                   const isTransfer = !!txn.transfer_group_id
                   return (
@@ -257,17 +268,25 @@ export default function Show() {
                     >
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-1.5">
-                          {isTransfer && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
-                          <span className="text-[13px] text-[#333] truncate">
-                            {txn.description || (isTransfer ? 'Transfer' : 'Transaction')}
-                          </span>
+                          {isTransfer && !isRedacted(txn.description || '') && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
+                          {isRedacted(txn.description || '') ? (
+                            <RedactBar width="w-24" height="h-3" />
+                          ) : (
+                            <span className="text-[13px] text-[#333] truncate">
+                              {txn.description || (isTransfer ? 'Transfer' : 'Transaction')}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-2.5 text-[12px] text-[#999] hidden sm:table-cell">{txn.bucket_name}</td>
                       <td className={`px-4 py-2.5 text-right text-[13px] font-mono ${
-                        isPositive ? 'text-emerald-600' : 'text-[#c05050]'
+                        isAmtRedacted ? 'text-[#bbb]' : isPositive ? 'text-emerald-600' : 'text-[#c05050]'
                       }`}>
-                        {isPositive ? '+' : ''}{amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                        {isAmtRedacted ? (
+                          <RedactBar width="w-12" height="h-3" />
+                        ) : (
+                          `${isPositive ? '+' : ''}${amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-right text-[12px] text-[#aaa] hidden sm:table-cell">
                         {formatShortDate(txn.occurred_at)}

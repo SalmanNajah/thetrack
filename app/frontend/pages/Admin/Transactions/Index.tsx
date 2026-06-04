@@ -5,6 +5,8 @@ import { AdminLayout } from '../AdminLayout'
 import { Pagination } from '@/components/Pagination'
 import type { AdminTransaction, PaginationData, AuthUser } from '@/types'
 import { Search, ArrowLeftRight } from 'lucide-react'
+import { isRedacted } from '@/lib/format'
+import { RedactBar } from '@/components/RedactBar'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -88,7 +90,8 @@ export default function Index() {
               </thead>
               <tbody>
                 {transactions.map((txn) => {
-                  const amount = parseFloat(txn.amount)
+                  const isAmtRedacted = isRedacted(txn.amount)
+                  const amount = isAmtRedacted ? 0 : parseFloat(txn.amount)
                   const isPositive = amount > 0
                   const isTransfer = !!txn.transfer_group_id
                   return (
@@ -98,10 +101,14 @@ export default function Index() {
                     >
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-1.5">
-                          {isTransfer && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
-                          <span className="text-[13px] text-[#333] truncate max-w-[200px]">
-                            {txn.description || (isTransfer ? 'Transfer' : 'Transaction')}
-                          </span>
+                          {isTransfer && !isRedacted(txn.description || '') && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
+                          {isRedacted(txn.description || '') ? (
+                            <RedactBar width="w-24" height="h-3" />
+                          ) : (
+                            <span className="text-[13px] text-[#333] truncate max-w-[200px]">
+                              {txn.description}
+                            </span>
+                          )}
                         </div>
                         <p className="text-[10px] text-[#ccc] mt-0.5 font-mono">#{txn.id}</p>
                       </td>
@@ -117,9 +124,13 @@ export default function Index() {
                         {txn.bucket_name}
                       </td>
                       <td className={`px-4 py-2.5 text-right text-[13px] font-mono ${
-                        isPositive ? 'text-emerald-600' : 'text-[#c05050]'
+                        isAmtRedacted ? 'text-[#bbb]' : isPositive ? 'text-emerald-600' : 'text-[#c05050]'
                       }`}>
-                        {isPositive ? '+' : ''}{amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                        {isAmtRedacted ? (
+                          <RedactBar width="w-12" height="h-3" />
+                        ) : (
+                          `${isPositive ? '+' : ''}${amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-right text-[12px] text-[#aaa] hidden lg:table-cell">
                         {formatDate(txn.occurred_at)}

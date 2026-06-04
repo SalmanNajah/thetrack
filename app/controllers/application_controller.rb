@@ -18,10 +18,11 @@ class ApplicationController < ActionController::Base
     return unless user_signed_in?
     return if current_user.email_verified?
 
-    # Generate a new OTP if they don't have a pending one
-    unless current_user.otp_sent_at.present? && !current_user.otp_expired?
-      code = current_user.generate_otp!
-      OtpMailer.verification_code(current_user, code).deliver_later
+    if current_user.otp_code_digest.blank? || current_user.otp_expired?
+      if current_user.can_resend_otp?
+        code = current_user.generate_otp!
+        OtpMailer.verification_code(current_user, code).deliver_later
+      end
     end
 
     session[:pending_verification_email] = current_user.email

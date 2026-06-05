@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { BottomNavbar } from "@/components/BottomNavbar";
 import { TransferDialog } from "@/components/TransferDialog";
+import { ImportPreviewModal } from "@/components/ImportPreviewModal";
 import {
   formatTxnAmount,
   formatCurrency,
@@ -19,6 +20,10 @@ import {
   ChevronUp,
   ArrowUp,
   Trash2,
+  Download,
+  Paperclip,
+  FileText,
+  FileSpreadsheet,
 } from "lucide-react";
 
 type PageProps = {
@@ -188,7 +193,7 @@ function DateGroup({
   );
 }
 
-function ChatInput({ bucketId }: { bucketId: number }) {
+function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClick: () => void }) {
   const [input, setInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -219,7 +224,15 @@ function ChatInput({ bucketId }: { bucketId: number }) {
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-tt-border bg-tt-surface px-5 py-3.5">
+    <div className="flex items-center gap-2 rounded-2xl border border-tt-border bg-tt-surface px-3 py-3">
+      <button
+        type="button"
+        onClick={onImportClick}
+        className="shrink-0 text-tt-text-tertiary hover:text-tt-text p-2 rounded-xl transition-colors bg-tt-bg active:scale-[0.95] cursor-pointer"
+        title="Import statement or paste text"
+      >
+        <Paperclip className="size-[18px]" />
+      </button>
       <input
         type="text"
         value={input}
@@ -227,12 +240,12 @@ function ChatInput({ bucketId }: { bucketId: number }) {
         onKeyDown={handleKeyDown}
         placeholder="-200 chai or 'move 50 to daily'"
         disabled={submitting}
-        className="flex-1 min-w-0 border-0 bg-transparent text-[15px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
+        className="flex-1 min-w-0 border-0 bg-transparent text-[15px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0 p-0"
       />
       <button
         onClick={handleSubmit}
         disabled={submitting || !input.trim()}
-        className="shrink-0 rounded-full bg-tt-text p-2.5 text-tt-bg transition-all duration-150 disabled:opacity-20 disabled:scale-90"
+        className="shrink-0 rounded-full bg-tt-text p-2.5 text-tt-bg transition-all duration-150 disabled:opacity-20 disabled:scale-90 cursor-pointer"
       >
         <ArrowUp className="size-4" />
       </button>
@@ -246,7 +259,6 @@ export default function Show() {
 
   useEffect(() => {
     if (flash?.notice) {
-      // Detect transfer notices and add CTA to navigate to target bucket
       const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/);
       if (transferMatch) {
         const targetName = transferMatch[1];
@@ -270,6 +282,19 @@ export default function Show() {
   const dateGroups = groupByDate(transactions);
 
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
+        setExportDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   function handleDeleteBucket() {
     router.delete(`/buckets/${bucket.slug}`, {
@@ -289,19 +314,56 @@ export default function Show() {
             Back
           </Link>
           <div className="flex items-center gap-2">
+            <div className="relative" ref={exportRef}>
+              <button
+                onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                className="flex items-center gap-1 rounded-xl border border-tt-border bg-tt-surface p-2 text-[12px] text-tt-text-tertiary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-all active:scale-[0.97] cursor-pointer"
+                title="Export options"
+              >
+                <Download className="size-3" />
+              </button>
+
+              {exportDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-xl border border-tt-border bg-tt-surface p-1.5 shadow-md z-50 animate-in fade-in-0 slide-in-from-top-2 duration-100">
+                  <a
+                    href={`/exports/csv?bucket_slug=${bucket.slug}&tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`}
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
+                    onClick={() => setExportDropdownOpen(false)}
+                  >
+                    <FileSpreadsheet className="size-3.5 text-tt-text-tertiary" />
+                    Export CSV
+                  </a>
+                  <a
+                    href={`/exports/pdf?bucket_slug=${bucket.slug}&tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`}
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
+                    onClick={() => setExportDropdownOpen(false)}
+                  >
+                    <FileText className="size-3.5 text-tt-text-tertiary" />
+                    Export PDF
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <ImportPreviewModal
+              bucketId={bucket.id}
+              open={importOpen}
+              onOpenChange={setImportOpen}
+            />
+
             {other_buckets.length > 0 &&
               (confirmDelete ? (
-                <div className="flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5">
+                <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5">
                   <span className="text-[12px] text-red-600">Delete?</span>
                   <button
                     onClick={handleDeleteBucket}
-                    className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors"
+                    className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors cursor-pointer"
                   >
                     Yes
                   </button>
                   <button
                     onClick={() => setConfirmDelete(false)}
-                    className="text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors"
+                    className="text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors cursor-pointer"
                   >
                     No
                   </button>
@@ -309,7 +371,7 @@ export default function Show() {
               ) : (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1 rounded-full border border-tt-border bg-tt-surface px-2.5 py-1.5 text-[12px] text-tt-text-tertiary hover:text-red-500 hover:border-red-200 transition-all active:scale-[0.97]"
+                  className="flex items-center gap-1 rounded-xl border border-tt-border bg-tt-surface p-2 text-[12px] text-tt-text-tertiary hover:text-red-500 hover:border-red-200 transition-all active:scale-[0.97] cursor-pointer"
                 >
                   <Trash2 className="size-3" />
                 </button>
@@ -361,7 +423,7 @@ export default function Show() {
 
       <div className="fixed bottom-24 left-0 right-0 z-40">
         <div className="mx-auto max-w-xl px-6">
-          <ChatInput bucketId={bucket.id} />
+          <ChatInput bucketId={bucket.id} onImportClick={() => setImportOpen(true)} />
         </div>
       </div>
 

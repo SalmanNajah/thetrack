@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { BottomNavbar } from '@/components/BottomNavbar'
 import type { AuthUser, CurrencyOption } from '@/types'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Download, FileText, FileSpreadsheet } from 'lucide-react'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -410,6 +410,44 @@ function SecuritySection({ user }: { user: PageProps['user'] }) {
   )
 }
 
+function DataSection() {
+  return (
+    <section>
+      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+        Data
+      </h2>
+      <div>
+        <a
+          href="/exports/csv"
+          className="flex items-center justify-between py-3.5 border-b border-tt-border-subtle hover:bg-tt-bg/50 transition-colors -mx-1 px-1 rounded-lg"
+        >
+          <div className="flex items-center gap-3">
+            <FileSpreadsheet className="size-4 text-tt-text-tertiary" />
+            <div>
+              <span className="text-sm text-tt-text-secondary">Export all transactions</span>
+              <p className="text-[11px] text-tt-text-tertiary">CSV spreadsheet</p>
+            </div>
+          </div>
+          <Download className="size-3.5 text-tt-text-tertiary" />
+        </a>
+        <a
+          href="/exports/pdf"
+          className="flex items-center justify-between py-3.5 hover:bg-tt-bg/50 transition-colors -mx-1 px-1 rounded-lg"
+        >
+          <div className="flex items-center gap-3">
+            <FileText className="size-4 text-tt-text-tertiary" />
+            <div>
+              <span className="text-sm text-tt-text-secondary">Export all transactions</span>
+              <p className="text-[11px] text-tt-text-tertiary">PDF bank statement</p>
+            </div>
+          </div>
+          <Download className="size-3.5 text-tt-text-tertiary" />
+        </a>
+      </div>
+    </section>
+  )
+}
+
 export default function Index() {
   const { flash, user, currencies, stats } = usePage<PageProps>().props
 
@@ -437,6 +475,7 @@ export default function Index() {
           <CurrencySection currentCurrency={user.currency} currencies={currencies} />
           <SignConventionSection unsignedAdds={user.unsigned_adds} />
           <SecuritySection user={user} />
+          <DataSection />
           <DangerZone stats={stats} />
         </div>
       </div>

@@ -49,6 +49,17 @@ Rails.application.routes.draw do
     delete :delete_account, on: :member
   end
 
+  # Data exports & imports
+  scope :exports do
+    get :csv, to: "exports#csv", as: :export_csv
+    get :pdf, to: "exports#pdf", as: :export_pdf
+  end
+
+  scope :imports do
+    post :parse, to: "imports#parse", as: :parse_import
+    post :create, to: "imports#create", as: :execute_import
+  end
+
   # Admin dashboard
   namespace :admin do
     root to: "dashboard#index"

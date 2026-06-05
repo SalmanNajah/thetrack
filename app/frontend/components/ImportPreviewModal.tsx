@@ -16,6 +16,7 @@ type ParsedRow = {
 
 type Props = {
   bucketId: number
+  currentBalance: number
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -34,7 +35,7 @@ function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => voi
   )
 }
 
-export function ImportPreviewModal({ bucketId, open, onOpenChange }: Props) {
+export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChange }: Props) {
   const [step, setStep] = useState<'upload' | 'preview' | 'importing'>('upload')
   const [mode, setMode] = useState<'file' | 'text'>('file')
   const [pastedText, setPastedText] = useState('')
@@ -155,6 +156,9 @@ export function ImportPreviewModal({ bucketId, open, onOpenChange }: Props) {
   const selected = rows.filter(r => r.selected)
   const credits = selected.filter(r => +r.amount > 0).reduce((s, r) => s + +r.amount, 0)
   const debits  = selected.filter(r => +r.amount < 0).reduce((s, r) => s + Math.abs(+r.amount), 0)
+  const netImpact = credits - debits
+  const projectedBalance = currentBalance + netImpact
+  const wouldGoNegative = projectedBalance < -0.001
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -209,12 +213,12 @@ export function ImportPreviewModal({ bucketId, open, onOpenChange }: Props) {
                   <div className="size-10 rounded-xl bg-tt-bg flex items-center justify-center mx-auto mb-3">
                     <Upload className="size-5 text-tt-text-tertiary" />
                   </div>
-                  <p className="text-sm text-tt-text font-medium">Drop CSV or PDF statement</p>
-                  <p className="text-[12px] text-tt-text-tertiary mt-1">Supports bank files and statements</p>
-                  <input ref={fileInputRef} type="file" accept=".csv,.pdf" onChange={e => e.target.files?.[0] && processFile(e.target.files[0])} className="hidden" />
+                  <p className="text-sm text-tt-text font-medium">Drop CSV file</p>
+                  <p className="text-[12px] text-tt-text-tertiary mt-1">Supports bank CSV exports</p>
+                  <input ref={fileInputRef} type="file" accept=".csv" onChange={e => e.target.files?.[0] && processFile(e.target.files[0])} className="hidden" />
                 </div>
                 <p className="text-[11px] text-tt-text-tertiary leading-relaxed">
-                  Tip: Upload bank statement PDFs or standard CSV files with date, description, amount (or debit/credit) columns.
+                  Tip: Export transactions as CSV from your bank app and upload here. Columns should include date, description, and amount (or debit/credit).
                 </p>
               </div>
             ) : (
@@ -312,16 +316,27 @@ export function ImportPreviewModal({ bucketId, open, onOpenChange }: Props) {
                   <span className="text-tt-negative font-medium">-{debits.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </span>
                 <span className="text-tt-text font-medium">
-                  Net {(credits - debits) >= 0 ? '+' : ''}{(credits - debits).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  Net {netImpact >= 0 ? '+' : ''}{netImpact.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
               </div>
+
+              {wouldGoNegative && selected.length > 0 && (
+                <div className="rounded-lg bg-amber-50 border border-amber-100/70 px-3 py-2 flex items-start gap-2">
+                  <AlertCircle className="size-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-amber-700 leading-relaxed">
+                    Importing these transactions would make the balance negative
+                    ({projectedBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}). Deselect some expenses or add funds first.
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => handleOpenChange(false)} className="flex-1">
                   Cancel
                 </Button>
                 <Button
                   onClick={handleImport}
-                  disabled={!selected.length}
+                  disabled={!selected.length || wouldGoNegative}
                   className="flex-1 bg-tt-text hover:bg-tt-text/90 text-tt-bg font-medium"
                 >
                   Import {selected.length} transaction{selected.length !== 1 ? 's' : ''}

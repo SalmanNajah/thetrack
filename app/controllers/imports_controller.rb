@@ -3,24 +3,11 @@
 class ImportsController < ApplicationController
   def parse
     if params[:file].present?
-      file = params[:file]
-      filename = file.original_filename.to_s.downcase
-
-      result = if filename.end_with?(".pdf")
-        begin
-          require "pdf-reader"
-          reader = PDF::Reader.new(file.path)
-          pdf_text = reader.pages.map(&:text).join("\n")
-          Imports::TextParser.parse(pdf_text, current_user, require_date: true)
-        rescue StandardError => e
-          Imports::TextParser::Result.new(success: false, rows: [], errors: [ "Failed to parse PDF statement: #{e.message}" ])
-        end
-      else
-        content = file.read.force_encoding("UTF-8")
-        Imports::CsvImporter.parse(content)
-      end
+      content = params[:file].read.force_encoding("UTF-8")
+      result = Imports::CsvImporter.parse(content)
     elsif params[:text].present?
-      result = Imports::TextParser.parse(params[:text].to_s, current_user)
+      text = params[:text].to_s
+      result = Imports::TextParser.parse(text, current_user, require_date: false)
     else
       return render json: { success: false, errors: [ "No import data provided" ] }, status: :unprocessable_entity
     end

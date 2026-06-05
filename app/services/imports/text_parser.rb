@@ -9,7 +9,7 @@ module Imports
       /\b(\d{1,2})[-.](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[-.](\d{2,4})\b/i
     ].freeze
 
-    AMOUNT_REGEX = /([+-])?\s*(?:Rs\.?|₹|\$|€|£)?\s*(\d{1,3}(?:,\d{2,3})*(?:\.\d+)?|\d+(?:\.\d+)?)/i
+    AMOUNT_REGEX = /([+-])?\s*(?:Rs\.?|₹|\$|€|£)?\s*(\d{1,3}(?:,\d{2,3})+(?:\.\d+)?|\d+(?:\.\d+)?)/i
 
     BLACKLISTED_LINE_PATTERNS = [
       /\b(total|summary)\s+(credits?|debits?|amounts?|transactions?|txns?|balance|transfer|transfer?s)\b/i,
@@ -72,7 +72,6 @@ module Imports
           next
         end
 
-        # Pick the first matched number as the transaction amount
         amount_match = matches.first
         sign = amount_match[0]
         num_str = amount_match[1].gsub(",", "")
@@ -83,20 +82,11 @@ module Imports
           next
         end
 
-        if sign == "+"
-          # Keep positive
-        elsif sign == "-"
-          amount = -amount
-        else
-          amount = -amount unless user.unsigned_adds?
-        end
+        amount = -amount if sign == "-"
 
-        matched_amt_str = clean_line.match(AMOUNT_REGEX)&.to_s
-        desc = clean_line
-        desc = desc.sub(matched_amt_str, "") if matched_amt_str
-
+        desc = clean_line.gsub(AMOUNT_REGEX, "")
+        desc = desc.gsub(/(?:Rs\.?|₹|\$|€|£)\s*/i, "")
         desc = desc.gsub(/\[?\d{1,2}[:.]\d{2}(?:[:.]\d{2})?\s*(?:am|pm)?\]?\s*-?\s*/i, "")
-        desc = desc.gsub(/^[^:]+:\s*/, "")
         desc = desc.gsub(/\s+/, " ").strip
 
         rows << {

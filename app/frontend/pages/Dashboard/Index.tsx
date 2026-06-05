@@ -245,20 +245,7 @@ function BucketCards({
         )}
       </div>
       <div className="flex gap-3.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
-        {buckets.map((bucket) => (
-          <Link
-            key={bucket.id}
-            href={`/buckets/${bucket.slug}`}
-            className="group shrink-0 min-w-[140px] rounded-xl border border-tt-border bg-tt-surface px-5 py-4 transition-all duration-150 hover:border-tt-text-tertiary/40 hover:shadow-sm active:scale-[0.97]"
-          >
-            <p className="text-[12px] text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors">
-              {bucket.name}
-            </p>
-            <p className="mt-2.5 text-[17px] font-semibold tracking-tight text-tt-text">
-              {formatCurrency(bucket.balance, currencySymbol)}
-            </p>
-          </Link>
-        ))}
+
         {isAdding ? (
           <div
             className="shrink-0 min-w-[140px] rounded-xl border border-tt-text/20 bg-tt-surface px-5 py-4 flex flex-col justify-between"
@@ -309,6 +296,20 @@ function BucketCards({
             </p>
           </button>
         )}
+        {buckets.map((bucket) => (
+          <Link
+            key={bucket.id}
+            href={`/buckets/${bucket.slug}`}
+            className="group shrink-0 min-w-[140px] rounded-xl border border-tt-border bg-tt-surface px-5 py-4 transition-all duration-150 hover:border-tt-text-tertiary/40 hover:shadow-sm active:scale-[0.97]"
+          >
+            <p className="text-[12px] text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors">
+              {bucket.name}
+            </p>
+            <p className="mt-2.5 text-[17px] font-semibold tracking-tight text-tt-text">
+              {formatCurrency(bucket.balance, currencySymbol)}
+            </p>
+          </Link>
+        ))}
       </div>
     </section>
   );

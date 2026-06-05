@@ -228,7 +228,7 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
       <button
         type="button"
         onClick={onImportClick}
-        className="shrink-0 text-tt-text-tertiary hover:text-tt-text p-2 rounded-xl transition-colors bg-tt-bg active:scale-[0.95] cursor-pointer"
+        className="shrink-0 text-tt-text-tertiary hover:text-tt-text p-2 rounded-xl transition-colors border border-tt-border-subtle bg-tt-bg hover:border-white active:scale-[0.95] cursor-pointer"
         title="Import statement or paste text"
       >
         <Paperclip className="size-[18px]" />
@@ -348,6 +348,7 @@ export default function Show() {
 
             <ImportPreviewModal
               bucketId={bucket.id}
+              currentBalance={parseFloat(bucket.balance)}
               open={importOpen}
               onOpenChange={setImportOpen}
             />

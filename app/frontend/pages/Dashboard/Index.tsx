@@ -335,15 +335,16 @@ export default function Index() {
         const targetBucket = buckets.find((b) => b.name === targetName);
         toast.success(flash.notice, {
           id: "flash-notice",
-          ...(targetBucket && {
-            action: {
-              label: `Go to ${targetBucket.name}`,
-              onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
-            },
-          }),
+          action: targetBucket ? {
+            label: `Go to ${targetBucket.name}`,
+            onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
+          } : undefined,
         });
       } else {
-        toast.success(flash.notice, { id: "flash-notice" });
+        toast.success(flash.notice, {
+          id: "flash-notice",
+          action: undefined,
+        });
       }
     }
     if (flash?.alert) toast.error(flash.alert, { id: "flash-alert" });

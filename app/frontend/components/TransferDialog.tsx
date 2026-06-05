@@ -100,12 +100,12 @@ export function TransferDialog({
       <DialogTrigger asChild>
         <button className={buttonClass}>
           <ArrowLeftRight className={iconClass} />
-          Move money
+          Transfer
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-[15px] font-semibold">Move money</DialogTitle>
+          <DialogTitle className="text-[15px] font-semibold">Transfer</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="pt-1">
           <div className="relative rounded-2xl border border-tt-border overflow-visible bg-tt-surface">

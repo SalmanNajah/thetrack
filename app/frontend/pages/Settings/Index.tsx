@@ -452,7 +452,7 @@ export default function Index() {
   const { flash, user, currencies, stats } = usePage<PageProps>().props
 
   useEffect(() => {
-    if (flash?.notice) toast.success(flash.notice, { id: 'flash-notice' })
+    if (flash?.notice) toast.success(flash.notice, { id: 'flash-notice', action: undefined })
     if (flash?.alert) toast.error(flash.alert, { id: 'flash-alert' })
   }, [flash?.notice, flash?.alert])
 

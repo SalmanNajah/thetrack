@@ -1,6 +1,7 @@
 import { Link, usePage, router } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { toast } from "sonner";
+import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { BottomNavbar } from "@/components/BottomNavbar";
 import { TransferDialog } from "@/components/TransferDialog";
 import { ImportPreviewModal } from "@/components/ImportPreviewModal";
@@ -14,7 +15,7 @@ import { classNames } from "@/lib/utils";
 import type { Bucket, TransactionRecord, AuthUser } from "@/types";
 import {
   ArrowLeft,
-  Pencil,
+  PenLine,
   ArrowLeftRight,
   ChevronDown,
   ChevronUp,
@@ -47,6 +48,9 @@ function BalanceDisplay({
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const numericBalance = parseFloat(balance) || 0;
+  const animatedBalance = useAnimatedNumber(numericBalance);
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -108,9 +112,9 @@ function BalanceDisplay({
       title="Tap to edit balance"
     >
       <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-        {formatCurrency(balance, currencySymbol)}
+        {formatCurrency(animatedBalance.toFixed(2), currencySymbol)}
       </span>
-      <Pencil className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
+      <PenLine className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
     </button>
   );
 }

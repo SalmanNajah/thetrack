@@ -12,7 +12,7 @@ module Transactions
 
     def call
       if @new_balance.abs > MAX_AMOUNT
-        return ServiceResult.new(success: false, message: "That number is way too large — keep it under 10 billion")
+        return ServiceResult.new(success: false, message: "That number is way too large: keep it under 10 billion")
       end
 
       result = catch(:abort_with_result) do
@@ -27,7 +27,7 @@ module Transactions
           end
 
           if diff.negative? && (current_balance + diff) < 0
-            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@bucket.name} — you only have #{current_balance} available")
+            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@bucket.name}. You only have #{current_balance} available.")
           end
 
           transaction = @bucket.transactions.create!(

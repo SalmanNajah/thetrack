@@ -45,7 +45,7 @@ class Admin::UsersController < Admin::BaseController
       authorize user, :toggle_admin?
 
       if params[:admin].to_s == "false" && user.admin? && User.admins.count <= 1
-        redirect_to admin_user_path(user), alert: "Cannot remove the last admin — at least one admin must exist"
+        redirect_to admin_user_path(user), alert: "Cannot remove the last admin: at least one admin must exist"
         return
       end
     end
@@ -63,7 +63,7 @@ class Admin::UsersController < Admin::BaseController
     authorize user
 
     if user.admin? && User.admins.count <= 1
-      redirect_to admin_user_path(user), alert: "Cannot delete the last admin — at least one admin must exist"
+      redirect_to admin_user_path(user), alert: "Cannot delete the last admin: at least one admin must exist"
       return
     end
 

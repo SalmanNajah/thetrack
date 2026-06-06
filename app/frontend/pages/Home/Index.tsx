@@ -1,43 +1,635 @@
-import { usePage, Link } from "@inertiajs/react";
+import { usePage, Link, Head } from "@inertiajs/react";
+import { useState, useRef, type KeyboardEvent } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import {
+  ArrowLeftRight,
+  Paperclip,
+  ArrowUp,
+  Wallet,
+  Banknote,
+  CircleDollarSign,
+} from "lucide-react";
+import dashboardPng from "@/assets/images/dashboard.png";
 
-export default function Index() {
-  const { auth } = usePage<{ auth?: { user: { id: number; email: string } } }>().props;
-  const isLoggedIn = !!auth?.user;
+type DemoTransaction = {
+  id: number;
+  description: string;
+  amount: number;
+  bucket: string;
+  isTransfer?: boolean;
+};
 
+const SEED_TRANSACTIONS: DemoTransaction[] = [
+  { id: 1, description: "salary", amount: 450000, bucket: "Income" },
+  { id: 2, description: "groceries", amount: -340, bucket: "Daily" },
+  { id: 3, description: "auto rickshaw", amount: -120, bucket: "Daily" },
+  { id: 4, description: "chai", amount: -20, bucket: "Daily" },
+];
+
+const REVEAL_VARIANT = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+const STAGGER_CONTAINER = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+function GridBackground() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold">TheTrack</h1>
+    <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f1eb]">
+      <svg
+        className="absolute inset-0 h-full w-full stroke-[#e0dbd2]/50 mask-[radial-gradient(100%_100%_at_top_center,white,transparent)]"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="grid-pattern"
+            width={48}
+            height={48}
+            patternUnits="userSpaceOnUse"
+            x="50%"
+            y={-1}
+          >
+            <path d="M.5 48V.5H48" fill="none" />
+            <circle cx={0.5} cy={0.5} r={1} fill="#e0dbd2" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid-pattern)" strokeWidth={0} />
+      </svg>
+    </div>
+  );
+}
 
-        <p className="mt-4 text-zinc-600">Personal finance operating system</p>
-
-        <div className="mt-8 flex justify-center gap-4">
+function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1d] border-b border-[#2a2a2e] shadow-lg">
+      <div className="mx-auto flex max-w-5xl items-center justify-between p-6">
+        <span className="text-[15px] font-semibold tracking-tight text-white">
+          TheTrack
+        </span>
+        <div className="flex items-center gap-4">
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="rounded-xl bg-black px-5 py-3 text-white"
+              className="text-sm font-medium text-white/80 hover:text-white transition-colors"
             >
-              Go to Dashboard
+              Dashboard
             </Link>
           ) : (
             <>
               <Link
                 href="/users/sign_in"
-                className="rounded-xl bg-black px-5 py-3 text-white"
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors hidden sm:block"
               >
                 Login
               </Link>
-
               <Link
                 href="/users/sign_up"
-                className="rounded-xl border border-zinc-300 px-5 py-3"
+                className="bg-white text-[#1a1a1d] px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-all rounded-lg"
               >
-                Sign up
+                Get started
               </Link>
             </>
           )}
         </div>
       </div>
+    </nav>
+  );
+}
+
+function Digit({ char }: { char: string }) {
+  if (isNaN(Number(char))) {
+    return (
+      <span className="inline-flex h-[1em] items-center justify-center font-mono leading-none select-none whitespace-nowrap">
+        {char}
+      </span>
+    );
+  }
+  const num = Number(char);
+  return (
+    <span className="relative inline-flex h-[1em] w-[1ch] overflow-hidden font-mono leading-none select-none whitespace-nowrap align-bottom">
+      <motion.span
+        initial={{ y: 0 }}
+        animate={{ y: `-${num * 10}%` }}
+        transition={{ type: "spring", stiffness: 120, damping: 14 }}
+        className="absolute top-0 left-0 flex flex-col w-full h-[1000%]"
+      >
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+          <span
+            key={n}
+            className="h-[10%] w-full flex items-center justify-center font-mono leading-none select-none shrink-0"
+          >
+            {n}
+          </span>
+        ))}
+      </motion.span>
+    </span>
+  );
+}
+
+function Odometer({ value }: { value: number }) {
+  const str = Math.round(value).toLocaleString("en-IN");
+  const chars = str.split("");
+  return (
+    <span className="inline-flex overflow-hidden leading-none select-none h-[1em] items-center">
+      {chars.map((char, i) => {
+        const key = chars.length - 1 - i;
+        return <Digit key={key} char={char} />;
+      })}
+    </span>
+  );
+}
+
+function ProductShowcase() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+      className="relative w-full border-t border-tt-border bg-white/40 pt-16 mt-20"
+    >
+      <div className="max-w-5xl mx-auto px-6 sm:px-8 relative">
+        <div className="relative rounded-2xl border border-tt-border bg-[#fcfcfb] p-2">
+          <div className="relative rounded-md border border-tt-border bg-white overflow-hidden">
+            <img 
+              src={dashboardPng} 
+              alt="TheTrack Dashboard" 
+              className="w-full h-auto block object-cover" 
+            />
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function InteractiveDemo() {
+  const [incomeBalance, setIncomeBalance] = useState(450000);
+  const [dailyBalance, setDailyBalance] = useState(23763);
+  const [savingsBalance, setSavingsBalance] = useState(0);
+  const [activeBucket, setActiveBucket] = useState("Daily");
+  const [transactions, setTransactions] = useState<DemoTransaction[]>(SEED_TRANSACTIONS);
+  const [input, setInput] = useState("");
+
+  const nextId = useRef(SEED_TRANSACTIONS.length + 1);
+
+  const totalBalance = incomeBalance + dailyBalance + savingsBalance;
+
+  function handleSubmit() {
+    const raw = input.trim();
+    if (!raw) return;
+
+    if (raw.toLowerCase().startsWith("move ") || raw.toLowerCase().startsWith("transfer ")) {
+      const parts = raw.split(/\s+/);
+      const amtIndex = parts.findIndex((p) => /^\d+$/.test(p));
+      if (amtIndex !== -1) {
+        const amt = parseFloat(parts[amtIndex]);
+        const target = parts[parts.length - 1].toLowerCase();
+
+        if (amt <= 0) return;
+
+        if (target === "savings" || target === "save") {
+          if (dailyBalance >= amt) {
+            setDailyBalance((d) => d - amt);
+            setSavingsBalance((s) => s + amt);
+            setTransactions((prev) => [
+              {
+                id: nextId.current++,
+                description: "Transfer to Savings",
+                amount: -amt,
+                bucket: "Daily",
+                isTransfer: true,
+              },
+              {
+                id: nextId.current++,
+                description: "Transfer from Daily",
+                amount: amt,
+                bucket: "Savings",
+                isTransfer: true,
+              },
+              ...prev,
+            ]);
+            setInput("");
+            toast.success(`Transferred ₹${amt.toLocaleString("en-IN")} to Savings`);
+          } else {
+            toast.error(`Not enough in Daily. You only have ₹${dailyBalance.toLocaleString("en-IN")} available.`);
+          }
+          return;
+        } else if (target === "daily" || target === "spend") {
+          if (savingsBalance >= amt) {
+            setSavingsBalance((s) => s - amt);
+            setDailyBalance((d) => d + amt);
+            setTransactions((prev) => [
+              {
+                id: nextId.current++,
+                description: "Transfer to Daily",
+                amount: -amt,
+                bucket: "Savings",
+                isTransfer: true,
+              },
+              {
+                id: nextId.current++,
+                description: "Transfer from Savings",
+                amount: amt,
+                bucket: "Daily",
+                isTransfer: true,
+              },
+              ...prev,
+            ]);
+            setInput("");
+            toast.success(`Transferred ₹${amt.toLocaleString("en-IN")} to Daily`);
+          } else {
+            toast.error(`Not enough in Savings. You only have ₹${savingsBalance.toLocaleString("en-IN")} available.`);
+          }
+          return;
+        }
+      }
+    }
+
+    const prefixMatch = raw.match(/^([+-]?\d+(?:\.\d+)?)\s+(.+)$/);
+    let amt = 0;
+    let desc = "expense";
+
+    if (prefixMatch) {
+      amt = parseFloat(prefixMatch[1]);
+      desc = prefixMatch[2];
+    } else {
+      const suffixMatch = raw.match(/^(.+?)\s+([+-]?\d+(?:\.\d+)?)$/);
+      if (suffixMatch) {
+        amt = parseFloat(suffixMatch[2]);
+        desc = suffixMatch[1];
+      } else {
+        const numberOnly = raw.match(/^([+-]?\d+(?:\.\d+)?)$/);
+        if (numberOnly) {
+          amt = parseFloat(numberOnly[1]);
+        } else {
+          toast.error("Couldn't make sense of that: try something like '-20 chai' or '+500 salary'");
+          return;
+        }
+      }
+    }
+
+    if (Math.abs(amt) > 9999999) {
+      toast.error("That number is way too large: keep it under 10 million");
+      return;
+    }
+
+    if (amt < 0) {
+      const cost = Math.abs(amt);
+      if (activeBucket === "Daily" && dailyBalance >= cost) {
+        setDailyBalance((d) => d - cost);
+        setTransactions((prev) => [
+          { id: nextId.current++, description: desc, amount: amt, bucket: "Daily" },
+          ...prev,
+        ]);
+        setInput("");
+      } else if (activeBucket === "Income" && incomeBalance >= cost) {
+        setIncomeBalance((i) => i - cost);
+        setTransactions((prev) => [
+          { id: nextId.current++, description: desc, amount: amt, bucket: "Income" },
+          ...prev,
+        ]);
+        setInput("");
+      } else if (activeBucket === "Savings" && savingsBalance >= cost) {
+        setSavingsBalance((s) => s - cost);
+        setTransactions((prev) => [
+          { id: nextId.current++, description: desc, amount: amt, bucket: "Savings" },
+          ...prev,
+        ]);
+        setInput("");
+      } else {
+        const currentVal = activeBucket === "Daily" ? dailyBalance : activeBucket === "Income" ? incomeBalance : savingsBalance;
+        toast.error(`Not enough in ${activeBucket}. You only have ₹${currentVal.toLocaleString("en-IN")} available.`);
+      }
+    } else {
+      if (activeBucket === "Daily") {
+        setDailyBalance((d) => d + amt);
+      } else if (activeBucket === "Income") {
+        setIncomeBalance((i) => i + amt);
+      } else {
+        setSavingsBalance((s) => s + amt);
+      }
+      setTransactions((prev) => [
+        { id: nextId.current++, description: desc, amount: amt, bucket: activeBucket },
+        ...prev,
+      ]);
+      setInput("");
+    }
+  }
+
+  function handleRemove(txn: DemoTransaction) {
+    if (txn.isTransfer) {
+      toast.error("Transfer transactions cannot be deleted individually: reset or perform transfer to reverse.");
+      return;
+    }
+
+    if (txn.amount > 0) {
+      if (txn.bucket === "Income" && incomeBalance >= txn.amount) {
+        setIncomeBalance((i) => i - txn.amount);
+        setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
+      } else if (txn.bucket === "Daily" && dailyBalance >= txn.amount) {
+        setDailyBalance((d) => d - txn.amount);
+        setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
+      } else if (txn.bucket === "Savings" && savingsBalance >= txn.amount) {
+        setSavingsBalance((s) => s - txn.amount);
+        setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
+      } else {
+        toast.error(`Cannot delete: would result in negative balance in ${txn.bucket}.`);
+      }
+    } else {
+      const refund = Math.abs(txn.amount);
+      if (txn.bucket === "Daily") {
+        setDailyBalance((d) => d + refund);
+      } else if (txn.bucket === "Income") {
+        setIncomeBalance((i) => i + refund);
+      } else {
+        setSavingsBalance((s) => s + refund);
+      }
+      setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
+    }
+  }
+
+  return (
+    <div className="w-full text-left">
+      <div>
+        <p className="text-[11px] font-medium tracking-wider uppercase text-[#a1a1aa]">
+          Total Balance
+        </p>
+        <p className="mt-1 text-[40px] font-semibold tracking-tighter text-[#18181b] leading-none font-mono flex items-center">
+          <span className="mr-0.5">₹</span>
+          <Odometer value={totalBalance} />
+        </p>
+      </div>
+
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        <button
+          onClick={() => setActiveBucket("Income")}
+          className={`border text-left rounded-lg p-3 transition-all cursor-pointer ${
+            activeBucket === "Income"
+              ? "border-[#5b5bd6] ring-1 ring-[#5b5bd6] bg-[#f7f7fc]"
+              : "border-[#e0dbd2] bg-[#fcfcfb] hover:bg-[#f4f1eb]/50"
+          }`}
+        >
+          <p className="text-[10px] text-[#a1a1aa] uppercase tracking-wide flex items-center gap-1.5">
+            <Wallet className={`size-3 ${activeBucket === "Income" ? "text-[#5b5bd6]" : "text-[#a1a1aa]"}`} />
+            Income
+          </p>
+          <p className="mt-1.5 text-[15px] font-bold text-[#18181b] tracking-tight font-mono flex items-center">
+            <span className="mr-0.5">₹</span>
+            <Odometer value={incomeBalance} />
+          </p>
+        </button>
+        <button
+          onClick={() => setActiveBucket("Daily")}
+          className={`border text-left rounded-lg p-3 transition-all cursor-pointer ${
+            activeBucket === "Daily"
+              ? "border-[#5b5bd6] ring-1 ring-[#5b5bd6] bg-[#f7f7fc]"
+              : "border-[#e0dbd2] bg-[#fcfcfb] hover:bg-[#f4f1eb]/50"
+          }`}
+        >
+          <p className="text-[10px] text-[#a1a1aa] uppercase tracking-wide flex items-center gap-1.5">
+            <Banknote className={`size-3 ${activeBucket === "Daily" ? "text-[#5b5bd6]" : "text-[#a1a1aa]"}`} />
+            Daily
+          </p>
+          <p className="mt-1.5 text-[15px] font-bold text-[#18181b] tracking-tight font-mono flex items-center">
+            <span className="mr-0.5">₹</span>
+            <Odometer value={dailyBalance} />
+          </p>
+        </button>
+        <button
+          onClick={() => setActiveBucket("Savings")}
+          className={`border text-left rounded-lg p-3 transition-all cursor-pointer ${
+            activeBucket === "Savings"
+              ? "border-[#5b5bd6] ring-1 ring-[#5b5bd6] bg-[#f7f7fc]"
+              : "border-[#e0dbd2] bg-[#fcfcfb] hover:bg-[#f4f1eb]/50"
+          }`}
+        >
+          <p className="text-[10px] text-[#a1a1aa] uppercase tracking-wide flex items-center gap-1.5">
+            <CircleDollarSign className={`size-3 ${activeBucket === "Savings" ? "text-[#5b5bd6]" : "text-[#a1a1aa]"}`} />
+            Savings
+          </p>
+          <p className="mt-1.5 text-[15px] font-bold text-[#18181b] tracking-tight font-mono flex items-center">
+            <span className="mr-0.5">₹</span>
+            <Odometer value={savingsBalance} />
+          </p>
+        </button>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-[10px] font-medium tracking-wider uppercase text-[#a1a1aa] mb-2">
+          Recent Transactions
+        </p>
+        <div className="max-h-[200px] overflow-y-auto pr-1 scrollbar-none">
+          <AnimatePresence initial={false}>
+            {transactions.map((txn) => (
+              <motion.div
+                key={txn.id}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => handleRemove(txn)}
+                className="group flex items-center justify-between py-3 border-b border-[#f0eeec] last:border-0 cursor-pointer hover:bg-[#fcfcfb] px-2 -mx-2 rounded-lg"
+              >
+                <div className="flex items-center gap-1.5">
+                  {txn.isTransfer && <ArrowLeftRight className="size-3 text-[#71717a] shrink-0" />}
+                  <span className="text-[13px] text-[#18181b] group-hover:text-red-500 transition-colors">
+                    {txn.description}
+                  </span>
+                  <span className="text-[9px] text-[#a1a1aa] uppercase bg-[#f4f1eb] px-1 py-0.5 rounded font-mono">
+                    {txn.bucket}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-[13px] font-medium tracking-tight font-mono ${
+                      txn.amount > 0 ? "text-[#059669]" : "text-[#92400e]"
+                    }`}
+                  >
+                    {txn.amount > 0 ? "+" : ""}
+                    {txn.amount.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-[10px] text-transparent group-hover:text-red-400 transition-colors font-semibold font-sans">
+                    ✕
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <div className="flex items-center gap-2 rounded-xl border border-[#e0dbd2] bg-[#fcfcfb] px-3 py-3">
+          <button
+            type="button"
+            className="shrink-0 text-[#71717a] p-1.5 rounded-lg border border-[#e0dbd2] bg-white transition-colors"
+          >
+            <Paperclip className="size-4" />
+          </button>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === "Enter") handleSubmit();
+            }}
+            placeholder={`type transaction for ${activeBucket} bucket...`}
+            className="flex-1 min-w-0 border-0 bg-transparent text-[14px] text-[#18181b] placeholder-[#a1a1aa] focus:outline-none focus:ring-0 p-0 font-sans"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={!input.trim()}
+            className="shrink-0 rounded-full bg-[#18181b] p-2 text-white hover:opacity-90 transition-all disabled:opacity-20 disabled:scale-95 cursor-pointer flex items-center justify-center"
+          >
+            <ArrowUp className="size-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LandingFooter() {
+  return (
+    <footer className="border-t border-[#2a2a2e] bg-[#1a1a1d] px-6">
+      <div className="mx-auto max-w-5xl py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span className="text-[14px] font-bold tracking-tight text-white">
+          TheTrack
+        </span>
+        <div className="flex flex-wrap gap-5 text-xs text-white/60">
+          <Link href="/" className="hover:text-white transition-colors">
+            Home
+          </Link>
+          <a href="#demo" className="hover:text-white transition-colors">
+            Demo
+          </a>
+          <a href="#" className="hover:text-white transition-colors">
+            Terms
+          </a>
+          <a href="#" className="hover:text-white transition-colors">
+            Privacy
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export default function Index() {
+  const { auth } = usePage<{
+    auth?: { user: { id: number; email: string } };
+  }>().props;
+  const isLoggedIn = !!auth?.user;
+  const demoRef = useRef<HTMLElement>(null);
+
+  return (
+    <div className="min-h-screen bg-[#f4f1eb] text-[#18181b] overflow-x-hidden relative font-sans animate-fade-in">
+      <Head>
+        <title>TheTrack — Know where your money is</title>
+        <meta
+          name="description"
+          content="Track where your money comes from, where it goes, and where it stays."
+        />
+      </Head>
+
+      <GridBackground />
+      <LandingNav isLoggedIn={isLoggedIn} />
+
+      <section className="relative pt-40 pb-20">
+        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-5xl pointer-events-none">
+          <div className="absolute left-3 sm:left-4 top-0 bottom-0 border-l border-tt-border border-dashed" />
+          <div className="absolute right-3 sm:right-4 top-0 bottom-0 border-r border-tt-border border-dashed" />
+        </div>
+
+        <div className="mx-auto max-w-4xl text-center relative z-10">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={STAGGER_CONTAINER}
+            className="relative"
+          >
+            <motion.h1
+              variants={REVEAL_VARIANT}
+              className="text-[42px] sm:text-[64px] lg:text-[84px] font-bold tracking-[-0.04em] leading-[1.05] text-[#18181b]"
+            >
+              Know where your money is.
+            </motion.h1>
+
+            <motion.p
+              variants={REVEAL_VARIANT}
+              className="mt-6 text-base sm:text-[18px] text-[#71717a] leading-relaxed max-w-2xl mx-auto"
+            >
+              Track where your money comes from, where it goes, and where it stays.
+            </motion.p>
+
+            <motion.div
+              variants={REVEAL_VARIANT}
+              className="mt-8 flex items-center justify-center gap-4"
+            >
+              {isLoggedIn ? (
+                <Link
+                  href="/dashboard"
+                  className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-lg hover:bg-[#222225] transition-colors"
+                >
+                  Go to dashboard →
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/users/sign_up"
+                    className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-lg hover:bg-[#222225] transition-colors"
+                  >
+                    Start tracking
+                  </Link>
+                  <button
+                    onClick={() =>
+                      demoRef.current?.scrollIntoView({ behavior: "smooth" })
+                    }
+                    className="border border-[#e0dbd2] bg-white text-[#18181b] px-6 py-2.5 text-sm font-semibold rounded-lg hover:bg-[#fcfcfb] transition-colors cursor-pointer"
+                  >
+                    Try demo
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        </div>
+
+        <ProductShowcase />
+        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-linear-to-t from-white to-transparent pointer-events-none" />
+
+      </section>
+
+      <section
+        ref={demoRef}
+        id="demo"
+        className="relative py-24 border-t border-b border-dashed border-[#e0dbd2] bg-white/40"
+      >
+        <div className="relative mx-auto max-w-5xl px-6 flex flex-col md:flex-row gap-12 items-start justify-between">
+          <div className="w-full md:w-1/3 flex flex-col justify-center min-h-[160px]">
+            <h2 className="text-[28px] sm:text-[34px] font-bold tracking-tight text-[#18181b] text-left">
+              See it in action.
+            </h2>
+            <p className="mt-4 text-[14px] text-[#71717a] leading-relaxed text-left font-sans">
+              Input a transaction, add bucket stashes, and watch balances adjust in real time. Click any item to remove it.
+            </p>
+          </div>
+
+          <div className="w-full md:w-2/3">
+            <InteractiveDemo />
+          </div>
+        </div>
+      </section>
+      <LandingFooter />
+      <Toaster position="top-right" />
     </div>
   );
 }

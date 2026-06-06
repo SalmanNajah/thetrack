@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { BottomNavbar } from "@/components/BottomNavbar";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { classNames } from "@/lib/utils";
+import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import type {
   Bucket,
   TransactionRecord,
@@ -297,21 +298,33 @@ function BucketCards({
           </button>
         )}
         {buckets.map((bucket) => (
-          <Link
+          <BucketCard
             key={bucket.id}
-            href={`/buckets/${bucket.slug}`}
-            className="group shrink-0 min-w-[140px] rounded-xl border border-tt-border bg-tt-surface px-5 py-4 transition-all duration-150 hover:border-tt-text-tertiary/40 hover:shadow-sm active:scale-[0.97]"
-          >
-            <p className="text-[12px] text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors">
-              {bucket.name}
-            </p>
-            <p className="mt-2.5 text-[17px] font-semibold tracking-tight text-tt-text">
-              {formatCurrency(bucket.balance, currencySymbol)}
-            </p>
-          </Link>
+            bucket={bucket}
+            currencySymbol={currencySymbol}
+          />
         ))}
       </div>
     </section>
+  );
+}
+
+function BucketCard({ bucket, currencySymbol }: { bucket: Bucket; currencySymbol: string }) {
+  const numericBalance = parseFloat(bucket.balance) || 0;
+  const animatedBalance = useAnimatedNumber(numericBalance);
+
+  return (
+    <Link
+      href={`/buckets/${bucket.slug}`}
+      className="group shrink-0 min-w-[140px] rounded-xl border border-tt-border bg-tt-surface px-5 py-4 transition-all duration-150 hover:border-tt-text-tertiary/40 hover:shadow-sm active:scale-[0.97]"
+    >
+      <p className="text-[12px] text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors">
+        {bucket.name}
+      </p>
+      <p className="mt-2.5 text-[17px] font-semibold tracking-tight text-tt-text">
+        {formatCurrency(animatedBalance.toFixed(2), currencySymbol)}
+      </p>
+    </Link>
   );
 }
 
@@ -352,6 +365,8 @@ export default function Index() {
   }, [flash?.notice, flash?.alert]);
 
   const displayName = user.name || user.email.split("@")[0];
+  const numericBalance = parseFloat(total_balance) || 0;
+  const animatedBalance = useAnimatedNumber(numericBalance);
 
   return (
     <div className="min-h-screen bg-tt-bg pb-20">
@@ -384,7 +399,7 @@ export default function Index() {
                 Total Balance
               </p>
               <p className="mt-2 text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-                {formatCurrency(total_balance, currency_symbol)}
+                {formatCurrency(animatedBalance.toFixed(2), currency_symbol)}
               </p>
             </section>
 

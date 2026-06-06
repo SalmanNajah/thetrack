@@ -17,7 +17,7 @@ module Transactions
       end
 
       if @amount > MAX_AMOUNT
-        return ServiceResult.new(success: false, message: "That number is way too large — keep it under 10 billion")
+        return ServiceResult.new(success: false, message: "That number is way too large: keep it under 10 billion")
       end
 
       transfer_group_id = SecureRandom.uuid
@@ -27,7 +27,7 @@ module Transactions
           [ @from_bucket, @to_bucket ].sort_by(&:id).each(&:lock!)
 
           if @from_bucket.balance < @amount
-            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@from_bucket.name} — you only have #{@from_bucket.balance} available")
+            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@from_bucket.name}. You only have #{@from_bucket.balance} available.")
           end
 
           @from_bucket.transactions.create!(

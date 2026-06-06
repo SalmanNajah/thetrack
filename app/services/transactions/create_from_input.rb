@@ -18,12 +18,12 @@ module Transactions
       end
 
       parsed = parser.parse_transaction
-      return ServiceResult.new(success: false, message: "Couldn't make sense of that one — try something like '-20 chai' or '+500 salary'") if parsed.nil?
+      return ServiceResult.new(success: false, message: "Couldn't make sense of that: try something like '-20 chai' or '+500 salary'") if parsed.nil?
 
       amount = parsed.sign == "+" ? parsed.amount : -parsed.amount
 
       if parsed.amount > MAX_AMOUNT
-        return ServiceResult.new(success: false, message: "That number is way too large — keep it under 10 billion")
+        return ServiceResult.new(success: false, message: "That number is way too large: keep it under 10 billion")
       end
 
       result = catch(:abort_with_result) do
@@ -31,7 +31,7 @@ module Transactions
           @bucket.lock!
 
           if amount.negative? && (@bucket.balance + amount) < 0
-            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@bucket.name} — you only have #{@bucket.balance} available")
+            throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@bucket.name}. You only have #{@bucket.balance} available.")
           end
 
           transaction = @bucket.transactions.create!(
@@ -64,7 +64,7 @@ module Transactions
       end
 
       if amount > MAX_AMOUNT
-        return ServiceResult.new(success: false, message: "That number is way too large — keep it under 10 billion")
+        return ServiceResult.new(success: false, message: "That number is way too large: keep it under 10 billion")
       end
 
       from_bucket = direction == :to ? @bucket : other_bucket

@@ -12,7 +12,7 @@ class BucketsController < ApplicationController
     )
 
     if bucket.save
-      redirect_to bucket_path(bucket.slug), notice: "'#{bucket.name}' is live - and is all yours now!"
+      redirect_to bucket_path(bucket.slug), notice: "#{bucket.name} is live and all yours now!"
     else
       redirect_back fallback_location: dashboard_path, alert: bucket.errors.full_messages.first
     end

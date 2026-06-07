@@ -301,10 +301,10 @@ function InteractiveDemo() {
         </p>
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-3">
+      <div className="mt-6 flex flex-col gap-1.5 sm:grid sm:grid-cols-3 sm:gap-3">
         <button
           onClick={() => setActiveBucket("Income")}
-          className={`border text-left rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
+          className={`border text-left rounded-xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex items-center justify-between sm:block ${
             activeBucket === "Income"
               ? "border-tt-text bg-white shadow-xs"
               : "border-tt-border-subtle bg-transparent hover:bg-white/40"
@@ -314,14 +314,14 @@ function InteractiveDemo() {
             <Wallet className="size-3 text-tt-text-tertiary" />
             Income
           </p>
-          <p className="mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
+          <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
             <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
             <Odometer value={incomeBalance} />
           </p>
         </button>
         <button
           onClick={() => setActiveBucket("Daily")}
-          className={`border text-left rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
+          className={`border text-left rounded-xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex items-center justify-between sm:block ${
             activeBucket === "Daily"
               ? "border-tt-text bg-white shadow-xs"
               : "border-tt-border-subtle bg-transparent hover:bg-white/40"
@@ -331,14 +331,14 @@ function InteractiveDemo() {
             <Banknote className="size-3 text-tt-text-tertiary" />
             Daily
           </p>
-          <p className="mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
+          <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
             <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
             <Odometer value={dailyBalance} />
           </p>
         </button>
         <button
           onClick={() => setActiveBucket("Savings")}
-          className={`border text-left rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
+          className={`border text-left rounded-xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex items-center justify-between sm:block ${
             activeBucket === "Savings"
               ? "border-tt-text bg-white shadow-xs"
               : "border-tt-border-subtle bg-transparent hover:bg-white/40"
@@ -348,7 +348,7 @@ function InteractiveDemo() {
             <CircleDollarSign className="size-3 text-tt-text-tertiary" />
             Savings
           </p>
-          <p className="mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
+          <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
             <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
             <Odometer value={savingsBalance} />
           </p>

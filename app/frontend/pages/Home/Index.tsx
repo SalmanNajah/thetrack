@@ -29,17 +29,18 @@ const SEED_TRANSACTIONS: DemoTransaction[] = [
 ];
 
 const REVEAL_VARIANT = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16, filter: "blur(8px)" },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+    filter: "blur(0px)",
+    transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] as const },
   },
 };
 
 const STAGGER_CONTAINER = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
+  visible: { transition: { staggerChildren: 0.2 } },
 };
 
 function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
@@ -53,7 +54,7 @@ function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-white/80 hover:text-white transition-colors"
+              className="bg-white text-[#1a1a1d] px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-all rounded-lg"
             >
               Dashboard
             </Link>
@@ -79,21 +80,21 @@ function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   );
 }
 
-function ProductShowcase() {
+function ProductShowcase({ delay }: { delay: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
-      className="relative w-full pt-4 sm:pt-6 mt-6 sm:mt-12 border-t border-dashed border-tt-border"
+      initial={{ opacity: 0, y: 24, scale: 0.985 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 1.4, delay, ease: [0.16, 1, 0.3, 1] as const }}
+      className="relative w-full pt-4 sm:pt-6 mt-10 sm:mt-12 border-t border-dashed border-tt-border"
     >
       <div className="max-w-5xl mx-auto px-6 sm:px-8 relative">
         <div className="relative rounded-md md:rounded-2xl border border-tt-border bg-white p-1 md:p-2">
           <div className="relative rounded-sm md:rounded-md border border-tt-border bg-tt-bg overflow-hidden">
-            <img 
-              src={dashboardPng} 
-              alt="TheTrack Dashboard" 
-              className="w-full h-auto block object-cover select-none pointer-events-none" 
+            <img
+              src={dashboardPng}
+              alt="TheTrack Dashboard"
+              className="w-full h-auto block object-cover select-none pointer-events-none"
               draggable={false}
             />
           </div>
@@ -108,8 +109,10 @@ function InteractiveDemo() {
   const [dailyBalance, setDailyBalance] = useState(23763);
   const [savingsBalance, setSavingsBalance] = useState(0);
   const [activeBucket, setActiveBucket] = useState("Daily");
-  const [transactions, setTransactions] = useState<DemoTransaction[]>(SEED_TRANSACTIONS);
+  const [transactions, setTransactions] =
+    useState<DemoTransaction[]>(SEED_TRANSACTIONS);
   const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const nextId = useRef(SEED_TRANSACTIONS.length + 1);
 
@@ -119,7 +122,12 @@ function InteractiveDemo() {
     const raw = input.trim();
     if (!raw) return;
 
-    if (raw.toLowerCase().startsWith("move ") || raw.toLowerCase().startsWith("transfer ")) {
+    inputRef.current?.focus();
+
+    if (
+      raw.toLowerCase().startsWith("move ") ||
+      raw.toLowerCase().startsWith("transfer ")
+    ) {
       const parts = raw.split(/\s+/);
       const amtIndex = parts.findIndex((p) => /^\d+$/.test(p));
       if (amtIndex !== -1) {
@@ -150,9 +158,13 @@ function InteractiveDemo() {
               ...prev,
             ]);
             setInput("");
-            toast.success(`Transferred ₹${amt.toLocaleString("en-IN")} to Savings`);
+            toast.success(
+              `Transferred ₹${amt.toLocaleString("en-IN")} to Savings`,
+            );
           } else {
-            toast.error(`Not enough in Daily. You only have ₹${dailyBalance.toLocaleString("en-IN")} available.`);
+            toast.error(
+              `Not enough in Daily. You only have ₹${dailyBalance.toLocaleString("en-IN")} available.`,
+            );
           }
           return;
         } else if (target === "daily" || target === "spend") {
@@ -177,9 +189,13 @@ function InteractiveDemo() {
               ...prev,
             ]);
             setInput("");
-            toast.success(`Transferred ₹${amt.toLocaleString("en-IN")} to Daily`);
+            toast.success(
+              `Transferred ₹${amt.toLocaleString("en-IN")} to Daily`,
+            );
           } else {
-            toast.error(`Not enough in Savings. You only have ₹${savingsBalance.toLocaleString("en-IN")} available.`);
+            toast.error(
+              `Not enough in Savings. You only have ₹${savingsBalance.toLocaleString("en-IN")} available.`,
+            );
           }
           return;
         }
@@ -203,7 +219,9 @@ function InteractiveDemo() {
         if (numberOnly) {
           amt = parseFloat(numberOnly[1]);
         } else {
-          toast.error("Couldn't make sense of that: try something like '-20 chai' or '+500 salary'");
+          toast.error(
+            "Couldn't make sense of that: try something like '-20 chai' or '+500 salary'",
+          );
           return;
         }
       }
@@ -219,27 +237,49 @@ function InteractiveDemo() {
       if (activeBucket === "Daily" && dailyBalance >= cost) {
         setDailyBalance((d) => d - cost);
         setTransactions((prev) => [
-          { id: nextId.current++, description: desc, amount: amt, bucket: "Daily" },
+          {
+            id: nextId.current++,
+            description: desc,
+            amount: amt,
+            bucket: "Daily",
+          },
           ...prev,
         ]);
         setInput("");
       } else if (activeBucket === "Income" && incomeBalance >= cost) {
         setIncomeBalance((i) => i - cost);
         setTransactions((prev) => [
-          { id: nextId.current++, description: desc, amount: amt, bucket: "Income" },
+          {
+            id: nextId.current++,
+            description: desc,
+            amount: amt,
+            bucket: "Income",
+          },
           ...prev,
         ]);
         setInput("");
       } else if (activeBucket === "Savings" && savingsBalance >= cost) {
         setSavingsBalance((s) => s - cost);
         setTransactions((prev) => [
-          { id: nextId.current++, description: desc, amount: amt, bucket: "Savings" },
+          {
+            id: nextId.current++,
+            description: desc,
+            amount: amt,
+            bucket: "Savings",
+          },
           ...prev,
         ]);
         setInput("");
       } else {
-        const currentVal = activeBucket === "Daily" ? dailyBalance : activeBucket === "Income" ? incomeBalance : savingsBalance;
-        toast.error(`Not enough in ${activeBucket}. You only have ₹${currentVal.toLocaleString("en-IN")} available.`);
+        const currentVal =
+          activeBucket === "Daily"
+            ? dailyBalance
+            : activeBucket === "Income"
+              ? incomeBalance
+              : savingsBalance;
+        toast.error(
+          `Not enough in ${activeBucket}. You only have ₹${currentVal.toLocaleString("en-IN")} available.`,
+        );
       }
     } else {
       if (activeBucket === "Daily") {
@@ -250,7 +290,12 @@ function InteractiveDemo() {
         setSavingsBalance((s) => s + amt);
       }
       setTransactions((prev) => [
-        { id: nextId.current++, description: desc, amount: amt, bucket: activeBucket },
+        {
+          id: nextId.current++,
+          description: desc,
+          amount: amt,
+          bucket: activeBucket,
+        },
         ...prev,
       ]);
       setInput("");
@@ -259,7 +304,9 @@ function InteractiveDemo() {
 
   function handleRemove(txn: DemoTransaction) {
     if (txn.isTransfer) {
-      toast.error("Transfer transactions cannot be deleted individually: reset or perform transfer to reverse.");
+      toast.error(
+        "Transfer transactions cannot be deleted individually: reset or perform transfer to reverse.",
+      );
       return;
     }
 
@@ -274,7 +321,9 @@ function InteractiveDemo() {
         setSavingsBalance((s) => s - txn.amount);
         setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
       } else {
-        toast.error(`Cannot delete: would result in negative balance in ${txn.bucket}.`);
+        toast.error(
+          `Cannot delete: would result in negative balance in ${txn.bucket}.`,
+        );
       }
     } else {
       const refund = Math.abs(txn.amount);
@@ -372,7 +421,9 @@ function InteractiveDemo() {
                 className="group flex items-center justify-between py-2 cursor-pointer hover:bg-tt-bg/30 px-2 -mx-2 rounded-lg transition-colors"
               >
                 <div className="flex items-center gap-1.5">
-                  {txn.isTransfer && <ArrowLeftRight className="size-3 text-tt-text-secondary shrink-0" />}
+                  {txn.isTransfer && (
+                    <ArrowLeftRight className="size-3 text-tt-text-secondary shrink-0" />
+                  )}
                   <span className="text-[13px] text-tt-text group-hover:text-red-500/80 transition-colors">
                     {txn.description}
                   </span>
@@ -399,13 +450,13 @@ function InteractiveDemo() {
       <div className="mt-6">
         <div className="flex items-center gap-3 rounded-xl border border-tt-border-subtle bg-white pl-4 pr-1.5 py-1.5 focus-within:border-tt-text/40 transition-all duration-200">
           <input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
               if (e.key === "Enter") handleSubmit();
             }}
             placeholder={`Add to ${activeBucket}...`}
-            autoFocus
             className="flex-1 min-w-0 border-0 bg-transparent text-[13px] text-tt-text placeholder-tt-text-tertiary/60 focus:outline-none focus:ring-0 p-0 font-sans"
           />
           <button
@@ -472,7 +523,7 @@ export default function Index() {
           <div className="absolute right-3 sm:right-4 top-0 bottom-0 border-r border-tt-border border-dashed" />
         </div>
 
-        <div className="mx-auto max-w-4xl text-center relative z-10">
+        <div className="mx-auto max-w-4xl text-center relative z-10 px-8 sm:px-12">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -481,14 +532,14 @@ export default function Index() {
           >
             <motion.h1
               variants={REVEAL_VARIANT}
-              className="text-[42px] sm:text-[64px] lg:text-[84px] font-bold tracking-[-0.04em] leading-[1.05] text-[#18181b]"
+              className="text-[32px] sm:text-[64px] lg:text-[84px] font-bold tracking-[-0.03em] sm:tracking-[-0.04em] leading-[1.15] sm:leading-[1.05] text-[#18181b] text-pretty"
             >
               Know where your money is.
             </motion.h1>
 
             <motion.p
               variants={REVEAL_VARIANT}
-              className="mt-6 text-base sm:text-[18px] text-[#71717a] leading-relaxed max-w-2xl mx-auto"
+              className="mt-4 sm:mt-6 text-sm sm:text-[18px] text-[#71717a] leading-relaxed max-w-2xl mx-auto text-pretty"
             >
               Track where your money comes from, where it goes, and where it stays.
             </motion.p>
@@ -509,9 +560,8 @@ export default function Index() {
           </motion.div>
         </div>
 
-        <ProductShowcase />
+        <ProductShowcase delay={isLoggedIn ? 0.60 : 0.40} />
         <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-linear-to-t from-[#f4f1eb] to-transparent pointer-events-none" />
-
       </section>
 
       <section
@@ -525,7 +575,8 @@ export default function Index() {
               See it in action.
             </h2>
             <p className="mt-4 text-[13px] text-tt-text-secondary leading-relaxed text-left font-sans">
-              Input a transaction, add bucket stashes, and watch balances adjust in real time. Click any item to remove it.
+              Input a transaction, add bucket stashes, and watch balances adjust
+              in real time. Click any item to remove it.
             </p>
           </div>
 

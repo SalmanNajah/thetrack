@@ -5,7 +5,7 @@ import { BottomNavbar } from "@/components/BottomNavbar";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { classNames } from "@/lib/utils";
-import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
+
 import type {
   Bucket,
   TransactionRecord,
@@ -312,7 +312,6 @@ function BucketCards({
 
 function BucketCard({ bucket, currencySymbol }: { bucket: Bucket; currencySymbol: string }) {
   const numericBalance = parseFloat(bucket.balance) || 0;
-  const animatedBalance = useAnimatedNumber(numericBalance);
 
   return (
     <Link
@@ -323,7 +322,7 @@ function BucketCard({ bucket, currencySymbol }: { bucket: Bucket; currencySymbol
         {bucket.name}
       </p>
       <p className="mt-2.5 text-[17px] font-semibold tracking-tight text-tt-text">
-        <Odometer value={formatCurrency(animatedBalance.toFixed(2), currencySymbol)} />
+        <Odometer value={formatCurrency(numericBalance.toFixed(2), currencySymbol)} />
       </p>
     </Link>
   );
@@ -367,7 +366,6 @@ export default function Index() {
 
   const displayName = user.name || user.email.split("@")[0];
   const numericBalance = parseFloat(total_balance) || 0;
-  const animatedBalance = useAnimatedNumber(numericBalance);
 
   return (
     <div className="min-h-screen bg-tt-bg pb-20">
@@ -400,7 +398,7 @@ export default function Index() {
                 Total Balance
               </p>
               <p className="mt-2 text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-                <Odometer value={formatCurrency(animatedBalance.toFixed(2), currency_symbol)} />
+                <Odometer value={formatCurrency(numericBalance.toFixed(2), currency_symbol)} />
               </p>
             </section>
 

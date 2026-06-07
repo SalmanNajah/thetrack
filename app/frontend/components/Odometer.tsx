@@ -22,9 +22,9 @@ function Digit({ char }: { char: string }) {
       style={{ width }}
     >
       <motion.span
-        initial={{ y: 0 }}
+        initial={false}
         animate={{ y: `-${num * 10}%` }}
-        transition={{ type: "spring", stiffness: 120, damping: 14 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20, mass: 0.8 }}
         className="absolute inset-x-0 top-0 flex flex-col h-[1000%]"
       >
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (

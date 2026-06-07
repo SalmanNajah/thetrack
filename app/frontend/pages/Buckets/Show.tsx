@@ -1,7 +1,6 @@
 import { Link, usePage, router } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { toast } from "sonner";
-import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { Odometer } from "@/components/Odometer";
 import { BottomNavbar } from "@/components/BottomNavbar";
 import { TransferDialog } from "@/components/TransferDialog";
@@ -51,7 +50,6 @@ function BalanceDisplay({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const numericBalance = parseFloat(balance) || 0;
-  const animatedBalance = useAnimatedNumber(numericBalance);
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -113,7 +111,7 @@ function BalanceDisplay({
       title="Tap to edit balance"
     >
       <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-        <Odometer value={formatCurrency(animatedBalance.toFixed(2), currencySymbol)} />
+        <Odometer value={formatCurrency(numericBalance.toFixed(2), currencySymbol)} />
       </span>
       <PenLine className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
     </button>

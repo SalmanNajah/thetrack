@@ -46,6 +46,14 @@ Rack::Attack.throttle("link-accounts/ip", limit: 5, period: 300.seconds) do |req
   req.real_ip if req.path == "/link-accounts" && req.post?
 end
 
-Rack::Attack.throttled_responder = lambda do |_env|
-  [ 429, { "Content-Type" => "text/plain" }, [ "Too many requests. Please try again later.\n" ] ]
+Rack::Attack.throttled_responder = lambda do |env|
+  request = ActionDispatch::Request.new(env)
+  request.flash[:alert] = "Too many requests. Please try again later."
+  referrer = request.referer || "/"
+
+  [
+    303,
+    { "Location" => referrer, "Content-Type" => "text/html" },
+    [ "" ]
+  ]
 end

@@ -8,7 +8,7 @@ import {
   ArrowUp,
   Wallet,
   Banknote,
-  CircleDollarSign,
+  TrendingUp,
 } from "lucide-react";
 import dashboardPng from "@/assets/images/dashboard.png";
 import { Odometer } from "@/components/Odometer";
@@ -22,10 +22,11 @@ type DemoTransaction = {
 };
 
 const SEED_TRANSACTIONS: DemoTransaction[] = [
-  { id: 1, description: "salary", amount: 450000, bucket: "Income" },
-  { id: 2, description: "groceries", amount: -340, bucket: "Daily" },
-  { id: 3, description: "auto rickshaw", amount: -120, bucket: "Daily" },
-  { id: 4, description: "chai", amount: -20, bucket: "Daily" },
+  { id: 1, description: "salary", amount: 175000, bucket: "Income" },
+  { id: 2, description: "freelance", amount: 25000, bucket: "Income" },
+  { id: 3, description: "groceries", amount: -340, bucket: "Daily" },
+  { id: 4, description: "cab", amount: -120, bucket: "Daily" },
+  { id: 5, description: "chai", amount: -20, bucket: "Daily" },
 ];
 
 const REVEAL_VARIANT = {
@@ -105,9 +106,9 @@ function ProductShowcase({ delay }: { delay: number }) {
 }
 
 function InteractiveDemo() {
-  const [incomeBalance, setIncomeBalance] = useState(450000);
-  const [dailyBalance, setDailyBalance] = useState(23763);
-  const [savingsBalance, setSavingsBalance] = useState(0);
+  const [incomeBalance, setIncomeBalance] = useState(200000);
+  const [dailyBalance, setDailyBalance] = useState(24520);
+  const [investmentsBalance, setInvestmentsBalance] = useState(96000);
   const [activeBucket, setActiveBucket] = useState("Daily");
   const [transactions, setTransactions] =
     useState<DemoTransaction[]>(SEED_TRANSACTIONS);
@@ -116,7 +117,12 @@ function InteractiveDemo() {
 
   const nextId = useRef(SEED_TRANSACTIONS.length + 1);
 
-  const totalBalance = incomeBalance + dailyBalance + savingsBalance;
+  const totalBalance = incomeBalance + dailyBalance + investmentsBalance;
+
+  function handleBucketClick(bucketName: string) {
+    setActiveBucket(bucketName);
+    inputRef.current?.focus();
+  }
 
   function handleSubmit() {
     const raw = input.trim();
@@ -136,14 +142,19 @@ function InteractiveDemo() {
 
         if (amt <= 0) return;
 
-        if (target === "savings" || target === "save") {
+        if (
+          target === "investments" ||
+          target === "invest" ||
+          target === "savings" ||
+          target === "save"
+        ) {
           if (dailyBalance >= amt) {
             setDailyBalance((d) => d - amt);
-            setSavingsBalance((s) => s + amt);
+            setInvestmentsBalance((s) => s + amt);
             setTransactions((prev) => [
               {
                 id: nextId.current++,
-                description: "Transfer to Savings",
+                description: "Transfer to Investments",
                 amount: -amt,
                 bucket: "Daily",
                 isTransfer: true,
@@ -152,14 +163,14 @@ function InteractiveDemo() {
                 id: nextId.current++,
                 description: "Transfer from Daily",
                 amount: amt,
-                bucket: "Savings",
+                bucket: "Investments",
                 isTransfer: true,
               },
               ...prev,
             ]);
             setInput("");
             toast.success(
-              `Transferred ₹${amt.toLocaleString("en-IN")} to Savings`,
+              `Transferred ₹${amt.toLocaleString("en-IN")} to Investments`,
             );
           } else {
             toast.error(
@@ -168,20 +179,20 @@ function InteractiveDemo() {
           }
           return;
         } else if (target === "daily" || target === "spend") {
-          if (savingsBalance >= amt) {
-            setSavingsBalance((s) => s - amt);
+          if (investmentsBalance >= amt) {
+            setInvestmentsBalance((s) => s - amt);
             setDailyBalance((d) => d + amt);
             setTransactions((prev) => [
               {
                 id: nextId.current++,
                 description: "Transfer to Daily",
                 amount: -amt,
-                bucket: "Savings",
+                bucket: "Investments",
                 isTransfer: true,
               },
               {
                 id: nextId.current++,
-                description: "Transfer from Savings",
+                description: "Transfer from Investments",
                 amount: amt,
                 bucket: "Daily",
                 isTransfer: true,
@@ -194,7 +205,7 @@ function InteractiveDemo() {
             );
           } else {
             toast.error(
-              `Not enough in Savings. You only have ₹${savingsBalance.toLocaleString("en-IN")} available.`,
+              `Not enough in Investments. You only have ₹${investmentsBalance.toLocaleString("en-IN")} available.`,
             );
           }
           return;
@@ -227,8 +238,8 @@ function InteractiveDemo() {
       }
     }
 
-    if (Math.abs(amt) > 9999999) {
-      toast.error("That number is way too large: keep it under 10 million");
+    if (Math.abs(amt) > 9999999999) {
+      toast.error("That number is way too large: keep it under 10 billion");
       return;
     }
 
@@ -258,14 +269,14 @@ function InteractiveDemo() {
           ...prev,
         ]);
         setInput("");
-      } else if (activeBucket === "Savings" && savingsBalance >= cost) {
-        setSavingsBalance((s) => s - cost);
+      } else if (activeBucket === "Investments" && investmentsBalance >= cost) {
+        setInvestmentsBalance((s) => s - cost);
         setTransactions((prev) => [
           {
             id: nextId.current++,
             description: desc,
             amount: amt,
-            bucket: "Savings",
+            bucket: "Investments",
           },
           ...prev,
         ]);
@@ -276,7 +287,7 @@ function InteractiveDemo() {
             ? dailyBalance
             : activeBucket === "Income"
               ? incomeBalance
-              : savingsBalance;
+              : investmentsBalance;
         toast.error(
           `Not enough in ${activeBucket}. You only have ₹${currentVal.toLocaleString("en-IN")} available.`,
         );
@@ -287,7 +298,7 @@ function InteractiveDemo() {
       } else if (activeBucket === "Income") {
         setIncomeBalance((i) => i + amt);
       } else {
-        setSavingsBalance((s) => s + amt);
+        setInvestmentsBalance((s) => s + amt);
       }
       setTransactions((prev) => [
         {
@@ -299,42 +310,6 @@ function InteractiveDemo() {
         ...prev,
       ]);
       setInput("");
-    }
-  }
-
-  function handleRemove(txn: DemoTransaction) {
-    if (txn.isTransfer) {
-      toast.error(
-        "Transfer transactions cannot be deleted individually: reset or perform transfer to reverse.",
-      );
-      return;
-    }
-
-    if (txn.amount > 0) {
-      if (txn.bucket === "Income" && incomeBalance >= txn.amount) {
-        setIncomeBalance((i) => i - txn.amount);
-        setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
-      } else if (txn.bucket === "Daily" && dailyBalance >= txn.amount) {
-        setDailyBalance((d) => d - txn.amount);
-        setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
-      } else if (txn.bucket === "Savings" && savingsBalance >= txn.amount) {
-        setSavingsBalance((s) => s - txn.amount);
-        setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
-      } else {
-        toast.error(
-          `Cannot delete: would result in negative balance in ${txn.bucket}.`,
-        );
-      }
-    } else {
-      const refund = Math.abs(txn.amount);
-      if (txn.bucket === "Daily") {
-        setDailyBalance((d) => d + refund);
-      } else if (txn.bucket === "Income") {
-        setIncomeBalance((i) => i + refund);
-      } else {
-        setSavingsBalance((s) => s + refund);
-      }
-      setTransactions((prev) => prev.filter((t) => t.id !== txn.id));
     }
   }
 
@@ -352,7 +327,7 @@ function InteractiveDemo() {
 
       <div className="mt-6 flex flex-col gap-1.5 sm:grid sm:grid-cols-3 sm:gap-3">
         <button
-          onClick={() => setActiveBucket("Income")}
+          onClick={() => handleBucketClick("Income")}
           className={`border text-left rounded-xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex items-center justify-between sm:block ${
             activeBucket === "Income"
               ? "border-tt-text bg-white shadow-xs"
@@ -369,7 +344,7 @@ function InteractiveDemo() {
           </p>
         </button>
         <button
-          onClick={() => setActiveBucket("Daily")}
+          onClick={() => handleBucketClick("Daily")}
           className={`border text-left rounded-xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex items-center justify-between sm:block ${
             activeBucket === "Daily"
               ? "border-tt-text bg-white shadow-xs"
@@ -386,20 +361,20 @@ function InteractiveDemo() {
           </p>
         </button>
         <button
-          onClick={() => setActiveBucket("Savings")}
+          onClick={() => handleBucketClick("Investments")}
           className={`border text-left rounded-xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex items-center justify-between sm:block ${
-            activeBucket === "Savings"
+            activeBucket === "Investments"
               ? "border-tt-text bg-white shadow-xs"
               : "border-tt-border-subtle bg-transparent hover:bg-white/40"
           }`}
         >
           <p className="text-[10px] text-tt-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
-            <CircleDollarSign className="size-3 text-tt-text-tertiary" />
-            Savings
+            <TrendingUp className="size-3 text-tt-text-tertiary" />
+            Investments
           </p>
           <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
             <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
-            <Odometer value={savingsBalance} />
+            <Odometer value={investmentsBalance} />
           </p>
         </button>
       </div>
@@ -417,15 +392,17 @@ function InteractiveDemo() {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
-                onClick={() => handleRemove(txn)}
-                className="group flex items-center justify-between py-2 cursor-pointer hover:bg-tt-bg/30 px-2 -mx-2 rounded-lg transition-colors"
+                className="flex items-center justify-between py-2 rounded-lg"
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {txn.isTransfer && (
                     <ArrowLeftRight className="size-3 text-tt-text-secondary shrink-0" />
                   )}
-                  <span className="text-[13px] text-tt-text group-hover:text-red-500/80 transition-colors">
+                  <span className="text-[13px] text-tt-text">
                     {txn.description}
+                  </span>
+                  <span className="text-[9px] font-medium tracking-wider uppercase text-tt-text-tertiary bg-[#18181b]/5 px-1.5 py-0.5 rounded-sm select-none font-sans">
+                    {txn.bucket}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -436,9 +413,6 @@ function InteractiveDemo() {
                   >
                     {txn.amount > 0 ? "+" : ""}
                     {txn.amount.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-[10px] text-transparent group-hover:text-tt-text-tertiary transition-colors font-semibold font-sans">
-                    ✕
                   </span>
                 </div>
               </motion.div>
@@ -541,7 +515,8 @@ export default function Index() {
               variants={REVEAL_VARIANT}
               className="mt-4 sm:mt-6 text-sm sm:text-[18px] text-[#71717a] leading-relaxed max-w-2xl mx-auto text-pretty"
             >
-              Track where your money comes from, where it goes, and where it stays.
+              Track where your money comes from, where it goes, and where it
+              stays.
             </motion.p>
 
             {isLoggedIn && (
@@ -560,51 +535,73 @@ export default function Index() {
           </motion.div>
         </div>
 
-        <ProductShowcase delay={isLoggedIn ? 0.60 : 0.40} />
+        <ProductShowcase delay={isLoggedIn ? 0.6 : 0.4} />
         <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-linear-to-t from-[#f4f1eb] to-transparent pointer-events-none" />
       </section>
 
-      <section
+      <motion.section
         ref={demoRef}
         id="demo"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.15 }}
+        variants={STAGGER_CONTAINER}
         className="relative py-6 sm:py-24 border-t border-b border-tt-border bg-[#fdfdfc]/50"
       >
         <div className="relative mx-auto max-w-5xl px-6 flex flex-col md:flex-row gap-12 items-start justify-between">
-          <div className="w-full md:w-1/3 flex flex-col justify-center min-h-[160px]">
+          <motion.div
+            variants={REVEAL_VARIANT}
+            className="w-full md:w-1/3 flex flex-col justify-center min-h-[160px]"
+          >
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-tt-text text-left">
               See it in action.
             </h2>
             <p className="mt-4 text-[13px] text-tt-text-secondary leading-relaxed text-left font-sans">
-              Input a transaction, add bucket stashes, and watch balances adjust
-              in real time. Click any item to remove it.
+              Record where money came from. Record where it went. TheTrack keeps
+              the totals up to date.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="w-full md:w-2/3">
+          <motion.div variants={REVEAL_VARIANT} className="w-full md:w-2/3">
             <InteractiveDemo />
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {!isLoggedIn && (
-        <section className="relative py-16 sm:py-24">
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={STAGGER_CONTAINER}
+          className="relative py-16 sm:py-24"
+        >
           <div className="mx-auto max-w-3xl text-center px-6">
-            <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-bold tracking-tight text-[#18181b] text-pretty leading-tight">
+            <motion.h2
+              variants={REVEAL_VARIANT}
+              className="text-2xl sm:text-4xl lg:text-[40px] font-bold tracking-tight text-[#18181b] text-pretty leading-tight"
+            >
               TheTrack is the app I wanted for myself.
-            </h2>
-            <p className="mt-4 text-base sm:text-lg text-[#52525b] leading-relaxed text-pretty">
+            </motion.h2>
+            <motion.p
+              variants={REVEAL_VARIANT}
+              className="mt-4 text-base sm:text-lg text-[#52525b] leading-relaxed text-pretty"
+            >
               Maybe it's what you're looking for too.
-            </p>
-            <div className="mt-8 flex items-center justify-center gap-4">
+            </motion.p>
+            <motion.div
+              variants={REVEAL_VARIANT}
+              className="mt-8 flex items-center justify-center gap-4"
+            >
               <Link
                 href="/users/sign_up"
                 className="bg-[#18181b] text-white px-8 py-3 text-sm font-semibold rounded-full"
               >
                 Start tracking
               </Link>
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
       )}
 
       <LandingFooter />

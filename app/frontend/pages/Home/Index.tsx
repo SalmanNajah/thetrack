@@ -42,32 +42,6 @@ const STAGGER_CONTAINER = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-function GridBackground() {
-  return (
-    <div className="absolute inset-0 -z-10 overflow-hidden bg-[#f4f1eb]">
-      <svg
-        className="absolute inset-0 h-full w-full stroke-[#e0dbd2]/50 mask-[radial-gradient(100%_100%_at_top_center,white,transparent)]"
-        aria-hidden="true"
-      >
-        <defs>
-          <pattern
-            id="grid-pattern"
-            width={48}
-            height={48}
-            patternUnits="userSpaceOnUse"
-            x="50%"
-            y={-1}
-          >
-            <path d="M.5 48V.5H48" fill="none" />
-            <circle cx={0.5} cy={0.5} r={1} fill="#e0dbd2" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid-pattern)" strokeWidth={0} />
-      </svg>
-    </div>
-  );
-}
-
 function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1d] border-b border-[#2a2a2e] shadow-lg">
@@ -119,7 +93,8 @@ function ProductShowcase() {
             <img 
               src={dashboardPng} 
               alt="TheTrack Dashboard" 
-              className="w-full h-auto block object-cover" 
+              className="w-full h-auto block object-cover select-none pointer-events-none" 
+              draggable={false}
             />
           </div>
         </div>
@@ -487,8 +462,6 @@ export default function Index() {
           content="Track where your money comes from, where it goes, and where it stays."
         />
       </Head>
-
-      <GridBackground />
       <LandingNav isLoggedIn={isLoggedIn} />
 
       <section className="relative min-h-screen flex flex-col justify-between pt-36 pb-0">

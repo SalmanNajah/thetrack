@@ -1,5 +1,6 @@
 import { useForm, Link, usePage, router } from "@inertiajs/react";
 import { FormEvent, useRef, useEffect, useState, KeyboardEvent, ClipboardEvent } from "react";
+import { AuthLayout } from "@/components/AuthLayout";
 
 type PageProps = {
   email: string;
@@ -114,121 +115,81 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50">
-      <div className="w-full max-w-md px-4">
-        <div className="mb-8 text-center">
-          <Link href="/" className="text-3xl font-bold tracking-tight text-zinc-900">
-            TheTrack
-          </Link>
-          <p className="mt-2 text-zinc-500">Verify your email</p>
+    <AuthLayout
+      title="Verify your email"
+      subtitle={`We sent a 6-digit code to ${maskEmail(email)}`}
+      flash={flash}
+    >
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4 flex justify-between gap-1">
+          {Array.from({ length: OTP_LENGTH }).map((_, i) => (
+            <input
+              key={i}
+              ref={(el) => { inputRefs.current[i] = el; }}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              autoComplete="one-time-code"
+              value={otp[i]}
+              onChange={(e) => handleChange(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              onPaste={i === 0 ? handlePaste : undefined}
+              className={`h-12 w-10 rounded-xl border text-center text-lg font-bold shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+                pageErrors?.otp
+                  ? "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500"
+                  : "border-tt-border-subtle text-tt-text bg-white focus:border-tt-text focus:ring-tt-text"
+              }`}
+              aria-label={`Digit ${i + 1}`}
+            />
+          ))}
         </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-zinc-200">
-          {flash?.notice && (
-            <div className="mb-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 ring-1 ring-emerald-200">
-              {flash.notice}
-            </div>
-          )}
-          {flash?.alert && (
-            <div className="mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
-              {flash.alert}
-            </div>
-          )}
+        {pageErrors?.otp && (
+          <p className="mb-4 text-center text-xs font-medium text-red-600">
+            {pageErrors.otp}
+          </p>
+        )}
 
-          <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100">
-              <svg
-                className="h-7 w-7 text-zinc-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
-                />
-              </svg>
-            </div>
-            <p className="text-sm text-zinc-600">
-              We sent a 6-digit code to
-            </p>
-            <p className="mt-1 text-sm font-semibold text-zinc-900">
-              {maskEmail(email)}
-            </p>
-          </div>
+        <button
+          type="submit"
+          disabled={processing || otp.join("").length < OTP_LENGTH}
+          className="mt-4 w-full rounded-xl bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
+        >
+          {processing ? "Verifying…" : "Verify email"}
+        </button>
+      </form>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-2 flex justify-center gap-2.5">
-              {Array.from({ length: OTP_LENGTH }).map((_, i) => (
-                <input
-                  key={i}
-                  ref={(el) => { inputRefs.current[i] = el; }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  autoComplete="one-time-code"
-                  value={otp[i]}
-                  onChange={(e) => handleChange(i, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(i, e)}
-                  onPaste={i === 0 ? handlePaste : undefined}
-                  className={`h-13 w-11 rounded-xl border text-center text-xl font-semibold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${
-                    pageErrors?.otp
-                      ? "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500"
-                      : "border-zinc-300 text-zinc-900 focus:border-zinc-900 focus:ring-zinc-900"
-                  }`}
-                  aria-label={`Digit ${i + 1}`}
-                />
-              ))}
-            </div>
-
-            {pageErrors?.otp && (
-              <p className="mb-4 text-center text-sm text-red-600">
-                {pageErrors.otp}
-              </p>
-            )}
-
+      <div className="mt-5 text-center">
+        <p className="text-xs text-tt-text-secondary font-medium">
+          Didn't receive the code?{" "}
+          {cooldown > 0 ? (
+            <span className="font-semibold text-tt-text-tertiary">
+              Resend in {cooldown}s
+            </span>
+          ) : (
             <button
-              type="submit"
-              disabled={processing || otp.join("").length < OTP_LENGTH}
-              className="mt-4 w-full rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              type="button"
+              onClick={handleResend}
+              disabled={processing}
+              className="font-bold text-tt-text hover:underline disabled:opacity-25 cursor-pointer"
             >
-              {processing ? "Verifying…" : "Verify email"}
+              Resend code
             </button>
-          </form>
+          )}
+        </p>
+      </div>
 
-          <div className="mt-5 text-center">
-            <p className="text-sm text-zinc-500">
-              Didn't receive the code?{" "}
-              {cooldown > 0 ? (
-                <span className="font-medium text-zinc-400">
-                  Resend in {cooldown}s
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={processing}
-                  className="font-semibold text-zinc-900 hover:text-zinc-700 disabled:opacity-50"
-                >
-                  Resend code
-                </button>
-              )}
-            </p>
-          </div>
-        </div>
-
-        <p className="mt-6 text-center text-sm text-zinc-500">
+      <div className="mt-8 text-center border-t border-tt-border-subtle pt-5">
+        <p className="text-xs text-tt-text-secondary font-medium">
           Wrong email?{" "}
           <Link
             href="/users/sign_up"
-            className="font-semibold text-zinc-900 hover:text-zinc-700"
+            className="font-bold text-tt-text hover:underline transition-all"
           >
             Go back
           </Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

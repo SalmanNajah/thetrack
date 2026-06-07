@@ -54,7 +54,7 @@ function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="bg-white text-[#1a1a1d] px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-all rounded-lg"
+              className="bg-white text-[#1a1a1d] px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-all rounded-full"
             >
               Dashboard
             </Link>
@@ -68,7 +68,7 @@ function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
               </Link>
               <Link
                 href="/users/sign_up"
-                className="bg-white text-[#1a1a1d] px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-all rounded-lg"
+                className="bg-white text-[#1a1a1d] px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-all rounded-full"
               >
                 Get started
               </Link>
@@ -551,7 +551,7 @@ export default function Index() {
               >
                 <Link
                   href="/dashboard"
-                  className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-lg hover:bg-[#222225] transition-colors"
+                  className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-full"
                 >
                   Go to dashboard →
                 </Link>
@@ -598,7 +598,7 @@ export default function Index() {
             <div className="mt-8 flex items-center justify-center gap-4">
               <Link
                 href="/users/sign_up"
-                className="bg-[#18181b] text-white px-8 py-3 text-sm font-semibold rounded-lg hover:bg-[#222225] transition-colors"
+                className="bg-[#18181b] text-white px-8 py-3 text-sm font-semibold rounded-full"
               >
                 Start tracking
               </Link>

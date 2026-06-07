@@ -150,4 +150,8 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+  ::selection {
+    background: var(--tt-text);
+    color: var(--tt-bg);
+  }
 }

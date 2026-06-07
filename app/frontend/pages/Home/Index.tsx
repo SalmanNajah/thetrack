@@ -5,13 +5,13 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import {
   ArrowLeftRight,
-  Paperclip,
   ArrowUp,
   Wallet,
   Banknote,
   CircleDollarSign,
 } from "lucide-react";
 import dashboardPng from "@/assets/images/dashboard.png";
+import { Odometer } from "@/components/Odometer";
 
 type DemoTransaction = {
   id: number;
@@ -102,49 +102,6 @@ function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
       </div>
     </nav>
-  );
-}
-
-function Digit({ char }: { char: string }) {
-  if (isNaN(Number(char))) {
-    return (
-      <span className="inline-flex h-[1em] items-center justify-center font-mono leading-none select-none whitespace-nowrap">
-        {char}
-      </span>
-    );
-  }
-  const num = Number(char);
-  return (
-    <span className="relative inline-flex h-[1em] w-[1ch] overflow-hidden font-mono leading-none select-none whitespace-nowrap align-bottom">
-      <motion.span
-        initial={{ y: 0 }}
-        animate={{ y: `-${num * 10}%` }}
-        transition={{ type: "spring", stiffness: 120, damping: 14 }}
-        className="absolute top-0 left-0 flex flex-col w-full h-[1000%]"
-      >
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-          <span
-            key={n}
-            className="h-[10%] w-full flex items-center justify-center font-mono leading-none select-none shrink-0"
-          >
-            {n}
-          </span>
-        ))}
-      </motion.span>
-    </span>
-  );
-}
-
-function Odometer({ value }: { value: number }) {
-  const str = Math.round(value).toLocaleString("en-IN");
-  const chars = str.split("");
-  return (
-    <span className="inline-flex overflow-hidden leading-none select-none h-[1em] items-center">
-      {chars.map((char, i) => {
-        const key = chars.length - 1 - i;
-        return <Digit key={key} char={char} />;
-      })}
-    </span>
   );
 }
 
@@ -360,11 +317,11 @@ function InteractiveDemo() {
   return (
     <div className="w-full text-left">
       <div>
-        <p className="text-[11px] font-medium tracking-wider uppercase text-[#a1a1aa]">
+        <p className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary">
           Total Balance
         </p>
-        <p className="mt-1 text-[40px] font-semibold tracking-tighter text-[#18181b] leading-none font-mono flex items-center">
-          <span className="mr-0.5">₹</span>
+        <p className="mt-1 text-[36px] font-bold text-tt-text flex items-center">
+          <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
           <Odometer value={totalBalance} />
         </p>
       </div>
@@ -372,62 +329,62 @@ function InteractiveDemo() {
       <div className="mt-6 grid grid-cols-3 gap-3">
         <button
           onClick={() => setActiveBucket("Income")}
-          className={`border text-left rounded-lg p-3 transition-all cursor-pointer ${
+          className={`border text-left rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
             activeBucket === "Income"
-              ? "border-[#5b5bd6] ring-1 ring-[#5b5bd6] bg-[#f7f7fc]"
-              : "border-[#e0dbd2] bg-[#fcfcfb] hover:bg-[#f4f1eb]/50"
+              ? "border-tt-text bg-white shadow-xs"
+              : "border-tt-border-subtle bg-transparent hover:bg-white/40"
           }`}
         >
-          <p className="text-[10px] text-[#a1a1aa] uppercase tracking-wide flex items-center gap-1.5">
-            <Wallet className={`size-3 ${activeBucket === "Income" ? "text-[#5b5bd6]" : "text-[#a1a1aa]"}`} />
+          <p className="text-[10px] text-tt-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
+            <Wallet className="size-3 text-tt-text-tertiary" />
             Income
           </p>
-          <p className="mt-1.5 text-[15px] font-bold text-[#18181b] tracking-tight font-mono flex items-center">
-            <span className="mr-0.5">₹</span>
+          <p className="mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
+            <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
             <Odometer value={incomeBalance} />
           </p>
         </button>
         <button
           onClick={() => setActiveBucket("Daily")}
-          className={`border text-left rounded-lg p-3 transition-all cursor-pointer ${
+          className={`border text-left rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
             activeBucket === "Daily"
-              ? "border-[#5b5bd6] ring-1 ring-[#5b5bd6] bg-[#f7f7fc]"
-              : "border-[#e0dbd2] bg-[#fcfcfb] hover:bg-[#f4f1eb]/50"
+              ? "border-tt-text bg-white shadow-xs"
+              : "border-tt-border-subtle bg-transparent hover:bg-white/40"
           }`}
         >
-          <p className="text-[10px] text-[#a1a1aa] uppercase tracking-wide flex items-center gap-1.5">
-            <Banknote className={`size-3 ${activeBucket === "Daily" ? "text-[#5b5bd6]" : "text-[#a1a1aa]"}`} />
+          <p className="text-[10px] text-tt-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
+            <Banknote className="size-3 text-tt-text-tertiary" />
             Daily
           </p>
-          <p className="mt-1.5 text-[15px] font-bold text-[#18181b] tracking-tight font-mono flex items-center">
-            <span className="mr-0.5">₹</span>
+          <p className="mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
+            <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
             <Odometer value={dailyBalance} />
           </p>
         </button>
         <button
           onClick={() => setActiveBucket("Savings")}
-          className={`border text-left rounded-lg p-3 transition-all cursor-pointer ${
+          className={`border text-left rounded-xl p-3.5 transition-all duration-200 cursor-pointer ${
             activeBucket === "Savings"
-              ? "border-[#5b5bd6] ring-1 ring-[#5b5bd6] bg-[#f7f7fc]"
-              : "border-[#e0dbd2] bg-[#fcfcfb] hover:bg-[#f4f1eb]/50"
+              ? "border-tt-text bg-white shadow-xs"
+              : "border-tt-border-subtle bg-transparent hover:bg-white/40"
           }`}
         >
-          <p className="text-[10px] text-[#a1a1aa] uppercase tracking-wide flex items-center gap-1.5">
-            <CircleDollarSign className={`size-3 ${activeBucket === "Savings" ? "text-[#5b5bd6]" : "text-[#a1a1aa]"}`} />
+          <p className="text-[10px] text-tt-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
+            <CircleDollarSign className="size-3 text-tt-text-tertiary" />
             Savings
           </p>
-          <p className="mt-1.5 text-[15px] font-bold text-[#18181b] tracking-tight font-mono flex items-center">
-            <span className="mr-0.5">₹</span>
+          <p className="mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
+            <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
             <Odometer value={savingsBalance} />
           </p>
         </button>
       </div>
 
-      <div className="mt-6">
-        <p className="text-[10px] font-medium tracking-wider uppercase text-[#a1a1aa] mb-2">
+      <div className="mt-8">
+        <p className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-3">
           Recent Transactions
         </p>
-        <div className="max-h-[200px] overflow-y-auto pr-1 scrollbar-none">
+        <div className="max-h-[220px] overflow-y-auto pr-1 scrollbar-none">
           <AnimatePresence initial={false}>
             {transactions.map((txn) => (
               <motion.div
@@ -437,27 +394,24 @@ function InteractiveDemo() {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
                 onClick={() => handleRemove(txn)}
-                className="group flex items-center justify-between py-3 border-b border-[#f0eeec] last:border-0 cursor-pointer hover:bg-[#fcfcfb] px-2 -mx-2 rounded-lg"
+                className="group flex items-center justify-between py-2 cursor-pointer hover:bg-tt-bg/30 px-2 -mx-2 rounded-lg transition-colors"
               >
                 <div className="flex items-center gap-1.5">
-                  {txn.isTransfer && <ArrowLeftRight className="size-3 text-[#71717a] shrink-0" />}
-                  <span className="text-[13px] text-[#18181b] group-hover:text-red-500 transition-colors">
+                  {txn.isTransfer && <ArrowLeftRight className="size-3 text-tt-text-secondary shrink-0" />}
+                  <span className="text-[13px] text-tt-text group-hover:text-red-500/80 transition-colors">
                     {txn.description}
-                  </span>
-                  <span className="text-[9px] text-[#a1a1aa] uppercase bg-[#f4f1eb] px-1 py-0.5 rounded font-mono">
-                    {txn.bucket}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-[13px] font-medium tracking-tight font-mono ${
-                      txn.amount > 0 ? "text-[#059669]" : "text-[#92400e]"
+                    className={`text-[13px] font-medium tracking-tight ${
+                      txn.amount > 0 ? "text-tt-positive/90" : "text-tt-text/80"
                     }`}
                   >
                     {txn.amount > 0 ? "+" : ""}
                     {txn.amount.toLocaleString("en-IN")}
                   </span>
-                  <span className="text-[10px] text-transparent group-hover:text-red-400 transition-colors font-semibold font-sans">
+                  <span className="text-[10px] text-transparent group-hover:text-tt-text-tertiary transition-colors font-semibold font-sans">
                     ✕
                   </span>
                 </div>
@@ -468,26 +422,20 @@ function InteractiveDemo() {
       </div>
 
       <div className="mt-6">
-        <div className="flex items-center gap-2 rounded-xl border border-[#e0dbd2] bg-[#fcfcfb] px-3 py-3">
-          <button
-            type="button"
-            className="shrink-0 text-[#71717a] p-1.5 rounded-lg border border-[#e0dbd2] bg-white transition-colors"
-          >
-            <Paperclip className="size-4" />
-          </button>
+        <div className="flex items-center gap-3 rounded-xl border border-tt-border-subtle bg-white pl-4 pr-1.5 py-1.5 focus-within:border-tt-text/40 transition-all duration-200">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
               if (e.key === "Enter") handleSubmit();
             }}
-            placeholder={`type transaction for ${activeBucket} bucket...`}
-            className="flex-1 min-w-0 border-0 bg-transparent text-[14px] text-[#18181b] placeholder-[#a1a1aa] focus:outline-none focus:ring-0 p-0 font-sans"
+            placeholder={`Add to ${activeBucket}...`}
+            className="flex-1 min-w-0 border-0 bg-transparent text-[13px] text-tt-text placeholder-tt-text-tertiary/60 focus:outline-none focus:ring-0 p-0 font-sans"
           />
           <button
             onClick={handleSubmit}
             disabled={!input.trim()}
-            className="shrink-0 rounded-full bg-[#18181b] p-2 text-white hover:opacity-90 transition-all disabled:opacity-20 disabled:scale-95 cursor-pointer flex items-center justify-center"
+            className="shrink-0 size-8 rounded-lg bg-tt-text text-white hover:bg-tt-text/90 transition-all disabled:opacity-25 flex items-center justify-center cursor-pointer"
           >
             <ArrowUp className="size-4" />
           </button>
@@ -611,14 +559,14 @@ export default function Index() {
       <section
         ref={demoRef}
         id="demo"
-        className="relative py-24 border-t border-b border-dashed border-[#e0dbd2] bg-white/40"
+        className="relative py-24 border-t border-b border-tt-border bg-[#fdfdfc]/50"
       >
         <div className="relative mx-auto max-w-5xl px-6 flex flex-col md:flex-row gap-12 items-start justify-between">
           <div className="w-full md:w-1/3 flex flex-col justify-center min-h-[160px]">
-            <h2 className="text-[28px] sm:text-[34px] font-bold tracking-tight text-[#18181b] text-left">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-tt-text text-left">
               See it in action.
             </h2>
-            <p className="mt-4 text-[14px] text-[#71717a] leading-relaxed text-left font-sans">
+            <p className="mt-4 text-[13px] text-tt-text-secondary leading-relaxed text-left font-sans">
               Input a transaction, add bucket stashes, and watch balances adjust in real time. Click any item to remove it.
             </p>
           </div>

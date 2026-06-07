@@ -2,6 +2,7 @@ import { Link, usePage, router } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { toast } from "sonner";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
+import { Odometer } from "@/components/Odometer";
 import { BottomNavbar } from "@/components/BottomNavbar";
 import { TransferDialog } from "@/components/TransferDialog";
 import { ImportPreviewModal } from "@/components/ImportPreviewModal";
@@ -112,7 +113,7 @@ function BalanceDisplay({
       title="Tap to edit balance"
     >
       <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-        {formatCurrency(animatedBalance.toFixed(2), currencySymbol)}
+        <Odometer value={formatCurrency(animatedBalance.toFixed(2), currencySymbol)} />
       </span>
       <PenLine className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
     </button>
@@ -249,7 +250,7 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
       <button
         onClick={handleSubmit}
         disabled={submitting || !input.trim()}
-        className="shrink-0 rounded-full bg-tt-text p-2.5 text-tt-bg transition-all duration-150 disabled:opacity-20 disabled:scale-90 cursor-pointer"
+        className="shrink-0 size-8 rounded-lg bg-tt-text text-tt-bg hover:opacity-90 transition-all disabled:opacity-25 flex items-center justify-center cursor-pointer"
       >
         <ArrowUp className="size-4" />
       </button>

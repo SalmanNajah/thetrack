@@ -73,7 +73,7 @@ export type AdminUserSummary = {
 export type AdminStats = {
   total_users: number
   new_users_7d: number
-  active_users_7d: number
+  active_users_24h: number
   active_users_rate: number
   onboarded_users: number
   onboarded_rate: number

@@ -48,8 +48,8 @@ export default function Index() {
               <p className="text-[11px] text-[#bbb] mt-0.5">+{stats.new_users_7d} registered this week</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Active Users (WAU)</p>
-              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.active_users_7d}</p>
+              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Active Users (DAU)</p>
+              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.active_users_24h}</p>
               <p className="text-[11px] text-[#bbb] mt-0.5">{stats.active_users_rate}% active rate</p>
             </div>
             <div className="p-4">

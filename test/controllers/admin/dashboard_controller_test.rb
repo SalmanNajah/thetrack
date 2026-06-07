@@ -76,8 +76,8 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil stats
     assert_equal User.active.count, stats["total_users"]
     assert_equal User.active.where("created_at >= ?", 7.days.ago).count, stats["new_users_7d"]
-    assert_equal 2, stats["active_users_7d"]
-    assert_equal ((2.0 / User.active.count) * 100).round(1), stats["active_users_rate"]
+    assert_equal 1, stats["active_users_24h"]
+    assert_equal ((1.0 / User.active.count) * 100).round(1), stats["active_users_rate"]
     assert_equal User.active.where(onboarded: true).count, stats["onboarded_users"]
     assert_equal ((User.active.where(onboarded: true).count.to_f / User.active.count) * 100).round(1), stats["onboarded_rate"]
     assert_equal Bucket.count, stats["total_buckets"]

@@ -4,8 +4,8 @@ class Admin::DashboardController < Admin::BaseController
   def index
     total_users = User.active.count
     new_users_7d = User.active.where("created_at >= ?", 7.days.ago).count
-    active_users_7d = Transaction.where("created_at >= ?", 7.days.ago).distinct.count(:user_id)
-    active_users_rate = total_users.zero? ? 0.0 : ((active_users_7d.to_f / total_users) * 100).round(1)
+    active_users_24h = Transaction.where("created_at >= ?", 24.hours.ago).distinct.count(:user_id)
+    active_users_rate = total_users.zero? ? 0.0 : ((active_users_24h.to_f / total_users) * 100).round(1)
 
     onboarded_users = User.active.where(onboarded: true).count
     onboarded_rate = total_users.zero? ? 0.0 : ((onboarded_users.to_f / total_users) * 100).round(1)
@@ -35,7 +35,7 @@ class Admin::DashboardController < Admin::BaseController
       stats: {
         total_users: total_users,
         new_users_7d: new_users_7d,
-        active_users_7d: active_users_7d,
+        active_users_24h: active_users_24h,
         active_users_rate: active_users_rate,
         onboarded_users: onboarded_users,
         onboarded_rate: onboarded_rate,

@@ -6,7 +6,6 @@ import { BottomNavbar } from "@/components/BottomNavbar";
 import { TransferDialog } from "@/components/TransferDialog";
 import { ImportPreviewModal } from "@/components/ImportPreviewModal";
 import {
-  formatTxnAmount,
   formatCurrency,
   groupByDate,
   getBucketLabel,
@@ -26,6 +25,8 @@ import {
   FileText,
   FileSpreadsheet,
   RotateCcw,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 type PageProps = {
@@ -41,10 +42,12 @@ function BalanceDisplay({
   balance,
   currencySymbol,
   bucketId,
+  hideBalances,
 }: {
   balance: string;
   currencySymbol: string;
   bucketId: number;
+  hideBalances: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -60,6 +63,7 @@ function BalanceDisplay({
   }, [editing]);
 
   function startEdit() {
+    if (hideBalances) return;
     setEditValue(parseFloat(balance).toString());
     setEditing(true);
   }
@@ -108,13 +112,19 @@ function BalanceDisplay({
   return (
     <button
       onClick={startEdit}
-      className="group relative inline-block text-left cursor-pointer"
-      title="Tap to edit balance"
+      disabled={hideBalances}
+      className={classNames(
+        "group relative inline-block text-left focus:outline-none",
+        hideBalances ? "cursor-default select-none" : "cursor-pointer"
+      )}
+      title={hideBalances ? undefined : "Tap to edit balance"}
     >
       <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-        <Odometer value={formatCurrency(numericBalance.toFixed(2), currencySymbol)} />
+        <Odometer value={formatCurrency(numericBalance.toFixed(2), currencySymbol)} masked={hideBalances} />
       </span>
-      <PenLine className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
+      {!hideBalances && (
+        <PenLine className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
+      )}
     </button>
   );
 }
@@ -122,9 +132,11 @@ function BalanceDisplay({
 function TransactionRow({
   txn,
   currencySymbol,
+  hideBalances,
 }: {
   txn: TransactionRecord;
   currencySymbol: string;
+  hideBalances: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const amount = parseFloat(txn.amount);
@@ -165,17 +177,18 @@ function TransactionRow({
         <div className="ml-4 shrink-0 flex flex-col items-end">
           <span
             className={classNames(
-              "text-sm font-medium tracking-tight",
+              "text-sm font-medium tracking-tight flex items-center gap-0.5",
               txn.reversed ? "line-through text-tt-text-tertiary opacity-60" : (isPositive ? "text-tt-positive" : "text-tt-negative"),
             )}
           >
-            {formatTxnAmount(txn.amount)}
+            <span>{isPositive ? "+" : "-"}</span>
+            <Odometer value={formatCurrency(txn.amount, currencySymbol)} masked={hideBalances} />
           </span>
           {txn.closing_balance && (
-            <span className="mt-0.5 text-[11px] text-tt-text-tertiary">
+            <span className="mt-0.5 text-[11px] text-tt-text-tertiary flex items-center gap-0.5">
               Closing:{" "}
               <span className={txn.reversed ? "text-tt-text-tertiary opacity-60" : "text-tt-text-secondary"}>
-                {formatCurrency(txn.closing_balance, currencySymbol)}
+                <Odometer value={formatCurrency(txn.closing_balance, currencySymbol)} masked={hideBalances} />
               </span>
             </span>
           )}
@@ -224,10 +237,12 @@ function DateGroup({
   date,
   transactions,
   currencySymbol,
+  hideBalances,
 }: {
   date: string;
   transactions: TransactionRecord[];
   currencySymbol: string;
+  hideBalances: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const total = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
@@ -244,6 +259,7 @@ function DateGroup({
             key={txn.id}
             txn={txn}
             currencySymbol={currencySymbol}
+            hideBalances={hideBalances}
           />
         ))}
 
@@ -253,12 +269,12 @@ function DateGroup({
       >
         <span>Total</span>
         <span className="flex items-center gap-1 tracking-tight">
-          {total >= 0 ? "+" : ""}
-          {total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+          <span>{total >= 0 ? "+" : "-"}</span>
+          <Odometer value={formatCurrency(total.toFixed(2), currencySymbol)} masked={hideBalances} />
           {collapsed ? (
-            <ChevronDown className="size-3" />
+            <ChevronDown className="size-3 ml-0.5" />
           ) : (
-            <ChevronUp className="size-3" />
+            <ChevronUp className="size-3 ml-0.5" />
           )}
         </span>
       </button>
@@ -331,6 +347,19 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
 export default function Show() {
   const { flash, bucket, transactions, other_buckets, currency_symbol } =
     usePage<PageProps>().props;
+
+  const [hideBalances, setHideBalances] = useState(false);
+
+  useEffect(() => {
+    const val = localStorage.getItem("thetrack_hide_balances") === "true";
+    setHideBalances(val);
+  }, []);
+
+  const toggleBalances = () => {
+    const newVal = !hideBalances;
+    setHideBalances(newVal);
+    localStorage.setItem("thetrack_hide_balances", String(newVal));
+  };
 
   useEffect(() => {
     if (flash?.notice) {
@@ -478,14 +507,29 @@ export default function Show() {
       <main className="flex-1">
         <div className="mx-auto max-w-xl px-6 pb-6">
           <section className="pt-4 pb-10">
-            <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
-              {getBucketLabel(bucket.slug)}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
+                {getBucketLabel(bucket.slug)}
+              </p>
+              <button
+                type="button"
+                onClick={toggleBalances}
+                className="text-tt-text-tertiary hover:text-tt-text-secondary transition-colors focus:outline-none cursor-pointer"
+                aria-label={hideBalances ? "Show balances" : "Hide balances"}
+              >
+                {hideBalances ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
+            </div>
             <div className="mt-2">
               <BalanceDisplay
                 balance={bucket.balance}
                 currencySymbol={currency_symbol}
                 bucketId={bucket.id}
+                hideBalances={hideBalances}
               />
             </div>
           </section>
@@ -498,6 +542,7 @@ export default function Show() {
                   date={date}
                   transactions={txns}
                   currencySymbol={currency_symbol}
+                  hideBalances={hideBalances}
                 />
               ))}
             </section>

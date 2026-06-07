@@ -24,7 +24,7 @@ function Digit({ char }: { char: string }) {
       <motion.span
         initial={false}
         animate={{ y: `-${num * 10}%` }}
-        transition={{ type: "spring", stiffness: 100, damping: 20, mass: 0.8 }}
+        transition={{ type: "spring", stiffness: 90, damping: 20, mass: 0.4 }}
         className="absolute inset-x-0 top-0 flex flex-col h-[1000%]"
       >
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
@@ -42,13 +42,19 @@ function Digit({ char }: { char: string }) {
 
 interface OdometerProps {
   value: string | number;
+  masked?: boolean;
 }
 
-export function Odometer({ value }: OdometerProps) {
-  const str =
+export function Odometer({ value, masked }: OdometerProps) {
+  let str =
     typeof value === "number"
       ? Math.round(value).toLocaleString("en-IN")
       : value.toString();
+
+  if (masked) {
+    str = str.replace(/\d/g, "X");
+  }
+
   const chars = str.split("");
 
   return (

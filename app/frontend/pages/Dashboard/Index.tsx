@@ -12,7 +12,7 @@ import type {
   CurrencyOption,
   AuthUser,
 } from "@/types";
-import { ArrowLeftRight, ChevronRight, Plus } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, Plus, Eye, EyeOff } from "lucide-react";
 import { TransferDialog } from "@/components/TransferDialog";
 
 type PageProps = {
@@ -192,9 +192,11 @@ function OnboardingCard({
 function BucketCards({
   buckets,
   currencySymbol,
+  hideBalances,
 }: {
   buckets: Bucket[];
   currencySymbol: string;
+  hideBalances: boolean;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState("");
@@ -303,6 +305,7 @@ function BucketCards({
             key={bucket.id}
             bucket={bucket}
             currencySymbol={currencySymbol}
+            hideBalances={hideBalances}
           />
         ))}
       </div>
@@ -310,7 +313,15 @@ function BucketCards({
   );
 }
 
-function BucketCard({ bucket, currencySymbol }: { bucket: Bucket; currencySymbol: string }) {
+function BucketCard({
+  bucket,
+  currencySymbol,
+  hideBalances,
+}: {
+  bucket: Bucket;
+  currencySymbol: string;
+  hideBalances: boolean;
+}) {
   const numericBalance = parseFloat(bucket.balance) || 0;
 
   return (
@@ -322,7 +333,7 @@ function BucketCard({ bucket, currencySymbol }: { bucket: Bucket; currencySymbol
         {bucket.name}
       </p>
       <p className="mt-2.5 text-[17px] font-semibold tracking-tight text-tt-text">
-        <Odometer value={formatCurrency(numericBalance.toFixed(2), currencySymbol)} />
+        <Odometer value={formatCurrency(numericBalance.toFixed(2), currencySymbol)} masked={hideBalances} />
       </p>
     </Link>
   );
@@ -340,6 +351,19 @@ export default function Index() {
     onboarded,
     currencies,
   } = usePage<PageProps>().props;
+
+  const [hideBalances, setHideBalances] = useState(false);
+
+  useEffect(() => {
+    const val = localStorage.getItem("thetrack_hide_balances") === "true";
+    setHideBalances(val);
+  }, []);
+
+  const toggleBalances = () => {
+    const newVal = !hideBalances;
+    setHideBalances(newVal);
+    localStorage.setItem("thetrack_hide_balances", String(newVal));
+  };
 
   useEffect(() => {
     if (flash?.notice) {
@@ -394,15 +418,29 @@ export default function Index() {
         ) : (
           <>
             <section className="pt-4 pb-10">
-              <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
-                Total Balance
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
+                  Total Balance
+                </p>
+                <button
+                  type="button"
+                  onClick={toggleBalances}
+                  className="text-tt-text-tertiary hover:text-tt-text-secondary transition-colors focus:outline-none cursor-pointer"
+                  aria-label={hideBalances ? "Show balances" : "Hide balances"}
+                >
+                  {hideBalances ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
               <p className="mt-2 text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-                <Odometer value={formatCurrency(numericBalance.toFixed(2), currency_symbol)} />
+                <Odometer value={formatCurrency(numericBalance.toFixed(2), currency_symbol)} masked={hideBalances} />
               </p>
             </section>
 
-            <BucketCards buckets={buckets} currencySymbol={currency_symbol} />
+            <BucketCards buckets={buckets} currencySymbol={currency_symbol} hideBalances={hideBalances} />
 
             {recent_transactions.length === 0 && (
               <div className="mt-8 text-center text-sm text-tt-text-tertiary">
@@ -445,23 +483,20 @@ export default function Index() {
                       <div className="ml-4 shrink-0 flex flex-col items-end">
                         <span
                           className={classNames(
-                            "text-sm font-medium tracking-tight",
+                            "text-sm font-medium tracking-tight flex items-center gap-0.5",
                             isPositive
                               ? "text-tt-positive"
                               : "text-tt-negative",
                           )}
                         >
-                          {isPositive ? "+" : "-"}
-                          {formatCurrency(txn.amount, currency_symbol)}
+                          <span>{isPositive ? "+" : "-"}</span>
+                          <Odometer value={formatCurrency(txn.amount, currency_symbol)} masked={hideBalances} />
                         </span>
                         {txn.closing_balance && (
-                          <span className="mt-0.5 text-[11px] text-tt-text-tertiary">
+                          <span className="mt-0.5 text-[11px] text-tt-text-tertiary flex items-center gap-0.5">
                             Closing balance:{" "}
                             <span className="text-tt-text-secondary">
-                              {formatCurrency(
-                                txn.closing_balance,
-                                currency_symbol,
-                              )}
+                              <Odometer value={formatCurrency(txn.closing_balance, currency_symbol)} masked={hideBalances} />
                             </span>
                           </span>
                         )}

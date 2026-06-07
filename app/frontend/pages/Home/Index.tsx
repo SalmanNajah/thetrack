@@ -9,6 +9,8 @@ import {
   Wallet,
   Banknote,
   TrendingUp,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import dashboardPng from "@/assets/images/dashboard.png";
 import { Odometer } from "@/components/Odometer";
@@ -116,6 +118,8 @@ function InteractiveDemo() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const nextId = useRef(SEED_TRANSACTIONS.length + 1);
+  const [hideBalances, setHideBalances] = useState(false);
+  const toggleBalances = () => setHideBalances(!hideBalances);
 
   const totalBalance = incomeBalance + dailyBalance + investmentsBalance;
 
@@ -316,12 +320,26 @@ function InteractiveDemo() {
   return (
     <div className="w-full text-left">
       <div>
-        <p className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary">
-          Total Balance
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary">
+            Total Balance
+          </p>
+          <button
+            type="button"
+            onClick={toggleBalances}
+            className="text-tt-text-tertiary hover:text-tt-text-secondary transition-colors focus:outline-none cursor-pointer"
+            aria-label={hideBalances ? "Show balances" : "Hide balances"}
+          >
+            {hideBalances ? (
+              <EyeOff className="size-3.5" />
+            ) : (
+              <Eye className="size-3.5" />
+            )}
+          </button>
+        </div>
         <p className="mt-1 text-[36px] font-bold text-tt-text flex items-center">
           <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
-          <Odometer value={totalBalance} />
+          <Odometer value={totalBalance} masked={hideBalances} />
         </p>
       </div>
 
@@ -340,7 +358,7 @@ function InteractiveDemo() {
           </p>
           <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
             <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
-            <Odometer value={incomeBalance} />
+            <Odometer value={incomeBalance} masked={hideBalances} />
           </p>
         </button>
         <button
@@ -357,7 +375,7 @@ function InteractiveDemo() {
           </p>
           <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
             <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
-            <Odometer value={dailyBalance} />
+            <Odometer value={dailyBalance} masked={hideBalances} />
           </p>
         </button>
         <button
@@ -374,7 +392,7 @@ function InteractiveDemo() {
           </p>
           <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
             <span className="mr-0.5 text-tt-text-secondary font-normal">₹</span>
-            <Odometer value={investmentsBalance} />
+            <Odometer value={investmentsBalance} masked={hideBalances} />
           </p>
         </button>
       </div>
@@ -411,8 +429,17 @@ function InteractiveDemo() {
                       txn.amount > 0 ? "text-tt-positive/90" : "text-tt-text/80"
                     }`}
                   >
-                    {txn.amount > 0 ? "+" : ""}
-                    {txn.amount.toLocaleString("en-IN")}
+                    {hideBalances ? (
+                      <>
+                        {txn.amount > 0 ? "+" : "-"}
+                        {Math.abs(txn.amount).toLocaleString("en-IN").replace(/\d/g, "X")}
+                      </>
+                    ) : (
+                      <>
+                        {txn.amount > 0 ? "+" : ""}
+                        {txn.amount.toLocaleString("en-IN")}
+                      </>
+                    )}
                   </span>
                 </div>
               </motion.div>

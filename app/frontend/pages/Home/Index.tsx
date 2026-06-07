@@ -154,11 +154,11 @@ function ProductShowcase() {
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
-      className="relative w-full border-t border-tt-border bg-white/40 pt-16 mt-20"
+      className="relative w-full pt-6 mt-12 border-t border-dashed border-tt-border"
     >
       <div className="max-w-5xl mx-auto px-6 sm:px-8 relative">
-        <div className="relative rounded-2xl border border-tt-border bg-[#fcfcfb] p-2">
-          <div className="relative rounded-md border border-tt-border bg-white overflow-hidden">
+        <div className="relative rounded-2xl border border-tt-border bg-white p-2">
+          <div className="relative rounded-md border border-tt-border bg-tt-bg overflow-hidden">
             <img 
               src={dashboardPng} 
               alt="TheTrack Dashboard" 
@@ -543,7 +543,7 @@ export default function Index() {
       <GridBackground />
       <LandingNav isLoggedIn={isLoggedIn} />
 
-      <section className="relative pt-40 pb-20">
+      <section className="relative min-h-screen flex flex-col justify-between pt-36 pb-0">
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-5xl pointer-events-none">
           <div className="absolute left-3 sm:left-4 top-0 bottom-0 border-l border-tt-border border-dashed" />
           <div className="absolute right-3 sm:right-4 top-0 bottom-0 border-r border-tt-border border-dashed" />
@@ -604,7 +604,7 @@ export default function Index() {
         </div>
 
         <ProductShowcase />
-        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-linear-to-t from-white to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-linear-to-t from-[#f4f1eb] to-transparent pointer-events-none" />
 
       </section>
 

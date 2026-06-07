@@ -466,7 +466,7 @@ export default function Index() {
       </Head>
       <LandingNav isLoggedIn={isLoggedIn} />
 
-      <section className="relative flex flex-col pt-36 sm:min-h-screen sm:justify-between pb-0">
+      <section className="relative flex flex-col pt-28 sm:pt-36 pb-0">
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-5xl pointer-events-none">
           <div className="absolute left-3 sm:left-4 top-0 bottom-0 border-l border-tt-border border-dashed" />
           <div className="absolute right-3 sm:right-4 top-0 bottom-0 border-r border-tt-border border-dashed" />
@@ -493,36 +493,19 @@ export default function Index() {
               Track where your money comes from, where it goes, and where it stays.
             </motion.p>
 
-            <motion.div
-              variants={REVEAL_VARIANT}
-              className="mt-8 flex items-center justify-center gap-4"
-            >
-              {isLoggedIn ? (
+            {isLoggedIn && (
+              <motion.div
+                variants={REVEAL_VARIANT}
+                className="mt-8 flex items-center justify-center gap-4"
+              >
                 <Link
                   href="/dashboard"
                   className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-lg hover:bg-[#222225] transition-colors"
                 >
                   Go to dashboard →
                 </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/users/sign_up"
-                    className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-lg hover:bg-[#222225] transition-colors"
-                  >
-                    Start tracking
-                  </Link>
-                  <button
-                    onClick={() =>
-                      demoRef.current?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="border border-[#e0dbd2] bg-white text-[#18181b] px-6 py-2.5 text-sm font-semibold rounded-lg hover:bg-[#fcfcfb] transition-colors cursor-pointer"
-                  >
-                    Try demo
-                  </button>
-                </>
-              )}
-            </motion.div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 
@@ -551,6 +534,28 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {!isLoggedIn && (
+        <section className="relative py-16 sm:py-24">
+          <div className="mx-auto max-w-3xl text-center px-6">
+            <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-bold tracking-tight text-[#18181b] text-pretty leading-tight">
+              TheTrack is the app I wanted for myself.
+            </h2>
+            <p className="mt-4 text-base sm:text-lg text-[#52525b] leading-relaxed text-pretty">
+              Maybe it's what you're looking for too.
+            </p>
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <Link
+                href="/users/sign_up"
+                className="bg-[#18181b] text-white px-8 py-3 text-sm font-semibold rounded-lg hover:bg-[#222225] transition-colors"
+              >
+                Start tracking
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       <LandingFooter />
       <Toaster position="top-right" />
     </div>

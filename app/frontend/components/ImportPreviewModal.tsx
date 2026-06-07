@@ -141,6 +141,10 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
     setRows(prev => prev.map(r => r.index === idx ? { ...r, description } : r))
   }
 
+  function updateAmount(idx: number, amount: string) {
+    setRows(prev => prev.map(r => r.index === idx ? { ...r, amount } : r))
+  }
+
   function handleImport() {
     const selected = rows.filter(r => r.selected)
     if (!selected.length) return
@@ -153,9 +157,21 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
     })
   }
 
+  const cleanAmt = useCallback((str: string) => {
+    if (!str) return 0
+    const cleaned = str.replace(/[, ]/g, '')
+    return parseFloat(cleaned)
+  }, [])
+
   const selected = rows.filter(r => r.selected)
-  const credits = selected.filter(r => +r.amount > 0).reduce((s, r) => s + +r.amount, 0)
-  const debits  = selected.filter(r => +r.amount < 0).reduce((s, r) => s + Math.abs(+r.amount), 0)
+  const credits = selected.reduce((s, r) => {
+    const val = cleanAmt(r.amount)
+    return (!isNaN(val) && val > 0) ? s + val : s
+  }, 0)
+  const debits  = selected.reduce((s, r) => {
+    const val = cleanAmt(r.amount)
+    return (!isNaN(val) && val < 0) ? s + Math.abs(val) : s
+  }, 0)
   const netImpact = credits - debits
   const projectedBalance = currentBalance + netImpact
   const wouldGoNegative = projectedBalance < -0.001
@@ -280,7 +296,9 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
 
             <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
               {rows.map(row => {
-                const amt = +row.amount
+                const amt = cleanAmt(row.amount) || 0
+                const isPos = amt > 0
+                const isNeg = amt < 0
                 return (
                   <div
                     key={row.index}
@@ -298,11 +316,15 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
                       />
                       <p className="text-[11px] text-tt-text-tertiary mt-0.5 font-mono tabular-nums">{row.date}</p>
                     </div>
-                    <span className={`shrink-0 text-[13px] font-mono font-medium tabular-nums ${
-                      amt > 0 ? 'text-tt-positive' : 'text-tt-negative'
-                    }`}>
-                      {amt > 0 ? '+' : ''}{amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
+                    <input
+                      type="text"
+                      value={row.amount}
+                      onChange={e => updateAmount(row.index, e.target.value)}
+                      placeholder="0.00"
+                      className={`w-28 bg-transparent p-0 text-right text-[13px] font-mono font-medium tabular-nums border-0 focus:outline-none focus:ring-0 ${
+                        isPos ? 'text-tt-positive' : isNeg ? 'text-tt-negative' : 'text-tt-text'
+                      }`}
+                    />
                   </div>
                 )
               })}

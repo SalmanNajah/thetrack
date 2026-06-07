@@ -23,8 +23,6 @@ class User < ApplicationRecord
   OTP_RESEND_COOLDOWN = 60.seconds
   OTP_MAX_ATTEMPTS = 5
 
-  # Generate a new OTP, store its SHA-256 HMAC and timestamp.
-  # Returns the plaintext code (to be sent via email).
   def generate_otp!
     code = SecureRandom.random_number(10**OTP_LENGTH).to_s.rjust(OTP_LENGTH, "0")
     update!(
@@ -35,15 +33,12 @@ class User < ApplicationRecord
     code
   end
 
-  # Perform verification with row-level locks and safe HMAC checks
   def verify_otp!(code)
-    # Serialize requests on this user row to prevent concurrency races
     with_lock do
       return :max_attempts_reached if otp_attempts >= OTP_MAX_ATTEMPTS
       return :expired if otp_expired?
       return :invalid if otp_code_digest.blank?
 
-      # Increment attempts count immediately on read
       increment!(:otp_attempts)
 
       if ActiveSupport::SecurityUtils.secure_compare(otp_code_digest, hash_otp(code))
@@ -62,10 +57,6 @@ class User < ApplicationRecord
 
   def otp_expired?
     otp_sent_at.blank? || otp_sent_at < OTP_EXPIRY.ago
-  end
-
-  def otp_max_attempts_reached?
-    otp_attempts >= OTP_MAX_ATTEMPTS
   end
 
   def can_resend_otp?

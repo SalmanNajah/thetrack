@@ -405,10 +405,12 @@ function InteractiveDemo() {
               if (e.key === "Enter") handleSubmit();
             }}
             placeholder={`Add to ${activeBucket}...`}
+            autoFocus
             className="flex-1 min-w-0 border-0 bg-transparent text-[13px] text-tt-text placeholder-tt-text-tertiary/60 focus:outline-none focus:ring-0 p-0 font-sans"
           />
           <button
             onClick={handleSubmit}
+            onMouseDown={(e) => e.preventDefault()}
             disabled={!input.trim()}
             className="shrink-0 size-8 rounded-lg bg-tt-text text-white hover:bg-tt-text/90 transition-all disabled:opacity-25 flex items-center justify-center cursor-pointer"
           >

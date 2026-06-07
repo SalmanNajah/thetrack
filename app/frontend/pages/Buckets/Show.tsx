@@ -244,11 +244,13 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="-200 chai or 'move 50 to daily'"
-        disabled={submitting}
+        readOnly={submitting}
+        autoFocus
         className="flex-1 min-w-0 border-0 bg-transparent text-[15px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0 p-0"
       />
       <button
         onClick={handleSubmit}
+        onMouseDown={(e) => e.preventDefault()}
         disabled={submitting || !input.trim()}
         className="shrink-0 size-8 rounded-lg bg-tt-text text-tt-bg hover:opacity-90 transition-all disabled:opacity-25 flex items-center justify-center cursor-pointer"
       >

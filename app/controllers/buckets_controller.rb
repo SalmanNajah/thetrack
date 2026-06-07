@@ -32,7 +32,7 @@ class BucketsController < ApplicationController
 
   def show
     bucket = current_user.buckets.find_by!(slug: params[:slug])
-    transactions = bucket.transactions.with_closing_balance.recent.limit(50)
+    transactions = bucket.transactions.with_closing_balance.includes(:reversed_by).recent.limit(50)
     other_buckets = current_user.buckets.where.not(id: bucket.id).ordered
 
     render inertia: "Buckets/Show", props: {

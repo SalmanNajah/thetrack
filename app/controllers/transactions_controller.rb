@@ -11,6 +11,7 @@ class TransactionsController < ApplicationController
     ).call
 
     if result.success?
+      flash[:recent_transaction_id] = result.record&.id
       redirect_back fallback_location: bucket_path(bucket.slug), notice: result.message
     else
       redirect_back fallback_location: bucket_path(bucket.slug), alert: result.message
@@ -32,6 +33,7 @@ class TransactionsController < ApplicationController
     ).call
 
     if result.success?
+      flash[:recent_transaction_id] = result.record&.id
       redirect_back fallback_location: bucket_path(from_bucket.slug), notice: result.message
     else
       redirect_back fallback_location: bucket_path(from_bucket.slug), alert: result.message
@@ -53,11 +55,27 @@ class TransactionsController < ApplicationController
     if result.message.nil?
       redirect_back fallback_location: bucket_path(bucket.slug)
     elsif result.success?
+      flash[:recent_transaction_id] = result.record&.id
       redirect_back fallback_location: bucket_path(bucket.slug), notice: result.message
     else
       redirect_back fallback_location: bucket_path(bucket.slug), alert: result.message
     end
   end
+
+  def reverse
+    transaction = current_user.transactions.find(params[:id])
+
+    result = Transactions::Reverse.new(
+      transaction: transaction
+    ).call
+
+    if result.success?
+      redirect_back fallback_location: bucket_path(transaction.bucket.slug), notice: result.message
+    else
+      redirect_back fallback_location: bucket_path(transaction.bucket.slug), alert: result.message
+    end
+  end
+
 
   private
 

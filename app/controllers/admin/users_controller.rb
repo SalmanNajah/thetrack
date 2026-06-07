@@ -27,7 +27,7 @@ class Admin::UsersController < Admin::BaseController
       user: UserSerializer.new(user, admin: true, current_user: current_user).as_json,
       buckets: BucketSerializer.collection(user.buckets.ordered, admin: true, current_user: current_user),
       recent_transactions: TransactionSerializer.collection(
-        user.transactions.includes(:bucket).recent.limit(50),
+        user.transactions.includes(:bucket, :reversed_by).recent.limit(50),
         admin: true,
         current_user: current_user
       ),

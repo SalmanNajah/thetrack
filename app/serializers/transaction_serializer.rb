@@ -16,6 +16,10 @@ class TransactionSerializer
       amount: should_redact ? "•••" : @txn.amount.to_s,
       occurred_at: @txn.occurred_at.iso8601,
       transfer_group_id: @txn.transfer_group_id,
+      kind: @txn.kind,
+      reversed: @txn.reversed_by.present?,
+      reversal_of_id: @txn.reversal_of_id,
+      reversed_by_id: @txn.reversed_by&.id,
       bucket: { id: @txn.bucket.id, name: @txn.bucket.name, slug: @txn.bucket.slug }
     }
 

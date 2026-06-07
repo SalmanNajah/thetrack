@@ -1,6 +1,7 @@
 export type FlashData = {
-  notice?: string
-  alert?: string
+  notice?: string | null
+  alert?: string | null
+  recent_transaction_id?: number | null
 }
 
 export type AuthUser = {
@@ -27,6 +28,10 @@ export type TransactionRecord = {
   bucket: { id: number; name: string; slug: string }
   paired_bucket?: { id: number; name: string; slug: string } | null
   closing_balance?: string
+  kind?: string
+  reversed?: boolean
+  reversal_of_id?: number | null
+  reversed_by_id?: number | null
 }
 
 export type Currency = "INR" | "USD" | "EUR" | "GBP" | "JPY" | "AED" | "CAD" | "AUD" | "SGD" | "CHF" | "CNY" | "KRW" | "SAR" | "BRL" | "ZAR"
@@ -84,6 +89,10 @@ export type AdminTransaction = {
   bucket_name: string
   bucket_id: number
   created_at: string
+  kind?: string
+  reversed?: boolean
+  reversal_of_id?: number | null
+  reversed_by_id?: number | null
 }
 
 export type AdminBucket = {

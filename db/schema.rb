@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_04_111558) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_104107) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -47,6 +47,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_111558) do
     t.string "description", default: ""
     t.string "kind", default: "manual", null: false
     t.datetime "occurred_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.bigint "reversal_of_id"
     t.uuid "transfer_group_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -54,6 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_111558) do
     t.index ["bucket_id", "occurred_at"], name: "index_transactions_on_bucket_id_and_occurred_at"
     t.index ["bucket_id"], name: "index_transactions_on_bucket_id"
     t.index ["kind"], name: "index_transactions_on_kind"
+    t.index ["reversal_of_id"], name: "index_transactions_on_reversal_of_id"
     t.index ["transfer_group_id"], name: "idx_transactions_transfer_partial", where: "(transfer_group_id IS NOT NULL)"
     t.index ["user_id", "occurred_at", "created_at"], name: "idx_transactions_user_recent", order: { occurred_at: :desc, created_at: :desc }
     t.index ["user_id"], name: "index_transactions_on_user_id"
@@ -96,5 +98,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_111558) do
   add_foreign_key "audit_logs", "users", column: "target_user_id", on_delete: :nullify
   add_foreign_key "buckets", "users"
   add_foreign_key "transactions", "buckets"
+  add_foreign_key "transactions", "transactions", column: "reversal_of_id"
   add_foreign_key "transactions", "users"
 end

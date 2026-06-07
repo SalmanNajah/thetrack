@@ -28,6 +28,9 @@ Rails.application.routes.draw do
   resources :buckets, only: [ :index, :show, :create, :destroy ], param: :slug
 
   resources :transactions, only: [ :create ] do
+    member do
+      post :reverse
+    end
     collection do
       post :transfer
       post :adjust_balance
@@ -64,7 +67,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root to: "dashboard#index"
     resources :users, only: [ :index, :show, :update, :destroy ]
-    resources :transactions, only: [ :index, :destroy ]
+    resources :transactions, only: [ :index ]
     resources :audit_logs, only: [ :index ]
   end
 

@@ -27,7 +27,6 @@ function formatDate(iso: string): string {
 export default function Index() {
   const { flash, transactions, pagination, search: initialSearch } = usePage<PageProps>().props
   const [searchInput, setSearchInput] = useState(initialSearch)
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
 
   useEffect(() => {
     if (flash?.notice) toast.success(flash.notice, { id: 'flash-notice', action: undefined })
@@ -45,12 +44,6 @@ export default function Index() {
     }, 300)
     return () => clearTimeout(timer)
   }, [searchInput])
-
-  function handleDelete(txnId: number) {
-    router.delete(`/admin/transactions/${txnId}`, {
-      onFinish: () => setDeleteConfirm(null),
-    })
-  }
 
   return (
     <AdminLayout>
@@ -85,7 +78,6 @@ export default function Index() {
                   <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden md:table-cell">Bucket</th>
                   <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa]">Amount</th>
                   <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden lg:table-cell">Date</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] w-20">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -101,12 +93,17 @@ export default function Index() {
                     >
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-1.5">
-                          {isTransfer && !isRedacted(txn.description || '') && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
-                          {isRedacted(txn.description || '') ? (
+                          {isTransfer && !isRedacted(txn.description || "") && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
+                          {isRedacted(txn.description || "") ? (
                             <RedactBar width="w-24" height="h-3" />
                           ) : (
-                            <span className="text-[13px] text-[#333] truncate max-w-[200px]">
-                              {txn.description}
+                            <span className={`text-[13px] text-[#333] truncate max-w-[200px] ${txn.reversed ? "line-through text-[#999]" : ""}`}>
+                              {txn.description || (isTransfer ? "Transfer" : "Transaction")}
+                            </span>
+                          )}
+                          {txn.reversed && (
+                            <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-600 border border-amber-500/20 shrink-0">
+                              Reversed
                             </span>
                           )}
                         </div>
@@ -124,48 +121,23 @@ export default function Index() {
                         {txn.bucket_name}
                       </td>
                       <td className={`px-4 py-2.5 text-right text-[13px] font-mono ${
-                        isAmtRedacted ? 'text-[#bbb]' : isPositive ? 'text-emerald-600' : 'text-[#c05050]'
+                        isAmtRedacted ? "text-[#bbb]" : txn.reversed ? "line-through text-[#999]" : isPositive ? "text-emerald-600" : "text-[#c05050]"
                       }`}>
                         {isAmtRedacted ? (
                           <RedactBar width="w-12" height="h-3" />
                         ) : (
-                          `${isPositive ? '+' : ''}${amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+                          `${isPositive ? "+" : ""}${amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right text-[12px] text-[#aaa] hidden lg:table-cell">
                         {formatDate(txn.occurred_at)}
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        {deleteConfirm === txn.id ? (
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => handleDelete(txn.id)}
-                              className="px-2 py-1 rounded text-[11px] font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirm(null)}
-                              className="px-2 py-1 rounded text-[11px] text-[#999] hover:text-[#555] transition-colors"
-                            >
-                              No
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setDeleteConfirm(txn.id)}
-                            className="px-2 py-1 rounded text-[11px] text-[#ccc] hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
-                          >
-                            Delete
-                          </button>
-                        )}
                       </td>
                     </tr>
                   )
                 })}
                 {transactions.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-[13px] text-[#bbb]">
+                    <td colSpan={5} className="px-4 py-12 text-center text-[13px] text-[#bbb]">
                       {initialSearch ? `No transactions for "${initialSearch}"` : 'No transactions yet'}
                     </td>
                   </tr>

@@ -112,7 +112,7 @@ module Imports
         end
 
         best_match = amount_matches.max_by { |m| score_candidate(m, temp_line) }
-        
+
         sign = best_match[1]
         num_str = best_match[2].gsub(",", "")
         amount = BigDecimal(num_str) rescue nil

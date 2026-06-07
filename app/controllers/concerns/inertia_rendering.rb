@@ -8,7 +8,8 @@ module InertiaRendering
       {
         flash: {
           notice: flash.discard(:notice),
-          alert: flash.discard(:alert)
+          alert: flash.discard(:alert),
+          recent_transaction_id: flash.discard(:recent_transaction_id)
         }
       }
     end

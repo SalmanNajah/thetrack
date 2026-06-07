@@ -268,24 +268,29 @@ export default function Show() {
                     >
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-1.5">
-                          {isTransfer && !isRedacted(txn.description || '') && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
-                          {isRedacted(txn.description || '') ? (
+                          {isTransfer && !isRedacted(txn.description || "") && <ArrowLeftRight className="size-3 text-[#ccc] shrink-0" />}
+                          {isRedacted(txn.description || "") ? (
                             <RedactBar width="w-24" height="h-3" />
                           ) : (
-                            <span className="text-[13px] text-[#333] truncate">
-                              {txn.description || (isTransfer ? 'Transfer' : 'Transaction')}
+                            <span className={`text-[13px] text-[#333] truncate ${txn.reversed ? "line-through text-[#999]" : ""}`}>
+                              {txn.description || (isTransfer ? "Transfer" : "Transaction")}
+                            </span>
+                          )}
+                          {txn.reversed && (
+                            <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-600 border border-amber-500/20 shrink-0">
+                              Reversed
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-4 py-2.5 text-[12px] text-[#999] hidden sm:table-cell">{txn.bucket_name}</td>
                       <td className={`px-4 py-2.5 text-right text-[13px] font-mono ${
-                        isAmtRedacted ? 'text-[#bbb]' : isPositive ? 'text-emerald-600' : 'text-[#c05050]'
+                        isAmtRedacted ? "text-[#bbb]" : txn.reversed ? "line-through text-[#999]" : isPositive ? "text-emerald-600" : "text-[#c05050]"
                       }`}>
                         {isAmtRedacted ? (
                           <RedactBar width="w-12" height="h-3" />
                         ) : (
-                          `${isPositive ? '+' : ''}${amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
+                          `${isPositive ? "+" : ""}${amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right text-[12px] text-[#aaa] hidden sm:table-cell">

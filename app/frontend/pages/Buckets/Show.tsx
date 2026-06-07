@@ -12,7 +12,7 @@ import {
   getBucketLabel,
 } from "@/lib/format";
 import { classNames } from "@/lib/utils";
-import type { Bucket, TransactionRecord, AuthUser } from "@/types";
+import type { Bucket, TransactionRecord, AuthUser, FlashData } from "@/types";
 import {
   ArrowLeft,
   PenLine,
@@ -25,11 +25,12 @@ import {
   Paperclip,
   FileText,
   FileSpreadsheet,
+  RotateCcw,
 } from "lucide-react";
 
 type PageProps = {
   auth: { user: AuthUser };
-  flash: { notice: string | null; alert: string | null };
+  flash: FlashData;
   bucket: Bucket;
   transactions: TransactionRecord[];
   other_buckets: Bucket[];
@@ -118,6 +119,107 @@ function BalanceDisplay({
   );
 }
 
+function TransactionRow({
+  txn,
+  currencySymbol,
+}: {
+  txn: TransactionRecord;
+  currencySymbol: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const amount = parseFloat(txn.amount);
+  const isPositive = amount > 0;
+  const isTransfer = !!txn.transfer_group_id;
+
+  return (
+    <div className="border-b border-tt-border-subtle last:border-0">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded(!expanded)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setExpanded(!expanded);
+          }
+        }}
+        className={classNames(
+          "flex items-center justify-between py-3 cursor-pointer select-none rounded-lg px-2 -mx-2 transition-colors duration-150 outline-none",
+          expanded ? "bg-tt-surface/50" : "hover:bg-tt-surface/20"
+        )}
+      >
+        <div className="min-w-0 flex-1 flex items-center gap-1.5">
+          {isTransfer && (
+            <ArrowLeftRight className="size-3 shrink-0 text-tt-text-tertiary" />
+          )}
+          <p
+            className={classNames(
+              "truncate text-sm",
+              txn.reversed ? "line-through text-tt-text-tertiary opacity-60" : "text-tt-text"
+            )}
+          >
+            {txn.description || (isTransfer ? "Transfer" : "Transaction")}
+          </p>
+
+        </div>
+        <div className="ml-4 shrink-0 flex flex-col items-end">
+          <span
+            className={classNames(
+              "text-sm font-medium tracking-tight",
+              txn.reversed ? "line-through text-tt-text-tertiary opacity-60" : (isPositive ? "text-tt-positive" : "text-tt-negative"),
+            )}
+          >
+            {formatTxnAmount(txn.amount)}
+          </span>
+          {txn.closing_balance && (
+            <span className="mt-0.5 text-[11px] text-tt-text-tertiary">
+              Closing:{" "}
+              <span className={txn.reversed ? "text-tt-text-tertiary opacity-60" : "text-tt-text-secondary"}>
+                {formatCurrency(txn.closing_balance, currencySymbol)}
+              </span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div
+        className={classNames(
+          "overflow-hidden transition-all duration-200 ease-in-out",
+          expanded ? "max-h-24 opacity-100 mb-2 mt-1" : "max-h-0 opacity-0 pointer-events-none"
+        )}
+      >
+        <div className="bg-tt-surface/30 border border-tt-border-subtle/50 rounded-xl p-3 flex items-center justify-between gap-4">
+          <div className="text-[12px] text-tt-text-secondary">
+            <div>
+              <span className="text-tt-text-tertiary">Type: </span>
+              <span className="capitalize">{txn.kind || (isTransfer ? "transfer" : "entry")}</span>
+            </div>
+
+            {txn.reversed && (
+              <div className="mt-0.5 text-tt-text-tertiary italic">
+                This transaction has been reversed
+              </div>
+            )}
+          </div>
+
+          {!txn.reversed && txn.kind !== "reversal" && !txn.reversal_of_id && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.post(`/transactions/${txn.id}/reverse`, {}, { preserveScroll: true });
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg text-tt-negative bg-tt-negative/10 border border-tt-negative/20 hover:bg-tt-negative/20 active:scale-[0.97] transition-all cursor-pointer"
+            >
+              <RotateCcw className="size-3.5" />
+              Undo Transaction
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DateGroup({
   date,
   transactions,
@@ -137,45 +239,13 @@ function DateGroup({
       </p>
 
       {!collapsed &&
-        transactions.map((txn) => {
-          const amount = parseFloat(txn.amount);
-          const isPositive = amount > 0;
-          const isTransfer = !!txn.transfer_group_id;
-
-          return (
-            <div
-              key={txn.id}
-              className="flex items-center justify-between py-3 border-b border-tt-border-subtle"
-            >
-              <div className="min-w-0 flex-1 flex items-center gap-1.5">
-                {isTransfer && (
-                  <ArrowLeftRight className="size-3 shrink-0 text-tt-text-tertiary" />
-                )}
-                <p className="truncate text-sm text-tt-text">
-                  {txn.description || (isTransfer ? "Transfer" : "Transaction")}
-                </p>
-              </div>
-              <div className="ml-4 shrink-0 flex flex-col items-end">
-                <span
-                  className={classNames(
-                    "text-sm font-medium tracking-tight",
-                    isPositive ? "text-tt-positive" : "text-tt-negative",
-                  )}
-                >
-                  {formatTxnAmount(txn.amount)}
-                </span>
-                {txn.closing_balance && (
-                  <span className="mt-0.5 text-[11px] text-tt-text-tertiary">
-                    Closing balance:{" "}
-                    <span className="text-tt-text-secondary">
-                      {formatCurrency(txn.closing_balance, currencySymbol)}
-                    </span>
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        transactions.map((txn) => (
+          <TransactionRow
+            key={txn.id}
+            txn={txn}
+            currencySymbol={currencySymbol}
+          />
+        ))}
 
       <button
         onClick={() => setCollapsed(!collapsed)}
@@ -264,26 +334,37 @@ export default function Show() {
 
   useEffect(() => {
     if (flash?.notice) {
-      const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/);
-      if (transferMatch) {
-        const targetName = transferMatch[1];
-        const targetBucket = other_buckets.find((b) => b.name === targetName);
+      const txnId = flash.recent_transaction_id;
+      if (txnId) {
         toast.success(flash.notice, {
           id: "flash-notice",
-          action: targetBucket ? {
-            label: `Go to ${targetBucket.name}`,
-            onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
-          } : undefined,
+          action: {
+            label: "Undo",
+            onClick: () => router.post(`/transactions/${txnId}/reverse`, {}, { preserveScroll: true }),
+          },
         });
       } else {
-        toast.success(flash.notice, {
-          id: "flash-notice",
-          action: undefined,
-        });
+        const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/);
+        if (transferMatch) {
+          const targetName = transferMatch[1];
+          const targetBucket = other_buckets.find((b) => b.name === targetName);
+          toast.success(flash.notice, {
+            id: "flash-notice",
+            action: targetBucket ? {
+              label: `Go to ${targetBucket.name}`,
+              onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
+            } : undefined,
+          });
+        } else {
+          toast.success(flash.notice, {
+            id: "flash-notice",
+            action: undefined,
+          });
+        }
       }
     }
     if (flash?.alert) toast.error(flash.alert, { id: "flash-alert" });
-  }, [flash?.notice, flash?.alert]);
+  }, [flash?.notice, flash?.alert, flash?.recent_transaction_id]);
 
   const dateGroups = groupByDate(transactions);
 

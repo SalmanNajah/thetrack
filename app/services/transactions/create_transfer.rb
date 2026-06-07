@@ -30,7 +30,7 @@ module Transactions
             throw :abort_with_result, ServiceResult.new(success: false, message: "Not enough in #{@from_bucket.name}. You only have #{@from_bucket.balance} available.")
           end
 
-          @from_bucket.transactions.create!(
+          txn = @from_bucket.transactions.create!(
             user: @user,
             amount: -@amount,
             description: "Transfer to #{@to_bucket.name}",
@@ -49,7 +49,7 @@ module Transactions
           )
 
           @user.update!(onboarded: true) unless @user.onboarded?
-          ServiceResult.new(success: true, message: "Transferred #{@amount} to #{@to_bucket.name}")
+          ServiceResult.new(success: true, message: "Transferred #{@amount} to #{@to_bucket.name}", record: txn)
         end
       end
 

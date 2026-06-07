@@ -85,11 +85,11 @@ function ProductShowcase() {
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
-      className="relative w-full pt-6 mt-12 border-t border-dashed border-tt-border"
+      className="relative w-full pt-4 sm:pt-6 mt-6 sm:mt-12 border-t border-dashed border-tt-border"
     >
       <div className="max-w-5xl mx-auto px-6 sm:px-8 relative">
-        <div className="relative rounded-2xl border border-tt-border bg-white p-2">
-          <div className="relative rounded-md border border-tt-border bg-tt-bg overflow-hidden">
+        <div className="relative rounded-md md:rounded-2xl border border-tt-border bg-white p-1 md:p-2">
+          <div className="relative rounded-sm md:rounded-md border border-tt-border bg-tt-bg overflow-hidden">
             <img 
               src={dashboardPng} 
               alt="TheTrack Dashboard" 
@@ -466,7 +466,7 @@ export default function Index() {
       </Head>
       <LandingNav isLoggedIn={isLoggedIn} />
 
-      <section className="relative min-h-screen flex flex-col justify-between pt-36 pb-0">
+      <section className="relative flex flex-col pt-36 sm:min-h-screen sm:justify-between pb-0">
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-5xl pointer-events-none">
           <div className="absolute left-3 sm:left-4 top-0 bottom-0 border-l border-tt-border border-dashed" />
           <div className="absolute right-3 sm:right-4 top-0 bottom-0 border-r border-tt-border border-dashed" />
@@ -534,7 +534,7 @@ export default function Index() {
       <section
         ref={demoRef}
         id="demo"
-        className="relative py-24 border-t border-b border-tt-border bg-[#fdfdfc]/50"
+        className="relative py-6 sm:py-24 border-t border-b border-tt-border bg-[#fdfdfc]/50"
       >
         <div className="relative mx-auto max-w-5xl px-6 flex flex-col md:flex-row gap-12 items-start justify-between">
           <div className="w-full md:w-1/3 flex flex-col justify-center min-h-[160px]">

@@ -73,9 +73,16 @@ export type AdminUserSummary = {
 export type AdminStats = {
   total_users: number
   new_users_7d: number
-  total_transactions: number
-  total_volume: string
   active_users_7d: number
+  active_users_rate: number
+  onboarded_users: number
+  onboarded_rate: number
+  total_buckets: number
+  avg_buckets: number
+  total_transactions: number
+  avg_transactions: number
+  new_transactions_7d: number
+  transactions_growth_rate: number
 }
 
 export type AdminTransaction = {

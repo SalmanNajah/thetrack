@@ -2,22 +2,13 @@ import { usePage, Link } from '@inertiajs/react'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { AdminLayout } from '../AdminLayout'
-import { formatCurrency } from '@/lib/format'
 import type { AdminStats, AdminUserSummary, AuthUser } from '@/types'
-
-type DbInfo = {
-  total_users: number
-  total_buckets: number
-  total_transactions: number
-  db_size: string
-}
 
 type PageProps = {
   auth: { user: AuthUser }
   flash: { notice: string | null; alert: string | null }
   stats: AdminStats
   recent_users: AdminUserSummary[]
-  db_info: DbInfo
 }
 
 function formatRelativeDate(iso: string): string {
@@ -36,7 +27,7 @@ function formatRelativeDate(iso: string): string {
 }
 
 export default function Index() {
-  const { flash, stats, recent_users, db_info } = usePage<PageProps>().props
+  const { flash, stats, recent_users } = usePage<PageProps>().props
 
   useEffect(() => {
     if (flash?.notice) toast.success(flash.notice, { id: 'flash-notice', action: undefined })
@@ -52,29 +43,36 @@ export default function Index() {
         <div className="mt-6 rounded-md border border-[#e0dbd2] bg-white">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-[#f0ede7]">
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Users</p>
+              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Total Users</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.total_users}</p>
-              <p className="text-[11px] text-[#bbb] mt-0.5">+{stats.new_users_7d} this week</p>
+              <p className="text-[11px] text-[#bbb] mt-0.5">+{stats.new_users_7d} registered this week</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Buckets</p>
-              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{db_info.total_buckets}</p>
-            </div>
-            <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Transactions</p>
-              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.total_transactions.toLocaleString()}</p>
-            </div>
-            <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Volume</p>
-              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{formatCurrency(stats.total_volume, '₹')}</p>
-            </div>
-            <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Active (7d)</p>
+              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Active Users (WAU)</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.active_users_7d}</p>
+              <p className="text-[11px] text-[#bbb] mt-0.5">{stats.active_users_rate}% active rate</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">DB Size</p>
-              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight font-mono">{db_info.db_size}</p>
+              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Onboarded Users</p>
+              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.onboarded_users}</p>
+              <p className="text-[11px] text-[#bbb] mt-0.5">{stats.onboarded_rate}% completion rate</p>
+            </div>
+            <div className="p-4">
+              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Total Buckets</p>
+              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.total_buckets}</p>
+              <p className="text-[11px] text-[#bbb] mt-0.5">Avg. {stats.avg_buckets} per user</p>
+            </div>
+            <div className="p-4">
+              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Total Transactions</p>
+              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.total_transactions.toLocaleString()}</p>
+              <p className="text-[11px] text-[#bbb] mt-0.5">Avg. {stats.avg_transactions} per user</p>
+            </div>
+            <div className="p-4">
+              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">New Transactions (7d)</p>
+              <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.new_transactions_7d.toLocaleString()}</p>
+              <p className="text-[11px] text-[#bbb] mt-0.5">
+                {stats.transactions_growth_rate >= 0 ? '+' : ''}{stats.transactions_growth_rate}% week-over-week
+              </p>
             </div>
           </div>
         </div>

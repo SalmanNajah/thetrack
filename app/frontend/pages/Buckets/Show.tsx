@@ -297,6 +297,7 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
       },
       {
         preserveScroll: true,
+        preserveState: true,
         onFinish: () => {
           setSubmitting(false);
           setInput("");
@@ -326,7 +327,6 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="-200 chai or 'move 50 to daily'"
-        readOnly={submitting}
         autoFocus
         spellCheck={false}
         autoComplete="off"
@@ -350,7 +350,7 @@ export default function Show() {
 
   const [hideBalances, setHideBalances] = useState(false);
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const val = localStorage.getItem("thetrack_hide_balances") === "true";
@@ -363,7 +363,9 @@ export default function Show() {
       const vv = window.visualViewport!;
       const isKeyboard = window.innerHeight - vv.height > 150;
       setIsKeyboardActive(isKeyboard);
-      setViewportHeight(vv.height);
+      if (containerRef.current) {
+        containerRef.current.style.height = `${vv.height}px`;
+      }
     };
     window.visualViewport.addEventListener("resize", handleResize);
     handleResize();
@@ -435,8 +437,8 @@ export default function Show() {
 
   return (
     <div
-      className="flex flex-col bg-tt-bg overflow-hidden w-full"
-      style={viewportHeight ? { height: `${viewportHeight}px` } : { height: "100dvh" }}
+      ref={containerRef}
+      className="flex flex-col bg-tt-bg overflow-hidden w-full h-dvh"
     >
       <header className="shrink-0 bg-tt-bg/80 backdrop-blur-md border-b border-tt-border-subtle">
         <div className="mx-auto flex max-w-xl items-center justify-between px-6 py-4">

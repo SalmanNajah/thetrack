@@ -326,7 +326,7 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="-200 chai or 'move 50 to daily'"
+        placeholder="-200 chai or +50 to daily"
         autoFocus
         spellCheck={false}
         autoComplete="off"

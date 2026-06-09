@@ -9,7 +9,7 @@ class User < ApplicationRecord
   scope :admins, -> { where(admin: true) }
   scope :active, -> { where.not("email LIKE ?", "%@deleted.thetrack.app") }
 
-  attribute :unsigned_adds, :boolean, default: false
+  attribute :default_unsigned_to_positive, :boolean, default: true
 
   def self.admin_emails
     ENV["ADMIN_EMAILS"].to_s.split(",").map(&:strip).map(&:downcase)

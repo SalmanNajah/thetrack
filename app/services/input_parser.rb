@@ -45,7 +45,7 @@ class InputParser
     elsif sign == "-"
       resolved_sign = "-"
     else
-      resolved_sign = @user.unsigned_adds? ? "+" : "-"
+      resolved_sign = @user.default_unsigned_to_positive? ? "+" : "-"
     end
 
     description = description.strip

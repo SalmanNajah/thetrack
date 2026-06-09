@@ -1,5 +1,5 @@
 import { usePage, Link, Head } from "@inertiajs/react";
-import { useState, useRef, type KeyboardEvent } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -448,20 +448,25 @@ function InteractiveDemo() {
         </div>
       </div>
 
-      <div className="mt-6">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}
+        className="mt-6"
+      >
         <div className="flex items-center gap-3 rounded-xl border border-tt-border-subtle bg-white pl-4 pr-1.5 py-1.5 focus-within:border-tt-text/40 transition-all duration-200">
           <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === "Enter") handleSubmit();
-            }}
+            spellCheck={false}
+            autoComplete="off"
             placeholder={`Add to ${activeBucket}...`}
             className="flex-1 min-w-0 border-0 bg-transparent text-[13px] text-tt-text placeholder-tt-text-tertiary/60 focus:outline-none focus:ring-0 p-0 font-sans"
           />
           <button
-            onClick={handleSubmit}
+            type="submit"
             onMouseDown={(e) => e.preventDefault()}
             disabled={!input.trim()}
             className="shrink-0 size-8 rounded-lg bg-tt-text text-white hover:bg-tt-text/90 transition-all disabled:opacity-25 flex items-center justify-center cursor-pointer"
@@ -469,7 +474,7 @@ function InteractiveDemo() {
             <ArrowUp className="size-4" />
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

@@ -132,6 +132,8 @@ function OnboardingCard({
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
                 autoFocus
+                spellCheck={false}
+                autoComplete="off"
                 className="flex-1 border-0 bg-transparent p-0 text-xl font-mono tracking-tight text-tt-text placeholder:text-tt-text-tertiary/30 focus:outline-none focus:ring-0"
               />
             </div>

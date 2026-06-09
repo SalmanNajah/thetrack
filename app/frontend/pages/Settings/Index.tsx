@@ -20,7 +20,7 @@ type PageProps = {
     email: string
     name: string | null
     currency: string
-    unsigned_adds: boolean
+    default_unsigned_to_positive: boolean
     provider: string | null
     created_at: string
   }
@@ -125,14 +125,14 @@ function CurrencySection({ currentCurrency, currencies }: {
   )
 }
 
-function SignConventionSection({ unsignedAdds }: { unsignedAdds: boolean }) {
+function SignConventionSection({ defaultUnsignedToPositive }: { defaultUnsignedToPositive: boolean }) {
   const [saving, setSaving] = useState(false)
 
   function handleToggle(value: boolean) {
     setSaving(true)
-    router.post('/settings/update_sign_convention', { unsigned_adds: value }, {
+    router.post('/settings/update_sign_convention', { default_unsigned_to_positive: value }, {
       preserveScroll: true,
-      onFinish: () => setSaving(false),
+      onFinish: () => { setSaving(false) },
     })
   }
 
@@ -148,7 +148,7 @@ function SignConventionSection({ unsignedAdds }: { unsignedAdds: boolean }) {
               onClick={() => handleToggle(false)}
               disabled={saving}
               className={`px-2.5 py-1 text-[12px] font-medium rounded-l-md border transition-all ${
-                !unsignedAdds
+                !defaultUnsignedToPositive
                   ? 'bg-tt-text text-tt-bg border-tt-text'
                   : 'bg-tt-bg text-tt-text-secondary border-tt-border hover:text-tt-text'
               }`}
@@ -159,7 +159,7 @@ function SignConventionSection({ unsignedAdds }: { unsignedAdds: boolean }) {
               onClick={() => handleToggle(true)}
               disabled={saving}
               className={`px-2.5 py-1 text-[12px] font-medium rounded-r-md border transition-all ${
-                unsignedAdds
+                defaultUnsignedToPositive
                   ? 'bg-tt-text text-tt-bg border-tt-text'
                   : 'bg-tt-bg text-tt-text-secondary border-tt-border hover:text-tt-text'
               }`}
@@ -169,7 +169,7 @@ function SignConventionSection({ unsignedAdds }: { unsignedAdds: boolean }) {
           </div>
         </Field>
         <p className="text-[11px] text-tt-text-tertiary mt-1.5 leading-relaxed px-0">
-          {unsignedAdds
+          {defaultUnsignedToPositive
             ? <>Typing <span className="font-mono text-tt-text-secondary">50 chai</span> will <span className="text-tt-positive font-medium">add</span> ₹50. Use <span className="font-mono text-tt-text-secondary">-50</span> to subtract.</>
             : <>Typing <span className="font-mono text-tt-text-secondary">50 chai</span> will <span className="text-tt-negative font-medium">subtract</span> ₹50. Use <span className="font-mono text-tt-text-secondary">+50</span> to add.</>
           }
@@ -473,7 +473,7 @@ export default function Index() {
         <div className="mt-8 space-y-8">
           <ProfileSection user={user} />
           <CurrencySection currentCurrency={user.currency} currencies={currencies} />
-          <SignConventionSection unsignedAdds={user.unsigned_adds} />
+          <SignConventionSection defaultUnsignedToPositive={user.default_unsigned_to_positive} />
           <SecuritySection user={user} />
           <DataSection />
           <DangerZone stats={stats} />

@@ -7,7 +7,7 @@ class SettingsController < ApplicationController
         email: current_user.email,
         name: current_user.name,
         currency: current_user.currency,
-        unsigned_adds: current_user.unsigned_adds,
+        default_unsigned_to_positive: current_user.default_unsigned_to_positive,
         provider: current_user.provider,
         created_at: current_user.created_at.strftime("%B %d, %Y")
       },
@@ -36,8 +36,8 @@ class SettingsController < ApplicationController
   end
 
   def update_sign_convention
-    value = ActiveModel::Type::Boolean.new.cast(params[:unsigned_adds])
-    if current_user.update(unsigned_adds: value)
+    value = ActiveModel::Type::Boolean.new.cast(params[:default_unsigned_to_positive])
+    if current_user.update(default_unsigned_to_positive: value)
       label = value ? "adds money" : "subtracts money"
       redirect_to settings_path, notice: "Unsigned amounts now #{label}"
     else

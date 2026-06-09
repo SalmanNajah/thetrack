@@ -131,6 +131,8 @@
   }
   html {
     @apply font-sans;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
   }
   /* Hide number input spinners */
   input[type="number"]::-webkit-inner-spin-button,

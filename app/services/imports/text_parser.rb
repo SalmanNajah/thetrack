@@ -34,7 +34,7 @@ module Imports
 
       current_date = nil
       current_sign = nil
-      is_unsigned_adds = user.respond_to?(:unsigned_adds?) ? user.unsigned_adds? : false
+      is_unsigned_adds = user.respond_to?(:default_unsigned_to_positive?) ? user.default_unsigned_to_positive? : true
 
       lines.each_with_index do |line, idx|
         line_str = line.strip

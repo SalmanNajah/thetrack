@@ -305,15 +305,14 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
     );
   }
 
-  function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  }
-
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-tt-border bg-tt-surface px-3 py-3">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+      className="flex items-center gap-2 rounded-2xl border border-tt-border bg-tt-surface px-3 py-3"
+    >
       <button
         type="button"
         onClick={onImportClick}
@@ -326,21 +325,22 @@ function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClic
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
         placeholder="-200 chai or 'move 50 to daily'"
         readOnly={submitting}
         autoFocus
+        spellCheck={false}
+        autoComplete="off"
         className="flex-1 min-w-0 border-0 bg-transparent text-[15px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0 p-0"
       />
       <button
-        onClick={handleSubmit}
+        type="submit"
         onMouseDown={(e) => e.preventDefault()}
         disabled={submitting || !input.trim()}
         className="shrink-0 size-8 rounded-lg bg-tt-text text-tt-bg hover:opacity-90 transition-all disabled:opacity-25 flex items-center justify-center cursor-pointer"
       >
         <ArrowUp className="size-4" />
       </button>
-    </div>
+    </form>
   );
 }
 
@@ -349,10 +349,25 @@ export default function Show() {
     usePage<PageProps>().props;
 
   const [hideBalances, setHideBalances] = useState(false);
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
   useEffect(() => {
     const val = localStorage.getItem("thetrack_hide_balances") === "true";
     setHideBalances(val);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const handleResize = () => {
+      const vv = window.visualViewport!;
+      const isKeyboard = window.innerHeight - vv.height > 150;
+      setIsKeyboardActive(isKeyboard);
+      setViewportHeight(vv.height);
+    };
+    window.visualViewport.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.visualViewport?.removeEventListener("resize", handleResize);
   }, []);
 
   const toggleBalances = () => {
@@ -419,8 +434,11 @@ export default function Show() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-tt-bg pb-48">
-      <header className="sticky top-0 z-30 bg-tt-bg/80 backdrop-blur-md">
+    <div
+      className="flex flex-col bg-tt-bg overflow-hidden w-full"
+      style={viewportHeight ? { height: `${viewportHeight}px` } : { height: "100dvh" }}
+    >
+      <header className="shrink-0 bg-tt-bg/80 backdrop-blur-md border-b border-tt-border-subtle">
         <div className="mx-auto flex max-w-xl items-center justify-between px-6 py-4">
           <Link
             href="/dashboard"
@@ -504,63 +522,68 @@ export default function Show() {
         </div>
       </header>
 
-      <main className="flex-1">
-        <div className="mx-auto max-w-xl px-6 pb-6">
-          <section className="pt-4 pb-10">
-            <div className="flex items-center gap-2">
-              <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
-                {getBucketLabel(bucket.slug)}
-              </p>
-              <button
-                type="button"
-                onClick={toggleBalances}
-                className="text-tt-text-tertiary hover:text-tt-text-secondary transition-colors focus:outline-none cursor-pointer"
-                aria-label={hideBalances ? "Show balances" : "Hide balances"}
-              >
-                {hideBalances ? (
-                  <EyeOff className="size-4" />
-                ) : (
-                  <Eye className="size-4" />
-                )}
-              </button>
-            </div>
-            <div className="mt-2">
-              <BalanceDisplay
-                balance={bucket.balance}
-                currencySymbol={currency_symbol}
-                bucketId={bucket.id}
-                hideBalances={hideBalances}
-              />
-            </div>
-          </section>
-
-          {dateGroups.length > 0 ? (
-            <section>
-              {dateGroups.map(([date, txns]) => (
-                <DateGroup
-                  key={date}
-                  date={date}
-                  transactions={txns}
+      <div className="flex-1 relative min-h-0">
+        <main className="h-full overflow-y-auto">
+          <div className="mx-auto max-w-xl px-6 pt-4 pb-20">
+            <section className="pt-2 pb-8">
+              <div className="flex items-center gap-2">
+                <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
+                  {getBucketLabel(bucket.slug)}
+                </p>
+                <button
+                  type="button"
+                  onClick={toggleBalances}
+                  className="text-tt-text-tertiary hover:text-tt-text-secondary transition-colors focus:outline-none cursor-pointer"
+                  aria-label={hideBalances ? "Show balances" : "Hide balances"}
+                >
+                  {hideBalances ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+              <div className="mt-2">
+                <BalanceDisplay
+                  balance={bucket.balance}
                   currencySymbol={currency_symbol}
+                  bucketId={bucket.id}
                   hideBalances={hideBalances}
                 />
-              ))}
+              </div>
             </section>
-          ) : (
-            <div className="py-20 text-center text-sm text-tt-text-tertiary">
-              No transactions yet.
-            </div>
-          )}
-        </div>
-      </main>
 
-      <div className="fixed bottom-24 left-0 right-0 z-40">
+            {dateGroups.length > 0 ? (
+              <section>
+                {dateGroups.map(([date, txns]) => (
+                  <DateGroup
+                    key={date}
+                    date={date}
+                    transactions={txns}
+                    currencySymbol={currency_symbol}
+                    hideBalances={hideBalances}
+                  />
+                ))}
+              </section>
+            ) : (
+              <div className="py-20 text-center text-sm text-tt-text-tertiary">
+                No transactions yet.
+              </div>
+            )}
+          </div>
+        </main>
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-tt-bg via-tt-bg/80 to-transparent z-30" />
+      </div>
+
+      <div className={classNames("relative z-40 shrink-0 bg-tt-bg pt-2 pb-24", isKeyboardActive && "pb-3 border-t border-tt-border-subtle")}>
         <div className="mx-auto max-w-xl px-6">
           <ChatInput bucketId={bucket.id} onImportClick={() => setImportOpen(true)} />
         </div>
       </div>
 
-      <BottomNavbar currentSlug={bucket.slug} />
+      <div className={classNames(isKeyboardActive && "hidden")}>
+        <BottomNavbar currentSlug={bucket.slug} />
+      </div>
     </div>
   );
 }

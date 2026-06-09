@@ -242,6 +242,8 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
                 <textarea
                   value={pastedText}
                   onChange={e => setPastedText(e.target.value)}
+                  spellCheck={false}
+                  autoComplete="off"
                   placeholder="Paste WhatsApp logs, Google Keep lists, or copied PDF text here...&#10;&#10;Examples:&#10;-200 coffee&#10;Yesterday -150 lunch&#10;27 Jan 2026 Transfer to Daily Rs.1,86,370.35"
                   className="w-full h-36 rounded-xl border border-tt-border bg-tt-bg p-3.5 text-[13px] text-tt-text placeholder:text-tt-text-tertiary/45 focus:border-tt-text-tertiary/60 focus:outline-none focus:ring-0 resize-none font-sans"
                 />
@@ -311,6 +313,8 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
                       <input
                         value={row.description}
                         onChange={e => updateDesc(row.index, e.target.value)}
+                        spellCheck={false}
+                        autoComplete="off"
                         placeholder="Add description…"
                         className="w-full bg-transparent p-0 text-[13px] text-tt-text placeholder:text-tt-text-tertiary/40 border-0 focus:outline-none focus:ring-0"
                       />
@@ -320,6 +324,8 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
                       type="text"
                       value={row.amount}
                       onChange={e => updateAmount(row.index, e.target.value)}
+                      spellCheck={false}
+                      autoComplete="off"
                       placeholder="0.00"
                       className={`w-28 bg-transparent p-0 text-right text-[13px] font-mono font-medium tabular-nums border-0 focus:outline-none focus:ring-0 ${
                         isPos ? 'text-tt-positive' : isNeg ? 'text-tt-negative' : 'text-tt-text'

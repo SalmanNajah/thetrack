@@ -33,12 +33,15 @@ class BucketsController < ApplicationController
   def show
     bucket = current_user.buckets.find_by!(slug: params[:slug])
     transactions = bucket.transactions.with_closing_balance.includes(:reversed_by).recent.limit(50)
-    other_buckets = current_user.buckets.where.not(id: bucket.id).ordered
+    all_buckets = current_user.buckets.ordered
+    other_buckets = all_buckets.where.not(id: bucket.id)
 
     render inertia: "Buckets/Show", props: {
       bucket: BucketSerializer.new(bucket).as_json,
       transactions: TransactionSerializer.collection(transactions, closing_balance: true, paired_bucket: true),
+      all_buckets: BucketSerializer.collection(all_buckets),
       other_buckets: BucketSerializer.collection(other_buckets),
+      total_balance: all_buckets.sum(&:balance).to_s,
       currency_symbol: current_user.currency_symbol
     }
   end

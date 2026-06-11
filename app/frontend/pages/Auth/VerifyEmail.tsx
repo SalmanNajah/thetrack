@@ -1,5 +1,12 @@
 import { useForm, Link, usePage, router } from "@inertiajs/react";
-import { FormEvent, useRef, useEffect, useState, KeyboardEvent, ClipboardEvent } from "react";
+import {
+  FormEvent,
+  useRef,
+  useEffect,
+  useState,
+  KeyboardEvent,
+  ClipboardEvent,
+} from "react";
 import { AuthLayout } from "@/components/AuthLayout";
 
 type PageProps = {
@@ -15,7 +22,12 @@ type PageProps = {
 const OTP_LENGTH = 6;
 
 export default function VerifyEmail() {
-  const { email, resend_cooldown, errors: pageErrors, flash } = usePage<PageProps>().props;
+  const {
+    email,
+    resend_cooldown,
+    errors: pageErrors,
+    flash,
+  } = usePage<PageProps>().props;
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [cooldown, setCooldown] = useState(resend_cooldown || 0);
@@ -72,7 +84,10 @@ export default function VerifyEmail() {
 
   function handlePaste(e: ClipboardEvent<HTMLInputElement>) {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, OTP_LENGTH);
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, OTP_LENGTH);
     if (!pastedData) return;
 
     const newOtp = [...otp];
@@ -103,9 +118,13 @@ export default function VerifyEmail() {
 
   function handleResend() {
     if (cooldown > 0 || processing) return;
-    router.post("/verify-email/resend", { email }, {
-      onSuccess: () => setCooldown(60),
-    });
+    router.post(
+      "/verify-email/resend",
+      { email },
+      {
+        onSuccess: () => setCooldown(60),
+      },
+    );
   }
 
   return (
@@ -119,7 +138,9 @@ export default function VerifyEmail() {
           {Array.from({ length: OTP_LENGTH }).map((_, i) => (
             <input
               key={i}
-              ref={(el) => { inputRefs.current[i] = el; }}
+              ref={(el) => {
+                inputRefs.current[i] = el;
+              }}
               type="text"
               inputMode="numeric"
               maxLength={1}
@@ -128,7 +149,7 @@ export default function VerifyEmail() {
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               onPaste={i === 0 ? handlePaste : undefined}
-              className={`h-12 w-10 rounded-xl border text-center text-lg font-bold shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+              className={`h-12 w-10  border text-center text-lg font-bold shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                 pageErrors?.otp
                   ? "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500"
                   : "border-tt-border-subtle text-tt-text bg-white focus:border-tt-text focus:ring-tt-text"
@@ -147,7 +168,7 @@ export default function VerifyEmail() {
         <button
           type="submit"
           disabled={processing || otp.join("").length < OTP_LENGTH}
-          className="mt-4 w-full rounded-xl bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
+          className="mt-4 w-full  bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
         >
           {processing ? "Verifying…" : "Verify email"}
         </button>

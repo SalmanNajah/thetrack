@@ -16,11 +16,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         unstyled: true,
         classNames: {
-          toast: "flex items-center gap-3 w-full max-w-[350px] bg-white border border-[#e0dbd2] px-4 py-3.5 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.03)] text-[13px] text-[#18181b] font-sans",
+          toast: "flex items-center gap-3 w-full max-w-[350px] bg-white border border-dashed border-[#a1a1aa]/40 px-4 py-3.5 text-[13px] text-[#18181b] font-sans",
           title: "font-medium text-[#18181b] leading-tight",
           description: "text-[#71717a] text-[11px] leading-relaxed",
-          actionButton: "bg-[#18181b] text-[#f7f7f5] hover:opacity-90 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-opacity shrink-0 ml-auto",
-          cancelButton: "text-[#71717a] hover:text-[#18181b] px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors shrink-0",
+          actionButton: "bg-[#18181b] text-[#f7f7f5] hover:opacity-90 px-2.5 py-1 text-[11px] font-medium transition-opacity shrink-0 ml-auto",
+          cancelButton: "text-[#71717a] hover:text-[#18181b] px-2.5 py-1 text-[11px] font-medium transition-colors shrink-0",
         },
       }}
       {...props}

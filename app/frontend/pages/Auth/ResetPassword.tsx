@@ -12,7 +12,11 @@ type PageProps = {
 };
 
 export default function ResetPassword() {
-  const { reset_password_token, errors: pageErrors, flash } = usePage<PageProps>().props;
+  const {
+    reset_password_token,
+    errors: pageErrors,
+    flash,
+  } = usePage<PageProps>().props;
 
   const { data, setData, put, processing } = useForm({
     user: {
@@ -52,13 +56,17 @@ export default function ResetPassword() {
             onChange={(e) =>
               setData("user", { ...data.user, password: e.target.value })
             }
-            className="block w-full rounded-xl border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
+            className="block w-full  border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
             placeholder="••••••••"
           />
           {pageErrors?.password ? (
-            <p className="mt-1.5 text-xs text-red-600 font-medium">{pageErrors.password}</p>
+            <p className="mt-1.5 text-xs text-red-600 font-medium">
+              {pageErrors.password}
+            </p>
           ) : (
-            <p className="mt-1.5 text-[10px] text-tt-text-tertiary font-medium">Minimum 6 characters</p>
+            <p className="mt-1.5 text-[10px] text-tt-text-tertiary font-medium">
+              Minimum 6 characters
+            </p>
           )}
         </div>
 
@@ -80,7 +88,7 @@ export default function ResetPassword() {
                 password_confirmation: e.target.value,
               })
             }
-            className="block w-full rounded-xl border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
+            className="block w-full  border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
             placeholder="••••••••"
           />
           {pageErrors?.password_confirmation && (
@@ -93,7 +101,7 @@ export default function ResetPassword() {
         <button
           type="submit"
           disabled={processing}
-          className="w-full rounded-xl bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
+          className="w-full  bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
         >
           {processing ? "Updating password…" : "Reset password"}
         </button>

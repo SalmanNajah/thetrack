@@ -8,8 +8,9 @@ class DashboardController < ApplicationController
       buckets: BucketSerializer.collection(buckets),
       total_balance: buckets.sum(&:balance).to_s,
       recent_transactions: TransactionSerializer.collection(
-        current_user.transactions.with_closing_balance.includes(:bucket, :reversed_by).recent.limit(10),
-        closing_balance: true
+        current_user.transactions.with_closing_balance.includes(:bucket, :reversed_by).recent.limit(50),
+        closing_balance: true,
+        paired_bucket: true
       ),
       currency_symbol: current_user.currency_symbol,
       currency: current_user.currency,

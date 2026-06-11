@@ -1,4 +1,4 @@
-import { usePage, router, Link, useForm } from '@inertiajs/react'
+import { usePage, router, useForm } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -9,9 +9,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog'
+import { WorkspaceLayout } from '@/components/WorkspaceLayout'
 import { BottomNavbar } from '@/components/BottomNavbar'
-import type { AuthUser, CurrencyOption } from '@/types'
-import { ArrowLeft, Download, FileText, FileSpreadsheet } from 'lucide-react'
+import type { AuthUser, CurrencyOption, Bucket } from '@/types'
+import { Download, FileText, FileSpreadsheet } from 'lucide-react'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -29,6 +30,9 @@ type PageProps = {
     buckets_count: number
     transactions_count: number
   }
+  buckets: Bucket[]
+  total_balance: string
+  currency_symbol: string
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -70,7 +74,7 @@ function ProfileSection({ user }: { user: PageProps['user'] }) {
                 onChange={e => setName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSave()}
                 autoFocus
-                className="w-32 rounded-lg border border-tt-border bg-tt-bg px-2.5 py-1 text-sm text-tt-text text-right focus:outline-none focus:ring-1 focus:ring-tt-accent"
+                className="w-32 border border-tt-border bg-tt-bg px-2.5 py-1 text-sm text-tt-text text-right focus:outline-none focus:ring-1 focus:ring-tt-accent"
               />
               <button onClick={handleSave} disabled={saving} className="text-[12px] font-medium text-tt-accent">
                 {saving ? '…' : 'Save'}
@@ -147,7 +151,7 @@ function SignConventionSection({ defaultUnsignedToPositive }: { defaultUnsignedT
             <button
               onClick={() => handleToggle(false)}
               disabled={saving}
-              className={`px-2.5 py-1 text-[12px] font-medium rounded-l-md border transition-all ${
+              className={`px-2.5 py-1 text-[12px] font-medium border transition-all ${
                 !defaultUnsignedToPositive
                   ? 'bg-tt-text text-tt-bg border-tt-text'
                   : 'bg-tt-bg text-tt-text-secondary border-tt-border hover:text-tt-text'
@@ -158,7 +162,7 @@ function SignConventionSection({ defaultUnsignedToPositive }: { defaultUnsignedT
             <button
               onClick={() => handleToggle(true)}
               disabled={saving}
-              className={`px-2.5 py-1 text-[12px] font-medium rounded-r-md border transition-all ${
+              className={`px-2.5 py-1 text-[12px] font-medium border transition-all ${
                 defaultUnsignedToPositive
                   ? 'bg-tt-text text-tt-bg border-tt-text'
                   : 'bg-tt-bg text-tt-text-secondary border-tt-border hover:text-tt-text'
@@ -216,7 +220,7 @@ function DangerZone({ stats }: { stats: PageProps['stats'] }) {
           </div>
           <Dialog open={resetOpen} onOpenChange={setResetOpen}>
             <DialogTrigger asChild>
-              <button className="shrink-0 rounded-lg bg-tt-negative px-3 py-1.5 text-[13px] font-medium text-white hover:bg-tt-negative/85 transition-colors">
+              <button className="shrink-0 bg-tt-negative px-3 py-1.5 text-[13px] font-medium text-white hover:bg-tt-negative/85 transition-colors">
                 Reset
               </button>
             </DialogTrigger>
@@ -248,7 +252,7 @@ function DangerZone({ stats }: { stats: PageProps['stats'] }) {
           </div>
           <Dialog open={deleteOpen} onOpenChange={v => { setDeleteOpen(v); setConfirmText('') }}>
             <DialogTrigger asChild>
-              <button className="shrink-0 rounded-lg bg-tt-negative px-3 py-1.5 text-[13px] font-medium text-white hover:bg-tt-negative/85 transition-colors">
+              <button className="shrink-0 bg-tt-negative px-3 py-1.5 text-[13px] font-medium text-white hover:bg-tt-negative/85 transition-colors">
                 Delete
               </button>
             </DialogTrigger>
@@ -419,7 +423,7 @@ function DataSection() {
       <div>
         <a
           href="/exports/csv"
-          className="flex items-center justify-between py-3.5 border-b border-tt-border-subtle hover:bg-tt-bg/50 transition-colors -mx-1 px-1 rounded-lg"
+          className="flex items-center justify-between py-3.5 border-b border-tt-border-subtle hover:bg-tt-bg/50 transition-colors -mx-1 px-1"
         >
           <div className="flex items-center gap-3">
             <FileSpreadsheet className="size-4 text-tt-text-tertiary" />
@@ -432,7 +436,7 @@ function DataSection() {
         </a>
         <a
           href="/exports/pdf"
-          className="flex items-center justify-between py-3.5 hover:bg-tt-bg/50 transition-colors -mx-1 px-1 rounded-lg"
+          className="flex items-center justify-between py-3.5 hover:bg-tt-bg/50 transition-colors -mx-1 px-1"
         >
           <div className="flex items-center gap-3">
             <FileText className="size-4 text-tt-text-tertiary" />
@@ -449,7 +453,7 @@ function DataSection() {
 }
 
 export default function Index() {
-  const { flash, user, currencies, stats } = usePage<PageProps>().props
+  const { flash, user, currencies, stats, buckets, total_balance, currency_symbol } = usePage<PageProps>().props
 
   useEffect(() => {
     if (flash?.notice) toast.success(flash.notice, { id: 'flash-notice', action: undefined })
@@ -457,17 +461,13 @@ export default function Index() {
   }, [flash?.notice, flash?.alert])
 
   return (
-    <div className="min-h-screen bg-tt-bg pb-20">
-      <header className="sticky top-0 z-30 bg-tt-bg/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-xl items-center px-6 py-4">
-          <Link href="/dashboard" className="flex items-center gap-1.5 text-[13px] text-tt-text-tertiary hover:text-tt-text transition-colors">
-            <ArrowLeft className="size-[14px]" />
-            Back
-          </Link>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-xl px-6">
+    <WorkspaceLayout
+      buckets={buckets || []}
+      totalBalance={total_balance || "0"}
+      currencySymbol={currency_symbol || "₹"}
+      showMobileBalance={false}
+    >
+      <div className="pt-4">
         <h1 className="text-lg font-semibold text-tt-text">Settings</h1>
 
         <div className="mt-8 space-y-8">
@@ -480,7 +480,10 @@ export default function Index() {
         </div>
       </div>
 
-      <BottomNavbar />
-    </div>
+      <div className="md:hidden">
+        <BottomNavbar />
+      </div>
+    </WorkspaceLayout>
   )
 }
+

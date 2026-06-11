@@ -2,6 +2,8 @@
 
 class SettingsController < ApplicationController
   def show
+    buckets = current_user.buckets.ordered
+
     render inertia: "Settings/Index", props: {
       user: {
         email: current_user.email,
@@ -15,7 +17,10 @@ class SettingsController < ApplicationController
       stats: {
         buckets_count: current_user.buckets.count,
         transactions_count: current_user.transactions.count
-      }
+      },
+      buckets: BucketSerializer.collection(buckets),
+      total_balance: buckets.sum(&:balance).to_s,
+      currency_symbol: current_user.currency_symbol
     }
   end
 
@@ -47,7 +52,10 @@ class SettingsController < ApplicationController
 
   def reset_all
     ActiveRecord::Base.transaction do
-      current_user.transactions.destroy_all
+      current_user.transactions.find_each do |t|
+        t.allow_destruction_override = true
+        t.destroy!
+      end
       current_user.buckets.destroy_all
       current_user.update!(onboarded: false)
       current_user.ensure_default_buckets!
@@ -60,8 +68,11 @@ class SettingsController < ApplicationController
     ActiveRecord::Base.transaction do
       audit!("user.account.delete", target_user: current_user, metadata: { email: current_user.email })
 
+      current_user.transactions.find_each do |t|
+        t.allow_destruction_override = true
+        t.destroy!
+      end
       current_user.buckets.destroy_all
-      current_user.transactions.destroy_all
 
       current_user.update!(
         email: "deleted-#{current_user.id}@deleted.thetrack.app",

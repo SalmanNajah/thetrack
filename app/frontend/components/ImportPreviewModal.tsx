@@ -192,7 +192,7 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
                 type="button"
                 onClick={() => { setMode('file'); setParseErrors([]) }}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[12px] font-semibold rounded-md transition-all ${
-                  mode === 'file' ? 'bg-tt-surface text-tt-text shadow-xs' : 'text-tt-text-tertiary hover:text-tt-text'
+                  mode === 'file' ? 'bg-tt-surface text-tt-text' : 'text-tt-text-tertiary hover:text-tt-text'
                 }`}
               >
                 <FileText className="size-3.5" />
@@ -202,7 +202,7 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
                 type="button"
                 onClick={() => { setMode('text'); setParseErrors([]) }}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[12px] font-semibold rounded-md transition-all ${
-                  mode === 'text' ? 'bg-tt-surface text-tt-text shadow-xs' : 'text-tt-text-tertiary hover:text-tt-text'
+                  mode === 'text' ? 'bg-tt-surface text-tt-text' : 'text-tt-text-tertiary hover:text-tt-text'
                 }`}
               >
                 <ClipboardList className="size-3.5" />

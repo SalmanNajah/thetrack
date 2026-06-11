@@ -32,6 +32,7 @@ Rails.application.routes.draw do
       post :reverse
     end
     collection do
+      get :search
       post :transfer
       post :adjust_balance
     end

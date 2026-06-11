@@ -31,7 +31,8 @@ export default function ForgotPassword() {
       flash={flash}
     >
       <p className="mb-6 text-xs text-tt-text-secondary leading-relaxed font-medium">
-        Enter the email address associated with your account, and we'll send you a link to reset your password.
+        Enter the email address associated with your account, and we'll send you
+        a link to reset your password.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -51,18 +52,20 @@ export default function ForgotPassword() {
             onChange={(e) =>
               setData("user", { ...data.user, email: e.target.value })
             }
-            className="block w-full rounded-xl border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
+            className="block w-full  border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
             placeholder="you@example.com"
           />
           {pageErrors?.email && (
-            <p className="mt-1.5 text-xs text-red-600 font-medium">{pageErrors.email}</p>
+            <p className="mt-1.5 text-xs text-red-600 font-medium">
+              {pageErrors.email}
+            </p>
           )}
         </div>
 
         <button
           type="submit"
           disabled={processing}
-          className="w-full rounded-xl bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
+          className="w-full  bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
         >
           {processing ? "Sending instructions…" : "Send reset instructions"}
         </button>

@@ -76,6 +76,30 @@ class TransactionsController < ApplicationController
     end
   end
 
+  def search
+    query = params[:q].to_s.strip
+
+    if query.blank?
+      transactions = current_user.transactions
+        .includes(:bucket)
+        .order(occurred_at: :desc, id: :desc)
+        .limit(10)
+    else
+      like_query = "%#{ActiveRecord::Base.sanitize_sql_like(query)}%"
+      transactions = current_user.transactions
+        .joins(:bucket)
+        .where(
+          "transactions.description ILIKE :q OR buckets.name ILIKE :q OR CAST(transactions.amount AS TEXT) ILIKE :q OR TO_CHAR(transactions.occurred_at, 'DD Mon YYYY') ILIKE :q OR TO_CHAR(transactions.occurred_at, 'Month') ILIKE :q",
+          q: like_query
+        )
+        .includes(:bucket)
+        .order(occurred_at: :desc, id: :desc)
+        .limit(20)
+    end
+
+    render json: TransactionSerializer.collection(transactions)
+  end
+
 
   private
 

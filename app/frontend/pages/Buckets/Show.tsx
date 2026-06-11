@@ -1,32 +1,21 @@
-import { Link, usePage, router } from "@inertiajs/react";
+import { usePage, router } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { toast } from "sonner";
-import { Odometer } from "@/components/Odometer";
-import { BottomNavbar } from "@/components/BottomNavbar";
-import { TransferDialog } from "@/components/TransferDialog";
+import { WorkspaceLayout } from "@/components/WorkspaceLayout";
+import { CommandInput } from "@/components/CommandInput";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import { ImportPreviewModal } from "@/components/ImportPreviewModal";
-import {
-  formatCurrency,
-  groupByDate,
-  getBucketLabel,
-} from "@/lib/format";
-import { classNames } from "@/lib/utils";
+import { TransferDialog } from "@/components/TransferDialog";
+import { BottomNavbar } from "@/components/BottomNavbar";
+import { Odometer } from "@/components/Odometer";
+import { formatCurrency, getBucketLabel } from "@/lib/format";
 import type { Bucket, TransactionRecord, AuthUser, FlashData } from "@/types";
 import {
-  ArrowLeft,
-  PenLine,
-  ArrowLeftRight,
-  ChevronDown,
-  ChevronUp,
-  ArrowUp,
   Trash2,
   Download,
-  Paperclip,
   FileText,
   FileSpreadsheet,
-  RotateCcw,
-  Eye,
-  EyeOff,
+  PenLine,
 } from "lucide-react";
 
 type PageProps = {
@@ -34,7 +23,9 @@ type PageProps = {
   flash: FlashData;
   bucket: Bucket;
   transactions: TransactionRecord[];
+  all_buckets: Bucket[];
   other_buckets: Bucket[];
+  total_balance: string;
   currency_symbol: string;
 };
 
@@ -42,12 +33,10 @@ function BalanceDisplay({
   balance,
   currencySymbol,
   bucketId,
-  hideBalances,
 }: {
   balance: string;
   currencySymbol: string;
   bucketId: number;
-  hideBalances: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -63,7 +52,6 @@ function BalanceDisplay({
   }, [editing]);
 
   function startEdit() {
-    if (hideBalances) return;
     setEditValue(parseFloat(balance).toString());
     setEditing(true);
   }
@@ -75,10 +63,7 @@ function BalanceDisplay({
     if (newBalance.toString() === parseFloat(balance).toString()) return;
     router.post(
       "/transactions/adjust_balance",
-      {
-        bucket_id: bucketId,
-        new_balance: editValue,
-      },
+      { bucket_id: bucketId, new_balance: editValue },
       { preserveScroll: true },
     );
   }
@@ -109,274 +94,57 @@ function BalanceDisplay({
     );
   }
 
+  const formatted = formatCurrency(numericBalance.toFixed(2), currencySymbol);
+  const fontSizeClass =
+    formatted.length > 14
+      ? "text-[1.875rem] md:text-[3.25rem]"
+      : formatted.length > 10
+        ? "text-[2.5rem] md:text-[3.25rem]"
+        : "text-[3.25rem]";
+
   return (
     <button
       onClick={startEdit}
-      disabled={hideBalances}
-      className={classNames(
-        "group relative inline-block text-left focus:outline-none",
-        hideBalances ? "cursor-default select-none" : "cursor-pointer"
-      )}
-      title={hideBalances ? undefined : "Tap to edit balance"}
+      className="group relative inline-block text-left focus:outline-none cursor-pointer max-w-full overflow-hidden"
     >
-      <span className="text-[3.25rem] font-semibold leading-none tracking-tighter text-tt-text">
-        <Odometer value={formatCurrency(numericBalance.toFixed(2), currencySymbol)} masked={hideBalances} />
+      <span className={`${fontSizeClass} font-semibold leading-none tracking-tighter text-tt-text truncate overflow-hidden block`}>
+        <Odometer
+          value={formatted}
+        />
       </span>
-      {!hideBalances && (
-        <PenLine className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
-      )}
+      <PenLine className="absolute -right-5 bottom-1 size-3.5 text-tt-text-tertiary opacity-30 transition-opacity group-hover:opacity-100" />
     </button>
   );
 }
 
-function TransactionRow({
-  txn,
-  currencySymbol,
-  hideBalances,
-}: {
-  txn: TransactionRecord;
-  currencySymbol: string;
-  hideBalances: boolean;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const amount = parseFloat(txn.amount);
-  const isPositive = amount > 0;
-  const isTransfer = !!txn.transfer_group_id;
-
-  return (
-    <div className="border-b border-tt-border-subtle last:border-0">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setExpanded(!expanded)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded(!expanded);
-          }
-        }}
-        className={classNames(
-          "flex items-center justify-between py-3 cursor-pointer select-none rounded-lg px-2 -mx-2 transition-colors duration-150 outline-none",
-          expanded ? "bg-tt-surface/50" : "hover:bg-tt-surface/20"
-        )}
-      >
-        <div className="min-w-0 flex-1 flex items-center gap-1.5">
-          {isTransfer && (
-            <ArrowLeftRight className="size-3 shrink-0 text-tt-text-tertiary" />
-          )}
-          <p
-            className={classNames(
-              "truncate text-sm",
-              txn.reversed ? "line-through text-tt-text-tertiary opacity-60" : "text-tt-text"
-            )}
-          >
-            {txn.description || (isTransfer ? "Transfer" : "Transaction")}
-          </p>
-
-        </div>
-        <div className="ml-4 shrink-0 flex flex-col items-end">
-          <span
-            className={classNames(
-              "text-sm font-medium tracking-tight flex items-center gap-0.5",
-              txn.reversed ? "line-through text-tt-text-tertiary opacity-60" : (isPositive ? "text-tt-positive" : "text-tt-negative"),
-            )}
-          >
-            <span>{isPositive ? "+" : "-"}</span>
-            <Odometer value={formatCurrency(txn.amount, currencySymbol)} masked={hideBalances} />
-          </span>
-          {txn.closing_balance && (
-            <span className="mt-0.5 text-[11px] text-tt-text-tertiary flex items-center gap-0.5">
-              Closing:{" "}
-              <span className={txn.reversed ? "text-tt-text-tertiary opacity-60" : "text-tt-text-secondary"}>
-                <Odometer value={formatCurrency(txn.closing_balance, currencySymbol)} masked={hideBalances} />
-              </span>
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div
-        className={classNames(
-          "overflow-hidden transition-all duration-200 ease-in-out",
-          expanded ? "max-h-24 opacity-100 mb-2 mt-1" : "max-h-0 opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="bg-tt-surface/30 border border-tt-border-subtle/50 rounded-xl p-3 flex items-center justify-between gap-4">
-          <div className="text-[12px] text-tt-text-secondary">
-            <div>
-              <span className="text-tt-text-tertiary">Type: </span>
-              <span className="capitalize">{txn.kind || (isTransfer ? "transfer" : "entry")}</span>
-            </div>
-
-            {txn.reversed && (
-              <div className="mt-0.5 text-tt-text-tertiary italic">
-                This transaction has been reversed
-              </div>
-            )}
-          </div>
-
-          {!txn.reversed && txn.kind !== "reversal" && !txn.reversal_of_id && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                router.post(`/transactions/${txn.id}/reverse`, {}, { preserveScroll: true });
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg text-tt-negative bg-tt-negative/10 border border-tt-negative/20 hover:bg-tt-negative/20 active:scale-[0.97] transition-all cursor-pointer"
-            >
-              <RotateCcw className="size-3.5" />
-              Undo Transaction
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DateGroup({
-  date,
-  transactions,
-  currencySymbol,
-  hideBalances,
-}: {
-  date: string;
-  transactions: TransactionRecord[];
-  currencySymbol: string;
-  hideBalances: boolean;
-}) {
-  const [collapsed, setCollapsed] = useState(false);
-  const total = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-
-  return (
-    <div>
-      <p className="px-0 pt-6 pb-2 text-[12px] font-medium tracking-wide uppercase text-tt-text-tertiary">
-        {date}
-      </p>
-
-      {!collapsed &&
-        transactions.map((txn) => (
-          <TransactionRow
-            key={txn.id}
-            txn={txn}
-            currencySymbol={currencySymbol}
-            hideBalances={hideBalances}
-          />
-        ))}
-
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="flex w-full items-center justify-between py-2.5 text-[12px] text-tt-text-tertiary hover:text-tt-text-secondary transition-colors"
-      >
-        <span>Total</span>
-        <span className="flex items-center gap-1 tracking-tight">
-          <span>{total >= 0 ? "+" : "-"}</span>
-          <Odometer value={formatCurrency(total.toFixed(2), currencySymbol)} masked={hideBalances} />
-          {collapsed ? (
-            <ChevronDown className="size-3 ml-0.5" />
-          ) : (
-            <ChevronUp className="size-3 ml-0.5" />
-          )}
-        </span>
-      </button>
-    </div>
-  );
-}
-
-function ChatInput({ bucketId, onImportClick }: { bucketId: number; onImportClick: () => void }) {
-  const [input, setInput] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  function handleSubmit() {
-    if (!input.trim() || submitting) return;
-    setSubmitting(true);
-    router.post(
-      "/transactions",
-      {
-        bucket_id: bucketId,
-        raw_input: input.trim(),
-      },
-      {
-        preserveScroll: true,
-        preserveState: true,
-        onFinish: () => {
-          setSubmitting(false);
-          setInput("");
-        },
-      },
-    );
-  }
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit();
-      }}
-      className="flex items-center gap-2 rounded-2xl border border-tt-border bg-tt-surface px-3 py-3"
-    >
-      <button
-        type="button"
-        onClick={onImportClick}
-        className="shrink-0 text-tt-text-tertiary hover:text-tt-text p-2 rounded-xl transition-colors border border-tt-border-subtle bg-tt-bg hover:border-white active:scale-[0.95] cursor-pointer"
-        title="Import statement or paste text"
-      >
-        <Paperclip className="size-[18px]" />
-      </button>
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="-200 chai or +50 to daily"
-        autoFocus
-        spellCheck={false}
-        autoComplete="off"
-        className="flex-1 min-w-0 border-0 bg-transparent text-[15px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0 p-0"
-      />
-      <button
-        type="submit"
-        onMouseDown={(e) => e.preventDefault()}
-        disabled={submitting || !input.trim()}
-        className="shrink-0 size-8 rounded-lg bg-tt-text text-tt-bg hover:opacity-90 transition-all disabled:opacity-25 flex items-center justify-center cursor-pointer"
-      >
-        <ArrowUp className="size-4" />
-      </button>
-    </form>
-  );
-}
-
 export default function Show() {
-  const { flash, bucket, transactions, other_buckets, currency_symbol } =
-    usePage<PageProps>().props;
+  const {
+    flash,
+    bucket,
+    transactions,
+    all_buckets,
+    other_buckets,
+    total_balance,
+    currency_symbol,
+  } = usePage<PageProps>().props;
 
-  const [hideBalances, setHideBalances] = useState(false);
-  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const val = localStorage.getItem("thetrack_hide_balances") === "true";
-    setHideBalances(val);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) return;
-    const handleResize = () => {
-      const vv = window.visualViewport!;
-      const isKeyboard = window.innerHeight - vv.height > 150;
-      setIsKeyboardActive(isKeyboard);
-      if (containerRef.current) {
-        containerRef.current.style.height = `${vv.height}px`;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        exportRef.current &&
+        !exportRef.current.contains(event.target as Node)
+      ) {
+        setExportDropdownOpen(false);
       }
-    };
-    window.visualViewport.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.visualViewport?.removeEventListener("resize", handleResize);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const toggleBalances = () => {
-    const newVal = !hideBalances;
-    setHideBalances(newVal);
-    localStorage.setItem("thetrack_hide_balances", String(newVal));
-  };
 
   useEffect(() => {
     if (flash?.notice) {
@@ -386,48 +154,38 @@ export default function Show() {
           id: "flash-notice",
           action: {
             label: "Undo",
-            onClick: () => router.post(`/transactions/${txnId}/reverse`, {}, { preserveScroll: true }),
+            onClick: () =>
+              router.post(
+                `/transactions/${txnId}/reverse`,
+                {},
+                { preserveScroll: true },
+              ),
           },
         });
       } else {
         const transferMatch = flash.notice.match(/^Transferred .+ to (.+)$/);
         if (transferMatch) {
           const targetName = transferMatch[1];
-          const targetBucket = other_buckets.find((b) => b.name === targetName);
+          const targetBucket = other_buckets.find(
+            (b) => b.name === targetName,
+          );
           toast.success(flash.notice, {
             id: "flash-notice",
-            action: targetBucket ? {
-              label: `Go to ${targetBucket.name}`,
-              onClick: () => router.visit(`/buckets/${targetBucket.slug}`),
-            } : undefined,
+            action: targetBucket
+              ? {
+                  label: `Go to ${targetBucket.name}`,
+                  onClick: () =>
+                    router.visit(`/buckets/${targetBucket.slug}`),
+                }
+              : undefined,
           });
         } else {
-          toast.success(flash.notice, {
-            id: "flash-notice",
-            action: undefined,
-          });
+          toast.success(flash.notice, { id: "flash-notice" });
         }
       }
     }
     if (flash?.alert) toast.error(flash.alert, { id: "flash-alert" });
   }, [flash?.notice, flash?.alert, flash?.recent_transaction_id]);
-
-  const dateGroups = groupByDate(transactions);
-
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
-  const exportRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
-        setExportDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   function handleDeleteBucket() {
     router.delete(`/buckets/${bucket.slug}`, {
@@ -435,157 +193,128 @@ export default function Show() {
     });
   }
 
+  const tz = typeof Intl !== "undefined"
+    ? encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)
+    : "";
+
   return (
-    <div
-      ref={containerRef}
-      className="flex flex-col bg-tt-bg overflow-hidden w-full h-dvh"
+    <WorkspaceLayout
+      buckets={all_buckets}
+      totalBalance={total_balance}
+      currencySymbol={currency_symbol}
+      activeBucketSlug={bucket.slug}
+      showMobileBalance={false}
     >
-      <header className="shrink-0 bg-tt-bg/80 backdrop-blur-md border-b border-tt-border-subtle">
-        <div className="mx-auto flex max-w-xl items-center justify-between px-6 py-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-1.5 text-[13px] text-tt-text-tertiary hover:text-tt-text transition-colors"
-          >
-            <ArrowLeft className="size-[14px]" />
-            Back
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="relative" ref={exportRef}>
-              <button
-                onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                className="flex items-center gap-1 rounded-xl border border-tt-border bg-tt-surface p-2 text-[12px] text-tt-text-tertiary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-all active:scale-[0.97] cursor-pointer"
-                title="Export options"
-              >
-                <Download className="size-3" />
-              </button>
+      <section className="pt-4 pb-4">
+        <div className="flex items-center gap-2">
+          <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
+            {getBucketLabel(bucket.slug)}
+          </p>
+        </div>
+        <div className="mt-2">
+          <BalanceDisplay
+            balance={bucket.balance}
+            currencySymbol={currency_symbol}
+            bucketId={bucket.id}
+          />
+        </div>
 
-              {exportDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-xl border border-tt-border bg-tt-surface p-1.5 shadow-md z-50 animate-in fade-in-0 slide-in-from-top-2 duration-100">
-                  <a
-                    href={`/exports/csv?bucket_slug=${bucket.slug}&tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`}
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
-                    onClick={() => setExportDropdownOpen(false)}
-                  >
-                    <FileSpreadsheet className="size-3.5 text-tt-text-tertiary" />
-                    Export CSV
-                  </a>
-                  <a
-                    href={`/exports/pdf?bucket_slug=${bucket.slug}&tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`}
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
-                    onClick={() => setExportDropdownOpen(false)}
-                  >
-                    <FileText className="size-3.5 text-tt-text-tertiary" />
-                    Export PDF
-                  </a>
-                </div>
-              )}
-            </div>
+        <div className="flex items-center gap-1.5 mt-5">
+          <div className="relative" ref={exportRef}>
+            <button
+              onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+              className="flex items-center gap-1.5 border border-tt-border bg-tt-surface px-2.5 py-1.5 text-[12px] text-tt-text-tertiary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-all active:scale-[0.97] cursor-pointer"
+              title="Export options"
+            >
+              <Download className="size-3.5" />
+              <span>Export</span>
+            </button>
 
-            <ImportPreviewModal
-              bucketId={bucket.id}
-              currentBalance={parseFloat(bucket.balance)}
-              open={importOpen}
-              onOpenChange={setImportOpen}
+            {exportDropdownOpen && (
+              <div className="absolute left-0 mt-1 w-44 border border-tt-border bg-tt-surface p-1 z-50">
+                <a
+                  href={`/exports/csv?bucket_slug=${bucket.slug}&tz=${tz}`}
+                  className="flex w-full items-center gap-2 px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
+                  onClick={() => setExportDropdownOpen(false)}
+                >
+                  <FileSpreadsheet className="size-3.5 text-tt-text-tertiary" />
+                  CSV
+                </a>
+                <a
+                  href={`/exports/pdf?bucket_slug=${bucket.slug}&tz=${tz}`}
+                  className="flex w-full items-center gap-2 px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
+                  onClick={() => setExportDropdownOpen(false)}
+                >
+                  <FileText className="size-3.5 text-tt-text-tertiary" />
+                  PDF
+                </a>
+              </div>
+            )}
+          </div>
+
+          {other_buckets.length > 0 && (
+            <TransferDialog
+              buckets={[bucket, ...other_buckets]}
+              currencySymbol={currency_symbol}
+              defaultFromBucketId={bucket.id.toString()}
             />
+          )}
 
-            {other_buckets.length > 0 &&
-              (confirmDelete ? (
-                <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5">
-                  <span className="text-[12px] text-red-600">Delete?</span>
-                  <button
-                    onClick={handleDeleteBucket}
-                    className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors cursor-pointer"
-                  >
-                    Yes
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(false)}
-                    className="text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors cursor-pointer"
-                  >
-                    No
-                  </button>
-                </div>
-              ) : (
+          {other_buckets.length > 0 &&
+            (confirmDelete ? (
+              <div className="flex items-center gap-2 border border-red-200 bg-red-50 px-3 py-1.5">
+                <span className="text-[12px] text-red-600">Delete?</span>
                 <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1 rounded-xl border border-tt-border bg-tt-surface p-2 text-[12px] text-tt-text-tertiary hover:text-red-500 hover:border-red-200 transition-all active:scale-[0.97] cursor-pointer"
+                  onClick={handleDeleteBucket}
+                  className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors cursor-pointer"
                 >
-                  <Trash2 className="size-3" />
+                  Yes
                 </button>
-              ))}
-            {other_buckets.length > 0 && (
-              <TransferDialog
-                buckets={[bucket, ...other_buckets]}
-                currencySymbol={currency_symbol}
-                defaultFromBucketId={bucket.id.toString()}
-              />
-            )}
-          </div>
-        </div>
-      </header>
-
-      <div className="flex-1 relative min-h-0">
-        <main className="h-full overflow-y-auto">
-          <div className="mx-auto max-w-xl px-6 pt-4 pb-20">
-            <section className="pt-2 pb-8">
-              <div className="flex items-center gap-2">
-                <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
-                  {getBucketLabel(bucket.slug)}
-                </p>
                 <button
-                  type="button"
-                  onClick={toggleBalances}
-                  className="text-tt-text-tertiary hover:text-tt-text-secondary transition-colors focus:outline-none cursor-pointer"
-                  aria-label={hideBalances ? "Show balances" : "Hide balances"}
+                  onClick={() => setConfirmDelete(false)}
+                  className="text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors cursor-pointer"
                 >
-                  {hideBalances ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
+                  No
                 </button>
               </div>
-              <div className="mt-2">
-                <BalanceDisplay
-                  balance={bucket.balance}
-                  currencySymbol={currency_symbol}
-                  bucketId={bucket.id}
-                  hideBalances={hideBalances}
-                />
-              </div>
-            </section>
-
-            {dateGroups.length > 0 ? (
-              <section>
-                {dateGroups.map(([date, txns]) => (
-                  <DateGroup
-                    key={date}
-                    date={date}
-                    transactions={txns}
-                    currencySymbol={currency_symbol}
-                    hideBalances={hideBalances}
-                  />
-                ))}
-              </section>
             ) : (
-              <div className="py-20 text-center text-sm text-tt-text-tertiary">
-                No transactions yet.
-              </div>
-            )}
-          </div>
-        </main>
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-tt-bg via-tt-bg/80 to-transparent z-30" />
-      </div>
-
-      <div className={classNames("relative z-40 shrink-0 bg-tt-bg pt-2 pb-24", isKeyboardActive && "pb-3 border-t border-tt-border-subtle")}>
-        <div className="mx-auto max-w-xl px-6">
-          <ChatInput bucketId={bucket.id} onImportClick={() => setImportOpen(true)} />
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-1.5 border border-tt-border bg-tt-surface px-2.5 py-1.5 text-[12px] text-tt-text-tertiary hover:text-red-500 hover:border-red-200 transition-all active:scale-[0.97] cursor-pointer"
+              >
+                <Trash2 className="size-3.5" />
+                <span>Delete</span>
+              </button>
+            ))}
         </div>
+      </section>
+
+      <div className="pt-2 pb-4">
+        <CommandInput
+          mode="bucket"
+          bucketId={bucket.id}
+          bucketName={bucket.name}
+          onImportClick={() => setImportOpen(true)}
+          showSearchTrigger={true}
+        />
       </div>
 
-      <div className={classNames(isKeyboardActive && "hidden")}>
+      <ActivityFeed
+        transactions={transactions}
+        currencySymbol={currency_symbol}
+        showBucketName={false}
+      />
+
+      <ImportPreviewModal
+        bucketId={bucket.id}
+        currentBalance={parseFloat(bucket.balance)}
+        open={importOpen}
+        onOpenChange={setImportOpen}
+      />
+
+      <div className="md:hidden">
         <BottomNavbar currentSlug={bucket.slug} />
       </div>
-    </div>
+    </WorkspaceLayout>
   );
 }

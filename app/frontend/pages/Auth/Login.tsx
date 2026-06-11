@@ -49,11 +49,13 @@ export default function Login() {
             onChange={(e) =>
               setData("user", { ...data.user, email: e.target.value })
             }
-            className="block w-full rounded-xl border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
+            className="block w-full  border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
             placeholder="you@example.com"
           />
           {pageErrors?.email && (
-            <p className="mt-1.5 text-xs text-red-600 font-medium">{pageErrors.email}</p>
+            <p className="mt-1.5 text-xs text-red-600 font-medium">
+              {pageErrors.email}
+            </p>
           )}
         </div>
 
@@ -72,11 +74,13 @@ export default function Login() {
             onChange={(e) =>
               setData("user", { ...data.user, password: e.target.value })
             }
-            className="block w-full rounded-xl border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
+            className="block w-full  border border-tt-border-subtle bg-white px-4 py-2.5 text-sm text-tt-text shadow-xs placeholder:text-tt-text-tertiary/60 focus:border-tt-text/45 focus:outline-none focus:ring-0 transition-all duration-200"
             placeholder="••••••••"
           />
           {pageErrors?.password && (
-            <p className="mt-1.5 text-xs text-red-600 font-medium">{pageErrors.password}</p>
+            <p className="mt-1.5 text-xs text-red-600 font-medium">
+              {pageErrors.password}
+            </p>
           )}
         </div>
 
@@ -93,7 +97,9 @@ export default function Login() {
               }
               className="rounded border-tt-border text-tt-text focus:ring-tt-text size-4"
             />
-            <span className="text-xs text-tt-text-secondary font-medium">Remember me</span>
+            <span className="text-xs text-tt-text-secondary font-medium">
+              Remember me
+            </span>
           </label>
 
           <Link
@@ -107,7 +113,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={processing}
-          className="w-full rounded-xl bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
+          className="w-full  bg-tt-text px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-tt-text/90 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-25 transition-all duration-200 cursor-pointer"
         >
           {processing ? "Signing in…" : "Sign in"}
         </button>
@@ -115,7 +121,9 @@ export default function Login() {
 
       <div className="my-5 flex items-center gap-3">
         <div className="h-px flex-1 bg-tt-border-subtle" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-tt-text-tertiary">or</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-tt-text-tertiary">
+          or
+        </span>
         <div className="h-px flex-1 bg-tt-border-subtle" />
       </div>
 
@@ -131,7 +139,7 @@ export default function Login() {
         />
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-tt-border bg-white px-4 py-2.5 text-sm font-semibold text-tt-text-secondary shadow-xs transition hover:bg-tt-bg/35 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 cursor-pointer"
+          className="flex w-full items-center justify-center gap-3  border border-tt-border bg-white px-4 py-2.5 text-sm font-semibold text-tt-text-secondary shadow-xs transition hover:bg-tt-bg/35 focus:outline-none focus:ring-2 focus:ring-tt-text focus:ring-offset-2 cursor-pointer"
         >
           <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24">
             <path

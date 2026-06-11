@@ -1,10 +1,16 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Settings, LogOut, Plus, Home } from "lucide-react";
+import { Settings, LogOut, Plus, Home, HelpCircle } from "lucide-react";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency } from "@/lib/format";
 import { classNames } from "@/lib/utils";
 import type { Bucket, AuthUser } from "@/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type BucketSidebarProps = {
   buckets: Bucket[];
@@ -21,7 +27,24 @@ export function BucketSidebar({
 }: BucketSidebarProps) {
   const {
     auth: { user },
-  } = usePage<{ auth: { user: AuthUser } }>().props;
+  } = usePage<{ auth: { user: AuthUser & { low_balance_threshold?: number } } }>().props;
+
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  useEffect(() => {
+    function handleGlobalKeyDown(e: globalThis.KeyboardEvent) {
+      if (
+        e.key === "?" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
+        e.preventDefault();
+        setShortcutsOpen(true);
+      }
+    }
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
 
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState("");
@@ -93,15 +116,15 @@ export function BucketSidebar({
 
       <div className="border-t border-dashed border-tt-sidebar-border" />
 
-      <div className="px-5 py-4">
+      <div className="px-5 py-4 flex flex-col gap-1">
+        <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary">
+          total balance
+        </p>
         <p
           className={`${balanceFontSize} font-semibold leading-none tracking-tighter text-tt-text overflow-hidden`}
         >
           <Odometer value={formatted} />
         </p>
-        <div className="flex items-center gap-2 mt-1.5">
-          <p className="text-[11px] text-tt-text-secondary">total balance</p>
-        </div>
       </div>
 
       <div className="border-t border-dashed border-tt-sidebar-border" />
@@ -125,6 +148,7 @@ export function BucketSidebar({
         {buckets.map((bucket) => {
           const isActive = bucket.slug === activeBucketSlug;
           const bucketBalance = parseFloat(bucket.balance) || 0;
+          const isLow = user.low_balance_threshold !== undefined && bucketBalance < user.low_balance_threshold;
 
           return (
             <Link
@@ -140,7 +164,10 @@ export function BucketSidebar({
               <span className="text-[13px] font-medium truncate">
                 {bucket.name}
               </span>
-              <span className="text-[12px] text-tt-text-secondary group-hover:text-tt-text shrink-0 ml-2">
+              <span className={classNames(
+                "text-[12px] shrink-0 ml-2",
+                isLow ? "text-[#da8a09] font-medium" : "text-tt-text-secondary group-hover:text-tt-text"
+              )}>
                 <Odometer
                   value={formatCurrency(
                     bucketBalance.toFixed(2),
@@ -197,6 +224,13 @@ export function BucketSidebar({
           <Settings className="size-3.5" />
           Settings
         </Link>
+        <button
+          onClick={() => setShortcutsOpen(true)}
+          className="flex w-full items-center gap-2 px-2 py-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border border-transparent transition-colors cursor-pointer text-left focus:outline-none"
+        >
+          <HelpCircle className="size-3.5" />
+          Shortcuts
+        </button>
         <Link
           href="/users/sign_out"
           method="delete"
@@ -206,6 +240,40 @@ export function BucketSidebar({
           <LogOut className="size-3.5" />
           Log out
         </Link>
+
+        <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-[15px] font-semibold">Keyboard Shortcuts</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2 text-[13px]">
+              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
+                <span className="text-tt-text-secondary">Open search modal</span>
+                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">⌘K</kbd>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
+                <span className="text-tt-text-secondary">Focus transaction input</span>
+                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">/</kbd>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
+                <span className="text-tt-text-secondary">New transaction (focus input)</span>
+                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">⌘N</kbd>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
+                <span className="text-tt-text-secondary">Open transfer modal</span>
+                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">⌘T</kbd>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
+                <span className="text-tt-text-secondary">Close modals / Clear input</span>
+                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">Esc</kbd>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
+                <span className="text-tt-text-secondary">Show keyboard shortcuts</span>
+                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">?</kbd>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

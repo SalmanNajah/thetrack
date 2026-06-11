@@ -23,7 +23,9 @@ module InertiaRendering
             email: current_user.email,
             name: current_user.try(:name),
             admin: current_user.admin?,
-            super_admin: current_user.try(:super_admin?) || false
+            super_admin: current_user.try(:super_admin?) || false,
+            low_balance_threshold: current_user.low_balance_threshold.to_f,
+            default_unsigned_to_positive: current_user.default_unsigned_to_positive
           }
         },
         nav_buckets: buckets.map { |b| { id: b.id, name: b.name, slug: b.slug } }

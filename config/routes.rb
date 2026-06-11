@@ -49,6 +49,7 @@ Rails.application.routes.draw do
     post :update_currency, on: :member
     post :update_sign_convention, on: :member
     post :update_password, on: :member
+    post :update_low_balance_threshold, on: :member
     delete :reset_all, on: :member
     delete :delete_account, on: :member
   end

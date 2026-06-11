@@ -10,6 +10,7 @@ class SettingsController < ApplicationController
         name: current_user.name,
         currency: current_user.currency,
         default_unsigned_to_positive: current_user.default_unsigned_to_positive,
+        low_balance_threshold: current_user.low_balance_threshold.to_f,
         provider: current_user.provider,
         created_at: current_user.created_at.strftime("%B %d, %Y")
       },
@@ -47,6 +48,29 @@ class SettingsController < ApplicationController
       redirect_to settings_path, notice: "Unsigned amounts now #{label}"
     else
       redirect_to settings_path, alert: "Failed to update sign preference"
+    end
+  end
+
+  def update_low_balance_threshold
+    threshold = params[:low_balance_threshold].to_s.strip
+    if threshold.blank?
+      return redirect_to settings_path, alert: "Threshold cannot be blank"
+    end
+
+    begin
+      decimal_threshold = BigDecimal(threshold)
+    rescue ArgumentError, TypeError
+      return redirect_to settings_path, alert: "Invalid numeric value"
+    end
+
+    if decimal_threshold < 0
+      return redirect_to settings_path, alert: "Threshold must be greater than or equal to 0"
+    end
+
+    if current_user.update(low_balance_threshold: decimal_threshold)
+      redirect_to settings_path, notice: "Low balance alert threshold updated"
+    else
+      redirect_to settings_path, alert: current_user.errors.full_messages.to_sentence
     end
   end
 

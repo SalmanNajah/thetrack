@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_080304) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_11_140500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -46,6 +46,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_080304) do
     t.datetime "created_at", null: false
     t.string "description", default: ""
     t.string "kind", default: "manual", null: false
+    t.text "notes"
     t.datetime "occurred_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.bigint "reversal_of_id"
     t.uuid "transfer_group_id"
@@ -74,6 +75,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_080304) do
     t.string "encrypted_password", default: "", null: false
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
+    t.decimal "low_balance_threshold", precision: 12, scale: 2, default: "500.0", null: false
     t.string "name"
     t.boolean "onboarded", default: false, null: false
     t.integer "otp_attempts", default: 0, null: false

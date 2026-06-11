@@ -157,58 +157,86 @@ export function SearchPopup({ open, onClose }: SearchPopupProps) {
         )}
 
         {!loading && !query.trim() && results.length === 0 && (
-          <div className="px-4 py-6 text-center text-[12px] text-tt-text-tertiary/60">
-            No recent transactions
+          <div className="flex flex-col items-center justify-center px-4 py-10 text-center select-none">
+            <div className="size-10 rounded-full bg-tt-bg flex items-center justify-center mb-3">
+              <Search className="size-5 text-tt-text-tertiary/60" />
+            </div>
+            <p className="text-[13px] font-medium text-tt-text-secondary">
+              No transactions yet
+            </p>
+            <p className="text-[11px] text-tt-text-tertiary mt-1 max-w-[240px] leading-relaxed">
+              Start by typing in a bucket.
+            </p>
           </div>
         )}
 
         {!loading && results.length > 0 && (
-          <div className="max-h-[300px] overflow-y-auto">
+          <div className="max-h-[300px] overflow-y-auto pb-2">
             {!query.trim() && (
               <p className="px-4 pt-3 pb-1.5 text-[10px] font-mono tracking-wider uppercase text-tt-text-tertiary border-b border-dashed border-tt-border-subtle/40">
                 Recent Transactions
               </p>
             )}
-            {results.map((result, i) => {
-              const amount = parseFloat(result.amount);
-              const isPositive = amount > 0;
+            {(() => {
+              const shouldGroup = results.length > 7;
+              let lastMonth = "";
 
-              return (
-                <button
-                  key={result.id}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    navigateToResult(result);
-                  }}
-                  className={classNames(
-                    "w-full text-left px-4 py-2.5 flex items-center justify-between transition-colors cursor-pointer",
-                    i === selectedIndex
-                      ? "bg-tt-bg"
-                      : "hover:bg-tt-bg/50",
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] text-tt-text truncate">
-                      {result.description || "Transaction"}
-                    </p>
-                    <p className="text-[11px] text-tt-text-tertiary mt-0.5">
-                      {result.bucket.name} · {formatDate(result.occurred_at)}
-                    </p>
+              return results.map((result, i) => {
+                const amount = parseFloat(result.amount);
+                const isPositive = amount > 0;
+                
+                let monthHeader = null;
+                if (shouldGroup) {
+                  const currentMonth = new Date(result.occurred_at).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+                  if (currentMonth !== lastMonth) {
+                    lastMonth = currentMonth;
+                    monthHeader = (
+                      <p className="px-4 pt-4 pb-1 text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary border-b border-dashed border-tt-border-subtle/30">
+                        {currentMonth}
+                      </p>
+                    );
+                  }
+                }
+
+                return (
+                  <div key={result.id}>
+                    {monthHeader}
+                    <button
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        navigateToResult(result);
+                      }}
+                      className={classNames(
+                        "w-full text-left px-4 py-2.5 flex items-center justify-between transition-colors cursor-pointer",
+                        i === selectedIndex
+                          ? "bg-tt-bg"
+                          : "hover:bg-tt-bg/50",
+                      )}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] text-tt-text truncate">
+                          {result.description || "Transaction"}
+                        </p>
+                        <p className="text-[11px] text-tt-text-tertiary mt-0.5">
+                          {result.bucket.name} · {formatDate(result.occurred_at)}
+                        </p>
+                      </div>
+                      <span
+                        className={classNames(
+                          "text-[14px] font-medium tracking-tight ml-3 shrink-0 text-right w-20",
+                          isPositive ? "text-tt-positive" : "text-tt-negative",
+                        )}
+                      >
+                        {isPositive ? "+" : ""}
+                        {amount.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </button>
                   </div>
-                  <span
-                    className={classNames(
-                      "text-[14px] font-medium tracking-tight ml-3 shrink-0",
-                      isPositive ? "text-tt-positive" : "text-tt-negative",
-                    )}
-                  >
-                    {isPositive ? "+" : ""}
-                    {amount.toLocaleString("en-IN", {
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </button>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
         )}
       </div>

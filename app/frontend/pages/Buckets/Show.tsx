@@ -6,20 +6,20 @@ import { CommandInput } from "@/components/CommandInput";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { ImportPreviewModal } from "@/components/ImportPreviewModal";
 import { TransferDialog } from "@/components/TransferDialog";
-import { BottomNavbar } from "@/components/BottomNavbar";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency, getBucketLabel } from "@/lib/format";
 import type { Bucket, TransactionRecord, AuthUser, FlashData } from "@/types";
 import {
   Trash2,
-  Download,
   FileText,
   FileSpreadsheet,
   PenLine,
+  MoreHorizontal,
+  Search,
 } from "lucide-react";
 
 type PageProps = {
-  auth: { user: AuthUser };
+  auth: { user: AuthUser & { low_balance_threshold?: number } };
   flash: FlashData;
   bucket: Bucket;
   transactions: TransactionRecord[];
@@ -33,10 +33,12 @@ function BalanceDisplay({
   balance,
   currencySymbol,
   bucketId,
+  isLowBalance,
 }: {
   balance: string;
   currencySymbol: string;
   bucketId: number;
+  isLowBalance: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -102,12 +104,14 @@ function BalanceDisplay({
         ? "text-[2.5rem] md:text-[3.25rem]"
         : "text-[3.25rem]";
 
+  const balanceColorClass = isLowBalance ? "text-[#da8a09]" : "text-tt-text";
+
   return (
     <button
       onClick={startEdit}
       className="group relative inline-block text-left focus:outline-none cursor-pointer max-w-full overflow-hidden"
     >
-      <span className={`${fontSizeClass} font-semibold leading-none tracking-tighter text-tt-text truncate overflow-hidden block`}>
+      <span className={`${fontSizeClass} ${balanceColorClass} font-semibold leading-none tracking-tighter truncate overflow-hidden block`}>
         <Odometer
           value={formatted}
         />
@@ -119,6 +123,7 @@ function BalanceDisplay({
 
 export default function Show() {
   const {
+    auth,
     flash,
     bucket,
     transactions,
@@ -130,16 +135,17 @@ export default function Show() {
 
   const [importOpen, setImportOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
-  const exportRef = useRef<HTMLDivElement>(null);
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
-        exportRef.current &&
-        !exportRef.current.contains(event.target as Node)
+        overflowRef.current &&
+        !overflowRef.current.contains(event.target as Node)
       ) {
-        setExportDropdownOpen(false);
+        setOverflowOpen(false);
+        setConfirmDelete(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -206,86 +212,110 @@ export default function Show() {
       showMobileBalance={false}
     >
       <section className="pt-4 pb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-4">
           <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary">
             {getBucketLabel(bucket.slug)}
           </p>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-search"))}
+              className="flex items-center justify-center size-8 border border-tt-border bg-tt-surface hover:text-tt-text hover:border-tt-text-tertiary/40 transition-all active:scale-[0.97] cursor-pointer"
+              title="Search (⌘K)"
+            >
+              <Search className="size-3.5 text-tt-text-tertiary" />
+            </button>
+
+            <div className="relative" ref={overflowRef}>
+              <button
+                onClick={() => setOverflowOpen(!overflowOpen)}
+                className="flex items-center justify-center size-8 border border-tt-border bg-tt-surface hover:text-tt-text hover:border-tt-text-tertiary/40 transition-all active:scale-[0.97] cursor-pointer"
+                title="More actions"
+              >
+                <MoreHorizontal className="size-3.5 text-tt-text-tertiary" />
+              </button>
+
+              {overflowOpen && (
+                <div className="absolute right-0 mt-1 w-48 border border-tt-border bg-tt-surface p-1 z-50 shadow-sm flex flex-col gap-0.5">
+                  <a
+                    href={`/exports/csv?bucket_slug=${bucket.slug}&tz=${tz}`}
+                    className="flex w-full items-center gap-2 px-2.5 py-2 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left font-medium"
+                    onClick={() => setOverflowOpen(false)}
+                  >
+                    <FileSpreadsheet className="size-3.5 text-tt-text-tertiary" />
+                    Export as CSV
+                  </a>
+                  <a
+                    href={`/exports/pdf?bucket_slug=${bucket.slug}&tz=${tz}`}
+                    className="flex w-full items-center gap-2 px-2.5 py-2 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left font-medium"
+                    onClick={() => setOverflowOpen(false)}
+                  >
+                    <FileText className="size-3.5 text-tt-text-tertiary" />
+                    Export as PDF
+                  </a>
+
+                  {other_buckets.length > 0 && (
+                    <>
+                      <div className="border-t border-tt-border/50 my-1" />
+                      {confirmDelete ? (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border border-red-200 bg-red-50/50">
+                          <span className="text-[11px] text-red-600 font-medium">Delete?</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleDeleteBucket}
+                              className="text-[11px] font-semibold text-red-600 hover:text-red-700 cursor-pointer"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDelete(false);
+                              }}
+                              className="text-[11px] text-tt-text-tertiary hover:text-tt-text cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDelete(true);
+                          }}
+                          className="flex w-full items-center gap-2 px-2.5 py-2 text-[12px] text-red-600 hover:bg-red-50/40 hover:text-red-700 transition-colors text-left font-medium cursor-pointer"
+                        >
+                          <Trash2 className="size-3.5 text-red-500" />
+                          Delete bucket
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {other_buckets.length > 0 && (
+              <TransferDialog
+                buckets={[bucket, ...other_buckets]}
+                currencySymbol={currency_symbol}
+                defaultFromBucketId={bucket.id.toString()}
+              />
+            )}
+          </div>
         </div>
+
         <div className="mt-2">
           <BalanceDisplay
             balance={bucket.balance}
             currencySymbol={currency_symbol}
             bucketId={bucket.id}
+            isLowBalance={
+              auth.user.low_balance_threshold !== undefined &&
+              (parseFloat(bucket.balance) || 0) < auth.user.low_balance_threshold
+            }
           />
-        </div>
-
-        <div className="flex items-center gap-1.5 mt-5">
-          <div className="relative" ref={exportRef}>
-            <button
-              onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-              className="flex items-center gap-1.5 border border-tt-border bg-tt-surface px-2.5 py-1.5 text-[12px] text-tt-text-tertiary hover:text-tt-text hover:border-tt-text-tertiary/40 transition-all active:scale-[0.97] cursor-pointer"
-              title="Export options"
-            >
-              <Download className="size-3.5" />
-              <span>Export</span>
-            </button>
-
-            {exportDropdownOpen && (
-              <div className="absolute left-0 mt-1 w-44 border border-tt-border bg-tt-surface p-1 z-50">
-                <a
-                  href={`/exports/csv?bucket_slug=${bucket.slug}&tz=${tz}`}
-                  className="flex w-full items-center gap-2 px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
-                  onClick={() => setExportDropdownOpen(false)}
-                >
-                  <FileSpreadsheet className="size-3.5 text-tt-text-tertiary" />
-                  CSV
-                </a>
-                <a
-                  href={`/exports/pdf?bucket_slug=${bucket.slug}&tz=${tz}`}
-                  className="flex w-full items-center gap-2 px-2.5 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left"
-                  onClick={() => setExportDropdownOpen(false)}
-                >
-                  <FileText className="size-3.5 text-tt-text-tertiary" />
-                  PDF
-                </a>
-              </div>
-            )}
-          </div>
-
-          {other_buckets.length > 0 && (
-            <TransferDialog
-              buckets={[bucket, ...other_buckets]}
-              currencySymbol={currency_symbol}
-              defaultFromBucketId={bucket.id.toString()}
-            />
-          )}
-
-          {other_buckets.length > 0 &&
-            (confirmDelete ? (
-              <div className="flex items-center gap-2 border border-red-200 bg-red-50 px-3 py-1.5">
-                <span className="text-[12px] text-red-600">Delete?</span>
-                <button
-                  onClick={handleDeleteBucket}
-                  className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors cursor-pointer"
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  className="text-[12px] text-tt-text-tertiary hover:text-tt-text transition-colors cursor-pointer"
-                >
-                  No
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="flex items-center gap-1.5 border border-tt-border bg-tt-surface px-2.5 py-1.5 text-[12px] text-tt-text-tertiary hover:text-red-500 hover:border-red-200 transition-all active:scale-[0.97] cursor-pointer"
-              >
-                <Trash2 className="size-3.5" />
-                <span>Delete</span>
-              </button>
-            ))}
         </div>
       </section>
 
@@ -295,7 +325,6 @@ export default function Show() {
           bucketId={bucket.id}
           bucketName={bucket.name}
           onImportClick={() => setImportOpen(true)}
-          showSearchTrigger={true}
         />
       </div>
 
@@ -312,9 +341,6 @@ export default function Show() {
         onOpenChange={setImportOpen}
       />
 
-      <div className="md:hidden">
-        <BottomNavbar currentSlug={bucket.slug} />
-      </div>
     </WorkspaceLayout>
   );
 }

@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { BucketSidebar } from "@/components/BucketSidebar";
 import { MobileTopBar } from "@/components/MobileTopBar";
 import { SearchPopup } from "@/components/SearchPopup";
+import { BottomNavbar } from "@/components/BottomNavbar";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency } from "@/lib/format";
 import type { Bucket } from "@/types";
@@ -34,8 +35,15 @@ export function WorkspaceLayout({
         setSearchOpen((prev) => !prev);
       }
     }
+    function handleOpenSearch() {
+      setSearchOpen(true);
+    }
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("open-search", handleOpenSearch);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("open-search", handleOpenSearch);
+    };
   }, []);
 
   const numericBalance = parseFloat(totalBalance) || 0;
@@ -89,6 +97,12 @@ export function WorkspaceLayout({
           {children}
         </main>
       </div>
+
+      {onboarded && (
+        <div className="md:hidden">
+          <BottomNavbar currentSlug={activeBucketSlug} />
+        </div>
+      )}
 
       <SearchPopup open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>

@@ -57,6 +57,20 @@ export function TransferDialog({
     }
   }, [open])
 
+  useEffect(() => {
+    function handleGlobalKeyDown(e: KeyboardEvent) {
+      if (
+        e.key.toLowerCase() === "t" &&
+        (e.metaKey || e.ctrlKey)
+      ) {
+        e.preventDefault()
+        setOpen(true)
+      }
+    }
+    document.addEventListener("keydown", handleGlobalKeyDown)
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown)
+  }, [])
+
   const fromBucket = buckets.find(b => b.id.toString() === fromBucketId)
   const toBucket = buckets.find(b => b.id.toString() === toBucketId)
 

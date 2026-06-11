@@ -216,8 +216,11 @@ function DateGroup({
         className="flex w-full items-center justify-between py-2.5 text-[12px] text-tt-text-secondary hover:text-tt-text transition-colors focus:outline-none"
       >
         <span className="capitalize">{date.toLowerCase()} total</span>
-        <span className="flex items-center gap-1 tracking-tight font-medium">
-          <span>{total >= 0 ? "+" : "-"}</span>
+        <span className={classNames(
+          "flex items-center gap-1 tracking-tight font-medium",
+          total > 0 ? "text-tt-positive" : total < 0 ? "text-tt-negative" : "text-tt-text-secondary"
+        )}>
+          <span>{total > 0 ? "+" : total < 0 ? "-" : ""}</span>
           <Odometer
             value={formatCurrency(Math.abs(total).toFixed(2), currencySymbol)}
           />

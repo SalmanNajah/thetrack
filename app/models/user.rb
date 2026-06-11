@@ -6,6 +6,8 @@ class User < ApplicationRecord
   has_many :buckets, dependent: :destroy
   has_many :transactions, dependent: :destroy
 
+  validates :low_balance_threshold, numericality: { greater_than_or_equal_to: 0 }
+
   scope :admins, -> { where(admin: true) }
   scope :active, -> { where.not("email LIKE ?", "%@deleted.thetrack.app") }
 

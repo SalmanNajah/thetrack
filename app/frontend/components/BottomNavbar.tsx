@@ -29,7 +29,8 @@ function BucketIcon({ slug, className }: { slug: string; className?: string }) {
 }
 
 export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
-  const { nav_buckets } = usePage<{ nav_buckets: NavBucket[] }>().props;
+  const { url, props } = usePage<{ nav_buckets: NavBucket[] }>();
+  const { nav_buckets } = props;
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -39,8 +40,11 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
 
   if (!nav_buckets?.length) return null;
 
+  const isOnDashboard = url.startsWith("/dashboard");
+  const isOnSettings = url.startsWith("/settings");
+
   const current = nav_buckets.find((b) => b.slug === currentSlug);
-  const label = current?.name || "Dashboard";
+  const label = isOnSettings ? "Settings" : (current?.name || "Dashboard");
 
   useEffect(() => {
     if (open) {
@@ -231,7 +235,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                 onClick={close}
                 className={classNames(
                   "flex items-center gap-2.5  px-3.5 py-2.5 text-[14px] transition-colors duration-100 focus:outline-none",
-                  !currentSlug
+                  isOnDashboard
                     ? "text-tt-text font-medium bg-tt-bg"
                     : "text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg",
                 )}
@@ -242,7 +246,12 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
               <Link
                 href="/settings"
                 onClick={close}
-                className="flex items-center gap-2.5  px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg transition-colors duration-100 focus:outline-none"
+                className={classNames(
+                  "flex items-center gap-2.5  px-3.5 py-2.5 text-[14px] transition-colors duration-100 focus:outline-none",
+                  isOnSettings
+                    ? "text-tt-text font-medium bg-tt-bg"
+                    : "text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg",
+                )}
               >
                 <Settings className="size-3.5" />
                 Settings

@@ -1,14 +1,8 @@
 import { useState, useRef, useEffect, FormEvent, KeyboardEvent } from "react";
-import { router } from "@inertiajs/react";
-import { ArrowUp, Paperclip, Search, ChevronDown } from "lucide-react";
+import { router, usePage } from "@inertiajs/react";
+import { ArrowUp, Paperclip, ChevronDown } from "lucide-react";
 import { classNames } from "@/lib/utils";
-import type { Bucket } from "@/types";
-
-const BUCKET_PLACEHOLDERS: Record<string, string> = {
-  income: "salary 50000",
-  daily: "chai 20",
-};
-const DEFAULT_PLACEHOLDER = "-200 chai or +50 to daily";
+import type { Bucket, AuthUser } from "@/types";
 
 type CommandInputProps = {
   mode: "dashboard" | "bucket";
@@ -16,8 +10,6 @@ type CommandInputProps = {
   bucketId?: number;
   bucketName?: string;
   onImportClick?: () => void;
-  onSearchClick?: () => void;
-  showSearchTrigger?: boolean;
 };
 
 export function CommandInput({
@@ -26,14 +18,14 @@ export function CommandInput({
   bucketId,
   bucketName,
   onImportClick,
-  onSearchClick,
-  showSearchTrigger = false,
 }: CommandInputProps) {
   const [input, setInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { auth: { user } } = usePage<{ auth: { user: AuthUser & { default_unsigned_to_positive: boolean } } }>().props;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,10 +61,16 @@ export function CommandInput({
       ? { id: bucketId!, name: bucketName || "", slug: "" }
       : buckets.find((b) => b.id === selectedBucketId) || buckets[0];
 
+  const defaultPlaceholder = user?.default_unsigned_to_positive
+    ? "200 chai or move 50 to daily"
+    : "-200 chai or +50 to daily";
+
   const placeholder =
-    selectedBucket?.slug && BUCKET_PLACEHOLDERS[selectedBucket.slug]
-      ? BUCKET_PLACEHOLDERS[selectedBucket.slug]
-      : DEFAULT_PLACEHOLDER;
+    selectedBucket?.slug === "daily"
+      ? (user?.default_unsigned_to_positive ? "-200 chai" : "200 chai")
+      : selectedBucket?.slug === "income"
+        ? "salary 50000"
+        : defaultPlaceholder;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -89,13 +87,12 @@ export function CommandInput({
 
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
-      if (
-        e.key === "/" &&
-        !e.metaKey &&
-        !e.ctrlKey &&
-        document.activeElement?.tagName !== "INPUT" &&
-        document.activeElement?.tagName !== "TEXTAREA"
-      ) {
+      const isInputActive = document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA";
+      
+      const isSlash = e.key === "/" && !e.metaKey && !e.ctrlKey;
+      const isCmdN = e.key.toLowerCase() === "n" && (e.metaKey || e.ctrlKey);
+
+      if ((isSlash || isCmdN) && !isInputActive) {
         e.preventDefault();
         inputRef.current?.focus();
       }
@@ -134,29 +131,16 @@ export function CommandInput({
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") {
+      setInput("");
       inputRef.current?.blur();
     }
   }
 
   return (
     <div className="w-full">
-      <div className="border border-dashed border-tt-text-tertiary/40 bg-tt-surface">
+      <div className="border border-tt-text-tertiary/40 bg-tt-surface">
         <div className="flex items-center justify-between px-3 py-2 border-b border-dashed border-tt-text-tertiary/20">
-          {showSearchTrigger ? (
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onSearchClick?.();
-              }}
-              className="hidden md:flex items-center gap-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text border border-dashed border-tt-text-tertiary/40 px-2 py-0.5 bg-tt-bg transition-colors cursor-pointer"
-            >
-              <Search className="size-3" />
-              <span>⌘K</span>
-            </button>
-          ) : (
-            <div />
-          )}
+          <div />
 
           {mode === "dashboard" && buckets.length > 0 ? (
             <div className="relative ml-auto" ref={dropdownRef}>
@@ -202,7 +186,7 @@ export function CommandInput({
 
         <form
           onSubmit={handleSubmit}
-          className="flex items-center gap-2 px-3 py-3"
+          className="flex items-center gap-2 px-4 py-3.5"
         >
           {onImportClick && (
             <button

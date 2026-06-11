@@ -41,6 +41,8 @@ class Admin::UsersController < Admin::BaseController
     user = User.active.find(params[:id])
     authorize user
 
+    user.assign_attributes(user_params)
+
     if params.key?(:admin)
       authorize user, :toggle_admin?
 
@@ -48,9 +50,11 @@ class Admin::UsersController < Admin::BaseController
         redirect_to admin_user_path(user), alert: "Cannot remove the last admin: at least one admin must exist"
         return
       end
+
+      user.admin = ActiveModel::Type::Boolean.new.cast(params[:admin])
     end
 
-    if user.update(user_params)
+    if user.save
       audit!("admin.user.update", target_user: user, metadata: { email: user.email, changes: user.previous_changes.except("updated_at") })
       redirect_to admin_user_path(user), notice: "User updated successfully"
     else
@@ -95,10 +99,6 @@ class Admin::UsersController < Admin::BaseController
   private
 
   def user_params
-    if current_user.super_admin?
-      params.permit(:name, :currency, :admin)
-    else
-      params.permit(:name, :currency)
-    end
+    params.permit(:name, :currency)
   end
 end

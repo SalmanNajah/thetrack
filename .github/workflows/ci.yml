@@ -81,6 +81,9 @@ jobs:
         with:
           bundler-cache: true
 
+      - name: Install Node.js dependencies
+        run: npm ci
+
       - name: Run tests
         env:
           RAILS_ENV: test
@@ -119,6 +122,9 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+
+      - name: Install Node.js dependencies
+        run: npm ci
 
       - name: Run System Tests
         env:

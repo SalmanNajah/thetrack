@@ -258,9 +258,9 @@ export function BucketSidebar({
         </Link>
 
         <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
-          <DialogContent className="sm:max-w-sm">
+          <DialogContent className="sm:max-w-sm p-0! gap-0!">
             <DialogHeader>
-              <DialogTitle className="text-[15px] font-semibold">
+              <DialogTitle className="text-[15px] font-semibold px-4 py-4 border-b border-dashed">
                 Keyboard Shortcuts
               </DialogTitle>
             </DialogHeader>
@@ -268,7 +268,7 @@ export function BucketSidebar({
               {KEYBOARD_SHORTCUTS.map(({ label, key }) => (
                 <div
                   key={key}
-                  className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle"
+                  className="flex justify-between items-center pb-4 px-4 border-b border-tt-border-subtle last:border-0 first:pt-2"
                 >
                   <span className="text-tt-text-secondary">{label}</span>
                   <Kbd>{key}</Kbd>

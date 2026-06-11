@@ -103,7 +103,7 @@ export function BottomNavbar({
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-45 bg-tt-surface border-t border-tt-border h-[calc(64px+env(safe-area-inset-bottom))] pt-2.5 pb-[calc(4px+env(safe-area-inset-bottom))] flex items-center justify-around">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-tt-surface border-t border-tt-border h-[calc(64px+env(safe-area-inset-bottom))] pt-2.5 pb-[calc(4px+env(safe-area-inset-bottom))] flex items-center justify-around">
         <Link
           href="/dashboard"
           className={classNames(
@@ -120,17 +120,22 @@ export function BottomNavbar({
             <button
               className={classNames(
                 "flex flex-1 flex-col items-center justify-center h-full text-[11px] font-medium transition-colors focus:outline-none cursor-pointer",
-                isOnBuckets ? "text-tt-positive" : "text-tt-text-secondary"
+                isOnBuckets || open ? "text-tt-positive" : "text-tt-text-secondary"
               )}
             >
-              <Plus className="size-[22px]" />
+              <Plus
+                className={classNames(
+                  "size-[22px] transition-transform duration-300 ease-in-out origin-center",
+                  open ? "-rotate-135 text-red-600" : ""
+                )}
+              />
               <span className="mt-0.5">Buckets</span>
             </button>
           </SheetTrigger>
           <SheetContent
             side="bottom"
             showCloseButton={false}
-            className="bg-tt-surface border-t border-tt-border rounded-t-2xl max-h-[80vh] h-fit overflow-y-auto px-4 pt-5 pb-5 bottom-[calc(64px+env(safe-area-inset-bottom))]! left-0 right-0 w-full z-50 shadow-none!"
+            className="bg-tt-surface border-t border-tt-border rounded-t-2xl max-h-[80vh] h-fit overflow-y-auto px-4 pt-5 pb-5 bottom-[calc(64px+env(safe-area-inset-bottom))]! left-0 right-0 w-full z-48 shadow-none!"
           >
             <SheetHeader className="px-3 pb-1 flex flex-row items-center justify-between">
               <SheetTitle className="text-base font-semibold tracking-tight text-tt-text">My Buckets</SheetTitle>

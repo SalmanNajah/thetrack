@@ -66,7 +66,7 @@ gem "inertia_rails", "~> 3.21"
 gem "vite_rails", "~> 3.11"
 gem "devise", "~> 5.0"
 gem "omniauth-google-oauth2", "~> 1.2"
-gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem "omniauth-rails_csrf_protection", "~> 2.0"
 
 gem "resend", "~> 1.3"
 gem "rack-attack", "~> 6.7"

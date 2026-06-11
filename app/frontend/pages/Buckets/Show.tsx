@@ -220,7 +220,7 @@ export default function Show() {
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("open-search"))}
-              className="hidden md:flex items-center gap-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text border border-dashed border-tt-text-tertiary px-2.5 py-1.5 bg-tt-surface transition-colors cursor-pointer"
+              className="hidden md:flex items-center gap-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text border border-tt-text-tertiary/40 px-2.5 py-1.5 bg-tt-surface transition-colors cursor-pointer"
               title="Search (⌘K)"
             >
               <Search className="size-3.5 text-tt-text-tertiary" />

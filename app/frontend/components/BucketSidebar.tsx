@@ -11,6 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Kbd } from "@/components/ui/kbd";
+
+const KEYBOARD_SHORTCUTS = [
+  { label: "Open search modal", key: "⌘K" },
+  { label: "Focus transaction input", key: "/" },
+  { label: "New transaction (focus input)", key: "⌘N" },
+  { label: "Open transfer modal", key: "⌘T" },
+  { label: "Close modals / Clear input", key: "Esc" },
+  { label: "Show keyboard shortcuts", key: "?" },
+];
 
 type BucketSidebarProps = {
   buckets: Bucket[];
@@ -247,30 +257,15 @@ export function BucketSidebar({
               <DialogTitle className="text-[15px] font-semibold">Keyboard Shortcuts</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2 text-[13px]">
-              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
-                <span className="text-tt-text-secondary">Open search modal</span>
-                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">⌘K</kbd>
-              </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
-                <span className="text-tt-text-secondary">Focus transaction input</span>
-                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">/</kbd>
-              </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
-                <span className="text-tt-text-secondary">New transaction (focus input)</span>
-                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">⌘N</kbd>
-              </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
-                <span className="text-tt-text-secondary">Open transfer modal</span>
-                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">⌘T</kbd>
-              </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
-                <span className="text-tt-text-secondary">Close modals / Clear input</span>
-                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">Esc</kbd>
-              </div>
-              <div className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle">
-                <span className="text-tt-text-secondary">Show keyboard shortcuts</span>
-                <kbd className="px-1.5 py-0.5 bg-tt-bg border border-tt-border text-[11px] font-mono rounded">?</kbd>
-              </div>
+              {KEYBOARD_SHORTCUTS.map(({ label, key }) => (
+                <div
+                  key={key}
+                  className="flex justify-between items-center py-1.5 border-b border-tt-border-subtle"
+                >
+                  <span className="text-tt-text-secondary">{label}</span>
+                  <Kbd>{key}</Kbd>
+                </div>
+              ))}
             </div>
           </DialogContent>
         </Dialog>

@@ -109,15 +109,15 @@ class TransactionsController < ApplicationController
       suffix = match[2]
       if suffix
         case suffix.downcase
-        when 'k'
+        when "k"
           num *= 1_000
-        when 'm', 'million', 'millions'
+        when "m", "million", "millions"
           num *= 1_000_000
-        when 'b', 'billion', 'billions'
+        when "b", "billion", "billions"
           num *= 1_000_000_000
-        when 'l', 'lakh', 'lakhs'
+        when "l", "lakh", "lakhs"
           num *= 100_000
-        when 'cr', 'crore', 'crores'
+        when "cr", "crore", "crores"
           num *= 10_000_000
         end
       end

@@ -65,7 +65,7 @@ class Users::EmailVerificationsControllerTest < ActionDispatch::IntegrationTest
 
   test "POST /verify-email fails for expired OTP" do
     post new_user_session_url, params: { user: { email: @unverified_user.email, password: "password" } }
-    
+
     otp = @unverified_user.generate_otp!
     @unverified_user.update!(otp_sent_at: 15.minutes.ago)
 

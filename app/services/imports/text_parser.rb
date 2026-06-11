@@ -11,7 +11,7 @@ module Imports
       /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})\b/i
     ].freeze
 
-    AMOUNT_REGEX = /([+-])?\s*(?:Rs\.?|₹|\$|€|£)?\s*\b(\d{1,3}(?:,\d{2,3})+(?:\.\d+)?|\d+(?:\.\d+)?)\b(?!\s*(?:st|nd|rd|th)\b)/i
+    AMOUNT_REGEX = /([+-])?\s*(?:Rs\.?|₹|\$|€|£)?\s*\b(\d{1,3}(?:,\d{2,3})+(?:\.\d+)?|\d+(?:\.\d+)?)\s*(k|m|b|l|cr|lakhs?|crores?|millions?|billions?)?\b(?!\s*(?:st|nd|rd|th)\b)/i
 
     BLACKLISTED_LINE_PATTERNS = [
       /\b(total|summary)\s+(credits?|debits?|amounts?|transactions?|txns?|balance|transfer|transfer?s)\b/i,
@@ -115,12 +115,15 @@ module Imports
 
         sign = best_match[1]
         num_str = best_match[2].gsub(",", "")
+        suffix = best_match[3]
         amount = BigDecimal(num_str) rescue nil
 
         if amount.nil? || amount.zero?
           errors << "Line #{idx + 1}: Could not parse amount '#{num_str}'"
           next
         end
+
+        amount = apply_multiplier(amount, suffix)
 
         resolved_negative = false
         if current_sign == "-"
@@ -207,6 +210,23 @@ module Imports
       end
 
       score
+    end
+    def self.apply_multiplier(amount, suffix)
+      return amount if suffix.blank?
+      case suffix.downcase
+      when "k"
+        amount * 1_000
+      when "m", "million", "millions"
+        amount * 1_000_000
+      when "b", "billion", "billions"
+        amount * 1_000_000_000
+      when "l", "lakh", "lakhs"
+        amount * 100_000
+      when "cr", "crore", "crores"
+        amount * 10_000_000
+      else
+        amount
+      end
     end
   end
 end

@@ -101,11 +101,30 @@ class TransactionsController < ApplicationController
   end
 
 
-  private
-
   def parse_decimal(value)
     return nil if value.blank?
-    BigDecimal(value.to_s)
+    cleaned = value.to_s.strip.gsub(/,/, "")
+    if match = cleaned.match(/^(\d+(?:\.\d+)?)\s*(k|m|b|l|cr|lakhs?|crores?|millions?|billions?)?$/i)
+      num = BigDecimal(match[1])
+      suffix = match[2]
+      if suffix
+        case suffix.downcase
+        when 'k'
+          num *= 1_000
+        when 'm', 'million', 'millions'
+          num *= 1_000_000
+        when 'b', 'billion', 'billions'
+          num *= 1_000_000_000
+        when 'l', 'lakh', 'lakhs'
+          num *= 100_000
+        when 'cr', 'crore', 'crores'
+          num *= 10_000_000
+        end
+      end
+      num
+    else
+      BigDecimal(cleaned)
+    end
   rescue ArgumentError, TypeError
     nil
   end

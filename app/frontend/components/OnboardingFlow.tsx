@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { router } from "@inertiajs/react";
 import type { Bucket, CurrencyOption } from "@/types";
+import { parseAmountWithSuffix } from "@/lib/format";
 
 type OnboardingFlowProps = {
   buckets: Bucket[];
@@ -33,11 +34,11 @@ export function OnboardingFlow({
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
-      const val = parseFloat(amount);
-      if (!val || val <= 0) {
+      const parsedVal = parseAmountWithSuffix(amount);
+      if (!parsedVal || parsedVal <= 0) {
         handleSaveOnboarding(null);
       } else {
-        handleSaveOnboarding(amount);
+        handleSaveOnboarding(parsedVal.toString());
       }
     }
   }
@@ -146,9 +147,7 @@ export function OnboardingFlow({
             <span className="text-sm text-tt-text-tertiary">{displaySymbol}</span>
             <input
               ref={balanceInputRef}
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -177,11 +176,11 @@ export function OnboardingFlow({
           <button
             type="button"
             onClick={() => {
-              const val = parseFloat(amount);
-              if (!val || val <= 0) {
+              const parsedVal = parseAmountWithSuffix(amount);
+              if (!parsedVal || parsedVal <= 0) {
                 handleSaveOnboarding(null);
               } else {
-                handleSaveOnboarding(amount);
+                handleSaveOnboarding(parsedVal.toString());
               }
             }}
             className="bg-tt-text text-tt-bg px-4 py-1.5 text-[13px] font-medium hover:opacity-90 transition-opacity cursor-pointer"

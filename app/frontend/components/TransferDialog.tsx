@@ -8,7 +8,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog'
-import { formatCurrency } from '@/lib/format'
+import { formatCurrency, parseAmountWithSuffix } from '@/lib/format'
 import type { Bucket } from '@/types'
 
 export function TransferDialog({
@@ -79,13 +79,14 @@ export function TransferDialog({
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!amount || parseFloat(amount) <= 0 || !fromBucketId || !toBucketId) return
+    const parsedAmount = parseAmountWithSuffix(amount)
+    if (!amount || parsedAmount <= 0 || !fromBucketId || !toBucketId) return
     setSubmitting(true)
 
     router.post('/transactions/transfer', {
       from_bucket_id: parseInt(fromBucketId),
       to_bucket_id: parseInt(toBucketId),
-      amount,
+      amount: parsedAmount.toString(),
     }, {
       preserveScroll: true,
       onFinish: () => {
@@ -148,9 +149,7 @@ export function TransferDialog({
                   <span className="text-tt-text-tertiary text-sm">{currencySymbol}</span>
                   <input
                     ref={amountRef}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
+                    type="text"
                     value={amount}
                     onChange={e => setAmount(e.target.value)}
                     placeholder="0"
@@ -181,8 +180,8 @@ export function TransferDialog({
                   </SelectContent>
                 </Select>
                 <span className="text-2xl font-semibold tracking-tight text-tt-text-tertiary">
-                  {amount && parseFloat(amount) > 0
-                    ? formatCurrency(amount, currencySymbol)
+                  {amount && parseAmountWithSuffix(amount) > 0
+                    ? formatCurrency(parseAmountWithSuffix(amount).toString(), currencySymbol)
                     : `${currencySymbol}0`}
                 </span>
               </div>
@@ -202,7 +201,7 @@ export function TransferDialog({
               </button>
             </div>
           </div>
-          <Button type="submit" disabled={submitting || !amount || parseFloat(amount) <= 0 || !fromBucketId || !toBucketId} className="w-full mt-4 cursor-pointer">
+          <Button type="submit" disabled={submitting || !amount || parseAmountWithSuffix(amount) <= 0 || !fromBucketId || !toBucketId} className="w-full mt-4 cursor-pointer">
             {submitting ? 'Transferring…' : 'Transfer'}
           </Button>
         </form>

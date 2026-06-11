@@ -60,3 +60,21 @@ export function getBucketLabel(slug: string): string {
     default: return 'Balance'
   }
 }
+
+export function parseAmountWithSuffix(val: string): number {
+  if (!val) return 0
+  const cleaned = val.trim().replace(/,/g, "")
+  const match = cleaned.match(/^(\d+(?:\.\d+)?)\s*(k|m|b|l|cr|lakhs?|crores?|millions?|billions?)$/i)
+  if (!match) {
+    const parsed = parseFloat(cleaned)
+    return isNaN(parsed) ? 0 : parsed
+  }
+  const num = parseFloat(match[1])
+  const suffix = match[2].toLowerCase()
+  if (suffix === "k") return num * 1_000
+  if (suffix === "m" || suffix === "million" || suffix === "millions") return num * 1_000_000
+  if (suffix === "b" || suffix === "billion" || suffix === "billions") return num * 1_000_000_000
+  if (suffix === "l" || suffix === "lakh" || suffix === "lakhs") return num * 100_000
+  if (suffix === "cr" || suffix === "crore" || suffix === "crores") return num * 10_000_000
+  return num
+}

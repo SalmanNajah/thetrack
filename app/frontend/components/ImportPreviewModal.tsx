@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
+import { parseAmountWithSuffix } from '@/lib/format'
 
 type ParsedRow = {
   index: number
@@ -158,9 +159,7 @@ export function ImportPreviewModal({ bucketId, currentBalance, open, onOpenChang
   }
 
   const cleanAmt = useCallback((str: string) => {
-    if (!str) return 0
-    const cleaned = str.replace(/[, ]/g, '')
-    return parseFloat(cleaned)
+    return parseAmountWithSuffix(str)
   }, [])
 
   const selected = rows.filter(r => r.selected)

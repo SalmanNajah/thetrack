@@ -21,6 +21,7 @@ type PageProps = {
     name: string | null
     currency: string
     default_unsigned_to_positive: boolean
+    low_balance_threshold: number
     provider: string | null
     created_at: string
   }
@@ -93,16 +94,39 @@ function ProfileSection({ user }: { user: PageProps['user'] }) {
   )
 }
 
-function CurrencySection({ currentCurrency, currencies }: {
+function PreferencesSection({
+  currentCurrency,
+  currencies,
+  initialThreshold,
+  currencySymbol,
+}: {
   currentCurrency: string
   currencies: CurrencyOption[]
+  initialThreshold: number
+  currencySymbol: string
 }) {
+  const [currencySaving, setCurrencySaving] = useState(false)
+  const [threshold, setThreshold] = useState(initialThreshold.toString())
+  const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  function handleChange(value: string) {
-    setSaving(true)
+  useEffect(() => {
+    setThreshold(initialThreshold.toString())
+  }, [initialThreshold])
+
+  function handleCurrencyChange(value: string) {
+    setCurrencySaving(true)
     router.post('/settings/update_currency', { currency: value }, {
       preserveScroll: true,
+      onFinish: () => setCurrencySaving(false),
+    })
+  }
+
+  function handleThresholdSave() {
+    setSaving(true)
+    router.post('/settings/update_low_balance_threshold', { low_balance_threshold: threshold }, {
+      preserveScroll: true,
+      onSuccess: () => setEditing(false),
       onFinish: () => setSaving(false),
     })
   }
@@ -112,18 +136,42 @@ function CurrencySection({ currentCurrency, currencies }: {
       <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
         Preferences
       </h2>
-      <Field label="Currency">
-        <Select value={currentCurrency} onValueChange={handleChange} disabled={saving}>
-          <SelectTrigger className="w-28 h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {currencies.map(c => (
-              <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+      <div>
+        <Field label="Currency">
+          <Select value={currentCurrency} onValueChange={handleCurrencyChange} disabled={currencySaving}>
+            <SelectTrigger className="w-28 h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {currencies.map(c => (
+                <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+
+        <Field label="Low balance threshold">
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={threshold}
+                onChange={e => setThreshold(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleThresholdSave()}
+                autoFocus
+                className="w-24 border border-tt-border bg-tt-bg px-2.5 py-1 text-sm text-tt-text text-right focus:outline-none focus:ring-1 focus:ring-tt-accent"
+              />
+              <button onClick={handleThresholdSave} disabled={saving} className="text-[12px] font-medium text-tt-accent">
+                {saving ? '…' : 'Save'}
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setEditing(true)} className="text-sm text-tt-text border-b border-dashed border-tt-text-tertiary/40 hover:border-tt-accent hover:text-tt-accent cursor-pointer transition-colors">
+              {currencySymbol}{parseFloat(threshold).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+            </button>
+          )}
+        </Field>
+      </div>
     </section>
   )
 }
@@ -487,7 +535,12 @@ export default function Index() {
 
         <div className="mt-8 space-y-8">
           <ProfileSection user={user} />
-          <CurrencySection currentCurrency={user.currency} currencies={currencies} />
+          <PreferencesSection
+            currentCurrency={user.currency}
+            currencies={currencies}
+            initialThreshold={user.low_balance_threshold}
+            currencySymbol={currency_symbol}
+          />
           <SignConventionSection defaultUnsignedToPositive={user.default_unsigned_to_positive} />
           <SecuritySection user={user} />
           <DataSection />

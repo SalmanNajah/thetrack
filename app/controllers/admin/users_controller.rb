@@ -70,8 +70,11 @@ class Admin::UsersController < Admin::BaseController
     ActiveRecord::Base.transaction do
       audit!("admin.user.delete", target_user: user, metadata: { email: user.email })
 
+      user.transactions.find_each do |t|
+        t.allow_destruction_override = true
+        t.destroy!
+      end
       user.buckets.destroy_all
-      user.transactions.destroy_all
 
       user.update!(
         email: "deleted-#{user.id}@deleted.thetrack.app",

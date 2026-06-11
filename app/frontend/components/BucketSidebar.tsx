@@ -37,7 +37,9 @@ export function BucketSidebar({
 }: BucketSidebarProps) {
   const {
     auth: { user },
-  } = usePage<{ auth: { user: AuthUser & { low_balance_threshold?: number } } }>().props;
+  } = usePage<{
+    auth: { user: AuthUser & { low_balance_threshold?: number } };
+  }>().props;
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
@@ -119,12 +121,14 @@ export function BucketSidebar({
             <p className="text-[14px] font-medium text-tt-text truncate group-hover:opacity-80 transition-opacity">
               {displayName}
             </p>
-            <p className="text-[10px] text-tt-text-secondary truncate">{user.email}</p>
+            <p className="text-[10px] text-tt-text-secondary truncate">
+              {user.email}
+            </p>
           </div>
         </Link>
       </div>
 
-      <div className="border-t border-dashed border-tt-sidebar-border" />
+      <div className="border-t border-dashed border-tt-border" />
 
       <div className="px-5 py-4 flex flex-col gap-1">
         <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary">
@@ -137,38 +141,40 @@ export function BucketSidebar({
         </p>
       </div>
 
-      <div className="border-t border-dashed border-tt-sidebar-border" />
+      <div className="border-t border-dashed border-tt-border" />
 
-      <nav className="flex-1 overflow-y-auto min-h-0 px-3 py-2 scrollbar-none">
+      <nav className="flex-1 overflow-y-auto min-h-0 px-0 py-2 scrollbar-none">
         <Link
           href="/dashboard"
           className={classNames(
-            "flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium transition-all duration-100 mb-0.5 border border-transparent",
+            "flex items-center gap-2.5 px-5 py-2.5 text-[13px] font-medium transition-all duration-100 mb-0.5 border-y",
             isOnDashboard
-              ? "bg-white text-tt-text border-tt-sidebar-border"
-              : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50",
+              ? "bg-white text-tt-text border-tt-border"
+              : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border-transparent",
           )}
         >
           <Home className="size-3.5" />
           Dashboard
         </Link>
 
-        <div className="border-t border-dashed border-tt-sidebar-border/60 my-2 -mx-3" />
+        <div className="border-t border-dashed border-tt-border/60 my-2" />
 
         {buckets.map((bucket) => {
           const isActive = bucket.slug === activeBucketSlug;
           const bucketBalance = parseFloat(bucket.balance) || 0;
-          const isLow = user.low_balance_threshold !== undefined && bucketBalance < user.low_balance_threshold;
+          const isLow =
+            user.low_balance_threshold !== undefined &&
+            bucketBalance < user.low_balance_threshold;
 
           return (
             <Link
               key={bucket.id}
               href={`/buckets/${bucket.slug}`}
               className={classNames(
-                "flex items-center justify-between px-3 py-2 transition-all duration-100 group border border-transparent",
+                "flex items-center justify-between px-5 py-2.5 transition-all duration-100 group border-y",
                 isActive
-                  ? "bg-white text-tt-text border-tt-sidebar-border"
-                  : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50",
+                  ? "bg-white text-tt-text border-tt-border"
+                  : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border-transparent",
               )}
             >
               <span className="text-[13px] font-medium truncate">
@@ -191,7 +197,7 @@ export function BucketSidebar({
 
         {isAdding ? (
           <div
-            className="px-3 py-2"
+            className="px-5 py-2"
             onBlur={(e) => {
               if (!e.currentTarget.contains(e.relatedTarget as Node)) {
                 setIsAdding(false);
@@ -211,7 +217,7 @@ export function BucketSidebar({
         ) : (
           <button
             onClick={() => setIsAdding(true)}
-            className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-tt-text-secondary hover:text-tt-text transition-colors cursor-pointer"
+            className="flex w-full items-center gap-2 px-5 py-2.5 text-[13px] text-tt-text-secondary hover:text-tt-text transition-colors cursor-pointer"
           >
             <Plus className="size-3.5" />
             New bucket
@@ -219,7 +225,7 @@ export function BucketSidebar({
         )}
       </nav>
 
-      <div className="border-t border-dashed border-tt-sidebar-border" />
+      <div className="border-t border-dashed border-tt-border" />
 
       <div className="px-4 py-3 flex flex-col gap-1">
         <Link
@@ -227,8 +233,8 @@ export function BucketSidebar({
           className={classNames(
             "flex items-center gap-2 px-2 py-1.5 text-[12px] transition-colors border border-transparent",
             isOnSettings
-              ? "bg-white text-tt-text border-tt-sidebar-border"
-              : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50"
+              ? "bg-white text-tt-text border-tt-border"
+              : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50",
           )}
         >
           <Settings className="size-3.5" />
@@ -254,7 +260,9 @@ export function BucketSidebar({
         <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle className="text-[15px] font-semibold">Keyboard Shortcuts</DialogTitle>
+              <DialogTitle className="text-[15px] font-semibold">
+                Keyboard Shortcuts
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2 text-[13px]">
               {KEYBOARD_SHORTCUTS.map(({ label, key }) => (

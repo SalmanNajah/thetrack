@@ -59,7 +59,7 @@ export function WorkspaceLayout({
     <div className="min-h-screen bg-tt-bg">
       {onboarded && (
         <div
-          className="hidden md:block fixed left-0 top-0 bottom-0 border-r border-dashed border-tt-sidebar-border"
+          className="hidden md:block fixed left-0 top-0 bottom-0 border-r border-tt-border"
           style={{ width: "var(--tt-sidebar-width)" }}
         >
           <BucketSidebar

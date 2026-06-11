@@ -2,20 +2,25 @@ import { Link, usePage, router } from "@inertiajs/react";
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import {
-  Menu,
-  X,
   Home,
   Settings,
   Plus,
   Trash2,
-  LogOut,
   Wallet,
   Banknote,
   CircleDollarSign,
 } from "lucide-react";
 import { classNames } from "@/lib/utils";
-
-type NavBucket = { id: number; name: string; slug: string };
+import { formatCurrency } from "@/lib/format";
+import { Odometer } from "@/components/Odometer";
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import type { Bucket } from "@/types";
 
 function BucketIcon({ slug, className }: { slug: string; className?: string }) {
   switch (slug) {
@@ -28,29 +33,29 @@ function BucketIcon({ slug, className }: { slug: string; className?: string }) {
   }
 }
 
-export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
-  const { url, props } = usePage<{ nav_buckets: NavBucket[] }>();
-  const { nav_buckets } = props;
+export function BottomNavbar({
+  currentSlug,
+  buckets = [],
+  currencySymbol = "₹",
+}: {
+  currentSlug?: string;
+  buckets?: Bucket[];
+  totalBalance?: string;
+  currencySymbol?: string;
+}) {
+  const { url } = usePage();
   const [open, setOpen] = useState(false);
-  const [visible, setVisible] = useState(false);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  if (!nav_buckets?.length) return null;
-
   const isOnDashboard = url.startsWith("/dashboard");
   const isOnSettings = url.startsWith("/settings");
-
-  const current = nav_buckets.find((b) => b.slug === currentSlug);
-  const label = isOnSettings ? "Settings" : (current?.name || "Dashboard");
+  const isOnBuckets = url.startsWith("/buckets/") || !!currentSlug;
 
   useEffect(() => {
-    if (open) {
-      requestAnimationFrame(() => setVisible(true));
-    } else {
-      setVisible(false);
+    if (!open) {
       setAdding(false);
       setNewName("");
       setConfirmDelete(null);
@@ -58,13 +63,10 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
   }, [open]);
 
   useEffect(() => {
-    if (adding && inputRef.current) inputRef.current.focus();
+    if (adding && inputRef.current) {
+      inputRef.current.focus();
+    }
   }, [adding]);
-
-  function close() {
-    setVisible(false);
-    setTimeout(() => setOpen(false), 180);
-  }
 
   function handleCreateBucket() {
     const name = newName.trim();
@@ -76,7 +78,7 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
         onFinish: () => {
           setNewName("");
           setAdding(false);
-          close();
+          setOpen(false);
         },
       },
     );
@@ -86,12 +88,12 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
     router.delete(`/buckets/${slug}`, {
       onFinish: () => {
         setConfirmDelete(null);
-        close();
+        setOpen(false);
       },
     });
   }
 
-  function handleKeyDown(e: KeyboardEvent) {
+  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") handleCreateBucket();
     if (e.key === "Escape") {
       setAdding(false);
@@ -101,63 +103,67 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
 
   return (
     <>
-      {open && (
-        <div
+      <div className="fixed bottom-0 left-0 right-0 z-45 bg-tt-surface border-t border-tt-border h-[calc(64px+env(safe-area-inset-bottom))] pt-2.5 pb-[calc(4px+env(safe-area-inset-bottom))] flex items-center justify-around">
+        <Link
+          href="/dashboard"
           className={classNames(
-            "fixed inset-0 z-42 transition-opacity duration-180",
-            visible ? "opacity-100" : "opacity-0",
+            "flex flex-1 flex-col items-center justify-center h-full text-[11px] font-medium transition-colors focus:outline-none",
+            isOnDashboard ? "text-tt-positive" : "text-tt-text-secondary"
           )}
-          style={{ transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }}
-          onClick={close}
-        />
-      )}
+        >
+          <Home className="size-5 mb-0.5" />
+          Dashboard
+        </Link>
 
-      <div
-        className={classNames(
-          "fixed bottom-0 left-0 right-0 z-39 pointer-events-none bg-linear-to-t from-tt-bg via-tt-bg/60 to-transparent transition-all duration-200",
-          currentSlug ? "h-48" : "h-28",
-        )}
-      />
-
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
-        {open && (
-          <div
-            className={classNames(
-              "w-60 border border-tt-border bg-tt-surface shadow-[0_16px_48px_-8px_rgba(0,0,0,0.05),0_6px_16px_-4px_rgba(0,0,0,0.06)] overflow-hidden origin-bottom transition-all duration-220",
-              visible
-                ? "opacity-100 scale-100 translate-y-0"
-                : "opacity-0 scale-[0.92] translate-y-2",
-            )}
-            style={{
-              transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)",
-            }}
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <button
+              className={classNames(
+                "flex flex-1 flex-col items-center justify-center h-full text-[11px] font-medium transition-colors focus:outline-none cursor-pointer",
+                isOnBuckets ? "text-tt-positive" : "text-tt-text-secondary"
+              )}
+            >
+              <Plus className="size-[22px]" />
+              <span className="mt-0.5">Buckets</span>
+            </button>
+          </SheetTrigger>
+          <SheetContent
+            side="bottom"
+            showCloseButton={false}
+            className="bg-tt-surface border-t border-tt-border rounded-t-2xl max-h-[80vh] h-fit overflow-y-auto px-4 pt-5 pb-5 bottom-[calc(64px+env(safe-area-inset-bottom))]! left-0 right-0 w-full z-50 shadow-none!"
           >
-            <div className="px-1.5">
-              {nav_buckets.map((b) => {
+            <SheetHeader className="px-3 pb-1 flex flex-row items-center justify-between">
+              <SheetTitle className="text-base font-semibold tracking-tight text-tt-text">My Buckets</SheetTitle>
+            </SheetHeader>
+            <div className="pt-2 pb-3 space-y-2">
+              {buckets.map((b) => {
                 const isActive = b.slug === currentSlug;
                 const isDeleting = confirmDelete === b.slug;
+                const bucketBalance = parseFloat(b.balance) || 0;
 
                 if (isDeleting) {
                   return (
                     <div
                       key={b.id}
-                      className="flex items-center gap-1.5  px-3 py-2 bg-red-50"
+                      className="flex items-center justify-between px-3 py-2.5 border border-red-200 bg-red-50/50 rounded-xl"
                     >
-                      <span className="flex-1 text-[13px] text-red-600">
+                      <span className="text-[13px] text-red-600 font-medium">
                         Delete {b.name}?
                       </span>
-                      <button
-                        onClick={() => handleDeleteBucket(b.slug)}
-                        className="text-[12px] font-medium text-red-600 hover:underline focus:outline-none"
-                      >
-                        Yes
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(null)}
-                        className="text-[12px] text-tt-text-tertiary hover:underline focus:outline-none"
-                      >
-                        No
-                      </button>
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => handleDeleteBucket(b.slug)}
+                          className="text-[13px] font-semibold text-red-600 hover:underline cursor-pointer"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(null)}
+                          className="text-[13px] text-tt-text-secondary hover:underline cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   );
                 }
@@ -166,35 +172,43 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                   <div
                     key={b.id}
                     className={classNames(
-                      "group relative flex items-center  my-1.5",
-                      isActive ? "bg-tt-bg" : "hover:bg-tt-bg",
+                      "group relative flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent transition-all",
+                      isActive ? "bg-tt-positive/5 border-tt-positive/20" : "hover:bg-tt-bg"
                     )}
                   >
                     <Link
                       href={`/buckets/${b.slug}`}
-                      onClick={close}
-                      className={classNames(
-                        "flex flex-1 items-center gap-2.5  px-3.5 py-2.5 text-[14px] focus:outline-none",
-                        isActive
-                          ? "text-tt-text font-medium"
-                          : "text-tt-text-secondary hover:text-tt-text",
-                      )}
+                      onClick={() => setOpen(false)}
+                      className="flex-1 flex items-center justify-between pr-7 focus:outline-none"
                     >
-                      <BucketIcon
-                        slug={b.slug}
-                        className={classNames(
-                          "size-3.5 shrink-0",
-                          isActive ? "text-tt-accent" : "text-tt-text-tertiary",
-                        )}
-                      />
-                      {b.name}
+                      <div className="flex items-center gap-3">
+                        <BucketIcon
+                          slug={b.slug}
+                          className={classNames(
+                            "size-4 shrink-0",
+                            isActive ? "text-tt-positive" : "text-tt-text-tertiary"
+                          )}
+                        />
+                        <span className={classNames(
+                          "text-[14px]",
+                          isActive ? "text-tt-text font-semibold" : "text-tt-text-secondary"
+                        )}>
+                          {b.name}
+                        </span>
+                      </div>
+                      <span className={classNames(
+                        "text-[13px] font-medium font-mono",
+                        isActive ? "text-tt-positive" : "text-tt-text-secondary"
+                      )}>
+                        <Odometer value={formatCurrency(bucketBalance.toFixed(2), currencySymbol)} />
+                      </span>
                     </Link>
-                    {nav_buckets.length > 1 && (
+                    {buckets.length > 1 && (
                       <button
                         onClick={() => setConfirmDelete(b.slug)}
-                        className="absolute right-1.5 p-1  text-red-300/60 hover:text-red-600 transition-colors focus:outline-none"
+                        className="absolute right-3 p-1 text-tt-text-tertiary/40 hover:text-red-600 transition-colors focus:outline-none cursor-pointer"
                       >
-                        <Trash2 className="size-3" />
+                        <Trash2 className="size-3.5" />
                       </button>
                     )}
                   </div>
@@ -202,8 +216,8 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
               })}
 
               {adding ? (
-                <div className="flex items-center gap-2.5  px-3.5 py-2.5">
-                  <Plus className="size-3.5 shrink-0 text-tt-accent" />
+                <div className="flex items-center gap-3 px-3 py-2.5 border border-dashed border-tt-border rounded-xl">
+                  <Plus className="size-4 shrink-0 text-tt-positive" />
                   <input
                     ref={inputRef}
                     value={newName}
@@ -212,81 +226,33 @@ export function BottomNavbar({ currentSlug }: { currentSlug?: string }) {
                     onBlur={() => {
                       if (!newName.trim()) setAdding(false);
                     }}
-                    placeholder="Bucket name…"
-                    className="w-full border-0 bg-transparent p-0 text-[14px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-0"
+                    placeholder="New bucket name…"
+                    className="flex-1 border-0 bg-transparent p-0 text-[14px] text-tt-text placeholder:text-tt-text-tertiary/60 focus:outline-none focus:ring-0"
                   />
                 </div>
               ) : (
                 <button
                   onClick={() => setAdding(true)}
-                  className="flex w-full items-center gap-2.5  px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-accent hover:bg-tt-bg transition-colors duration-100 focus:outline-none"
+                  className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl border border-dashed border-tt-border/60 text-[14px] text-tt-text-secondary hover:text-tt-positive hover:border-tt-positive/40 transition-all cursor-pointer"
                 >
-                  <Plus className="size-3.5" />
+                  <Plus className="size-4" />
                   Add bucket
                 </button>
               )}
             </div>
+          </SheetContent>
+        </Sheet>
 
-            <div className="border-t border-tt-border-subtle mx-2" />
-
-            <div className="p-1.5">
-              <Link
-                href="/dashboard"
-                onClick={close}
-                className={classNames(
-                  "flex items-center gap-2.5  px-3.5 py-2.5 text-[14px] transition-colors duration-100 focus:outline-none",
-                  isOnDashboard
-                    ? "text-tt-text font-medium bg-tt-bg"
-                    : "text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg",
-                )}
-              >
-                <Home className="size-3.5" />
-                Dashboard
-              </Link>
-              <Link
-                href="/settings"
-                onClick={close}
-                className={classNames(
-                  "flex items-center gap-2.5  px-3.5 py-2.5 text-[14px] transition-colors duration-100 focus:outline-none",
-                  isOnSettings
-                    ? "text-tt-text font-medium bg-tt-bg"
-                    : "text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg",
-                )}
-              >
-                <Settings className="size-3.5" />
-                Settings
-              </Link>
-              <Link
-                href="/users/sign_out"
-                method="delete"
-                as="button"
-                onClick={close}
-                className="flex w-full items-center gap-2.5  px-3.5 py-2.5 text-[14px] text-tt-text-tertiary hover:text-tt-text-secondary hover:bg-tt-bg transition-colors duration-100 focus:outline-none"
-              >
-                <LogOut className="size-3.5" />
-                Log out
-              </Link>
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={() => (open ? close() : setOpen(true))}
-          className="flex items-center  border border-dashed border-tt-text-tertiary/50 bg-tt-surface text-[15px] text-tt-text-secondary shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-180 hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)] active:scale-[0.96] focus:outline-none focus-visible:outline-none overflow-hidden"
-          style={{ transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }}
+        <Link
+          href="/settings"
+          className={classNames(
+            "flex flex-1 flex-col items-center justify-center h-full text-[11px] font-medium transition-colors focus:outline-none",
+            isOnSettings ? "text-tt-positive" : "text-tt-text-secondary"
+          )}
         >
-          <span className="flex items-center justify-center px-4 py-2.5">
-            {open ? <X className="size-4" /> : <Menu className="size-4" />}
-          </span>
-          <span
-            className="self-stretch w-0"
-            style={{
-              borderLeft: "1px dashed var(--tt-text-tertiary)",
-              opacity: 0.35,
-            }}
-          />
-          <span className="px-5 py-2.5 font-medium">{label}</span>
-        </button>
+          <Settings className="size-5 mb-0.5" />
+          Settings
+        </Link>
       </div>
       <Toaster position="top-center" richColors />
     </>

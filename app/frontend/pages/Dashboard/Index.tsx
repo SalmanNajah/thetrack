@@ -6,7 +6,6 @@ import { CommandInput } from "@/components/CommandInput";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ImportPreviewModal } from "@/components/ImportPreviewModal";
-import { BottomNavbar } from "@/components/BottomNavbar";
 
 import type {
   Bucket,
@@ -107,7 +106,6 @@ export default function Index() {
               mode="dashboard"
               buckets={buckets}
               onImportClick={() => setImportOpen(true)}
-              showSearchTrigger={true}
             />
           </div>
 
@@ -133,12 +131,6 @@ export default function Index() {
           open={importOpen}
           onOpenChange={setImportOpen}
         />
-      )}
-
-      {onboarded && (
-        <div className="md:hidden">
-          <BottomNavbar />
-        </div>
       )}
     </WorkspaceLayout>
   );

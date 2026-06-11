@@ -220,10 +220,11 @@ export default function Show() {
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("open-search"))}
-              className="flex items-center justify-center size-8 border border-tt-border bg-tt-surface hover:text-tt-text hover:border-tt-text-tertiary/40 transition-all active:scale-[0.97] cursor-pointer"
+              className="hidden md:flex items-center gap-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text border border-dashed border-tt-text-tertiary px-2.5 py-1.5 bg-tt-surface transition-colors cursor-pointer"
               title="Search (⌘K)"
             >
               <Search className="size-3.5 text-tt-text-tertiary" />
+              <span>⌘K</span>
             </button>
 
             <div className="relative" ref={overflowRef}>

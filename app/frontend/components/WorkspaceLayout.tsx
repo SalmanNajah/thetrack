@@ -100,7 +100,12 @@ export function WorkspaceLayout({
 
       {onboarded && (
         <div className="md:hidden">
-          <BottomNavbar currentSlug={activeBucketSlug} />
+          <BottomNavbar
+            currentSlug={activeBucketSlug}
+            buckets={buckets}
+            totalBalance={totalBalance}
+            currencySymbol={currencySymbol}
+          />
         </div>
       )}
 

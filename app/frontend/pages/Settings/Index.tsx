@@ -1,4 +1,4 @@
-import { usePage, router, useForm } from '@inertiajs/react'
+import { usePage, router, useForm, Link } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -10,9 +10,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog'
 import { WorkspaceLayout } from '@/components/WorkspaceLayout'
-import { BottomNavbar } from '@/components/BottomNavbar'
 import type { AuthUser, CurrencyOption, Bucket } from '@/types'
-import { Download, FileText, FileSpreadsheet } from 'lucide-react'
+import { Download, FileText, FileSpreadsheet, LogOut } from 'lucide-react'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -452,6 +451,22 @@ function DataSection() {
   )
 }
 
+function LogoutSection() {
+  return (
+    <section className="md:hidden pt-4 border-t border-tt-border-subtle">
+      <Link
+        href="/users/sign_out"
+        method="delete"
+        as="button"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50/20 py-3 text-sm font-medium text-red-600 hover:bg-red-50/45 transition-colors focus:outline-none cursor-pointer"
+      >
+        <LogOut className="size-4" />
+        Log out
+      </Link>
+    </section>
+  )
+}
+
 export default function Index() {
   const { flash, user, currencies, stats, buckets, total_balance, currency_symbol } = usePage<PageProps>().props
 
@@ -477,11 +492,8 @@ export default function Index() {
           <SecuritySection user={user} />
           <DataSection />
           <DangerZone stats={stats} />
+          <LogoutSection />
         </div>
-      </div>
-
-      <div className="md:hidden">
-        <BottomNavbar />
       </div>
     </WorkspaceLayout>
   )

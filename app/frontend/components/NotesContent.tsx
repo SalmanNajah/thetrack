@@ -21,7 +21,16 @@ export function NotesContent({
 
   const [activeTab, setActiveTab] = useState<"global" | "bucket">(defaultTab);
   const [selectedBucketSlug, setSelectedBucketSlug] = useState("");
-  const [localContent, setLocalContent] = useState("");
+
+  const currentOriginalContent = (() => {
+    if (activeTab === "global") {
+      return user.notes || "";
+    }
+    const currentBucket = buckets.find((b: any) => b.slug === selectedBucketSlug);
+    return currentBucket?.notes || "";
+  })();
+
+  const [localContent, setLocalContent] = useState(currentOriginalContent);
   const [savingStatus, setSavingStatus] = useState<SavingStatus>("idle");
 
   useEffect(() => {
@@ -33,26 +42,17 @@ export function NotesContent({
     }
   }, [defaultBucketSlug, buckets]);
 
-  const currentOriginalContent = (() => {
-    if (activeTab === "global") {
-      return user.notes || "";
-    }
-    const currentBucket = buckets.find((b: any) => b.slug === selectedBucketSlug);
-    return currentBucket?.notes || "";
-  })();
-
   const activeId = activeTab === "global" ? user.id : selectedBucketSlug;
-  const lastLoadedRef = useRef({ tab: activeTab, id: activeId });
+  const currentOriginalContentRef = useRef(currentOriginalContent);
 
   useEffect(() => {
-    if (lastLoadedRef.current.tab !== activeTab || lastLoadedRef.current.id !== activeId) {
-      setLocalContent(currentOriginalContent);
-      setSavingStatus("idle");
-      lastLoadedRef.current = { tab: activeTab, id: activeId };
-    } else if (savingStatus !== "saving") {
-      setLocalContent(currentOriginalContent);
-    }
-  }, [activeTab, activeId, currentOriginalContent, savingStatus]);
+    currentOriginalContentRef.current = currentOriginalContent;
+  });
+
+  useEffect(() => {
+    setLocalContent(currentOriginalContentRef.current);
+    setSavingStatus("idle");
+  }, [activeTab, activeId]);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -74,6 +74,31 @@ export function NotesContent({
         onError: () => setSavingStatus("error"),
       }
     );
+  };
+
+  const handleSwitchTarget = (newTab: "global" | "bucket", newBucketSlug: string) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+
+    if (localContent !== currentOriginalContent) {
+      router.post(
+        "/notes",
+        {
+          type: activeTab,
+          id: activeTab === "global" ? user.id : selectedBucketSlug,
+          content: localContent,
+        },
+        {
+          preserveScroll: true,
+          preserveState: true,
+        }
+      );
+    }
+
+    setActiveTab(newTab);
+    setSelectedBucketSlug(newBucketSlug);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -131,7 +156,7 @@ export function NotesContent({
       <div className="flex items-center justify-between border-b border-tt-border pb-2 px-1">
         <div className="flex gap-4">
           <button
-            onClick={() => setActiveTab("global")}
+            onClick={() => handleSwitchTarget("global", selectedBucketSlug)}
             className={classNames(
               "text-[13px] font-semibold pb-1.5 border-b-2 transition-colors cursor-pointer focus:outline-none",
               activeTab === "global"
@@ -142,7 +167,7 @@ export function NotesContent({
             Global
           </button>
           <button
-            onClick={() => setActiveTab("bucket")}
+            onClick={() => handleSwitchTarget("bucket", selectedBucketSlug)}
             className={classNames(
               "text-[13px] font-semibold pb-1.5 border-b-2 transition-colors cursor-pointer focus:outline-none",
               activeTab === "bucket"
@@ -160,7 +185,7 @@ export function NotesContent({
         <div className="mt-3">
           <select
             value={selectedBucketSlug}
-            onChange={(e) => setSelectedBucketSlug(e.target.value)}
+            onChange={(e) => handleSwitchTarget("bucket", e.target.value)}
             className="w-full border border-tt-border bg-tt-surface px-3 py-2 text-[12px] font-medium text-tt-text focus:outline-none focus:ring-1 focus:ring-tt-accent transition-all"
           >
             {buckets.map((b: any) => (

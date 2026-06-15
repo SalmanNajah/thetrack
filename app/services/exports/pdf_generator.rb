@@ -223,19 +223,11 @@ module Exports
       pdf.font "Helvetica", size: 8
 
       pdf.table([ header ] + rows, column_widths: col_widths) do |t|
-        # General cell styles (applied first)
         t.cells.padding = [ 6, 8 ]
         t.cells.border_width = 0
         t.cells.border_bottom_width = 0.5
         t.cells.border_color = "e2e8f0"
         t.cells.size = 8
-        t.cells.text_color = COLOR_PRIMARY
-
-        # Header row styles (applied second to override)
-        t.row(0).font_style = :bold
-        t.row(0).text_color = COLOR_WHITE
-        t.row(0).background_color = COLOR_BG_HEADER
-        t.row(0).size = 8
 
         debit_col = @bucket.nil? ? 3 : 2
         credit_col = @bucket.nil? ? 4 : 3
@@ -246,14 +238,19 @@ module Exports
         t.column(balance_col).align = :right
 
         t.cells.each do |cell|
-          next if cell.row == 0
+          if cell.row == 0
+            cell.text_color = COLOR_WHITE
+            cell.background_color = COLOR_BG_HEADER
+            cell.font_style = :bold
+          else
+            cell.text_color = COLOR_PRIMARY
+            cell.background_color = cell.row.even? ? COLOR_BG_CARD : COLOR_WHITE
 
-          cell.background_color = cell.row.even? ? COLOR_BG_CARD : COLOR_WHITE
-
-          if cell.column == debit_col && cell.content.present?
-            cell.text_color = COLOR_DEBIT
-          elsif cell.column == credit_col && cell.content.present?
-            cell.text_color = COLOR_CREDIT
+            if cell.column == debit_col && cell.content.present?
+              cell.text_color = COLOR_DEBIT
+            elsif cell.column == credit_col && cell.content.present?
+              cell.text_color = COLOR_CREDIT
+            end
           end
         end
       end

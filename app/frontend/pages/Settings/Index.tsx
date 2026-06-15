@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { WorkspaceLayout } from '@/components/WorkspaceLayout'
 import type { AuthUser, CurrencyOption, Bucket } from '@/types'
-import { Download, FileText, FileSpreadsheet, LogOut } from 'lucide-react'
+import { FileText, FileSpreadsheet, LogOut } from 'lucide-react'
 
 type PageProps = {
   auth: { user: AuthUser }
@@ -461,39 +461,101 @@ function SecuritySection({ user }: { user: PageProps['user'] }) {
   )
 }
 
+interface ExportCardProps {
+  title: string
+  description: string
+  csvUrl: string
+  pdfUrl: string
+}
+
+function ExportCard({ title, description, csvUrl, pdfUrl }: ExportCardProps) {
+  return (
+    <div className="flex flex-col justify-between p-4 rounded-xl border border-tt-border bg-tt-surface/40 hover:bg-tt-surface/80 transition-all">
+      <div>
+        <h3 className="text-sm font-medium text-tt-text">{title}</h3>
+        <p className="text-[12px] text-tt-text-secondary mt-1 leading-relaxed">{description}</p>
+      </div>
+      <div className="mt-4 flex gap-2">
+        <a
+          href={csvUrl}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-tt-border bg-tt-surface py-2 text-[12px] font-medium text-tt-text-secondary hover:text-tt-text hover:border-tt-text-tertiary/60 transition-all active:scale-[0.98]"
+        >
+          <FileSpreadsheet className="size-3.5 text-tt-text-tertiary" />
+          <span>CSV</span>
+        </a>
+        <a
+          href={pdfUrl}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-tt-border bg-tt-surface py-2 text-[12px] font-medium text-tt-text-secondary hover:text-tt-text hover:border-tt-text-tertiary/60 transition-all active:scale-[0.98]"
+        >
+          <FileText className="size-3.5 text-tt-text-tertiary" />
+          <span>PDF</span>
+        </a>
+      </div>
+    </div>
+  )
+}
+
 function DataSection() {
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+
+  const tz = typeof Intl !== "undefined"
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "";
+
+  const queryParams = new URLSearchParams()
+  if (from) queryParams.set('from', from)
+  if (to) queryParams.set('to', to)
+  if (tz) queryParams.set('tz', tz)
+
+  const queryString = queryParams.toString()
+  const csvUrl = `/exports/csv${queryString ? `?${queryString}` : ''}`
+  const pdfUrl = `/exports/pdf${queryString ? `?${queryString}` : ''}`
+  const multiCsvUrl = `/exports/multi_csv${queryString ? `?${queryString}` : ''}`
+  const multiPdfUrl = `/exports/multi_pdf${queryString ? `?${queryString}` : ''}`
+
   return (
     <section>
       <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
         Data
       </h2>
-      <div>
-        <a
-          href="/exports/csv"
-          className="flex items-center justify-between py-3.5 border-b border-tt-border-subtle hover:bg-tt-bg/50 transition-colors -mx-1 px-1"
-        >
-          <div className="flex items-center gap-3">
-            <FileSpreadsheet className="size-4 text-tt-text-tertiary" />
-            <div>
-              <span className="text-sm text-tt-text-secondary">Export all transactions</span>
-              <p className="text-[11px] text-tt-text-tertiary">CSV spreadsheet</p>
-            </div>
-          </div>
-          <Download className="size-3.5 text-tt-text-tertiary" />
-        </a>
-        <a
-          href="/exports/pdf"
-          className="flex items-center justify-between py-3.5 hover:bg-tt-bg/50 transition-colors -mx-1 px-1"
-        >
-          <div className="flex items-center gap-3">
-            <FileText className="size-4 text-tt-text-tertiary" />
-            <div>
-              <span className="text-sm text-tt-text-secondary">Export all transactions</span>
-              <p className="text-[11px] text-tt-text-tertiary">PDF bank statement</p>
-            </div>
-          </div>
-          <Download className="size-3.5 text-tt-text-tertiary" />
-        </a>
+      <div className="mb-4 grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-tt-text-secondary mb-1.5">
+            From Date (Optional)
+          </label>
+          <Input
+            type="date"
+            value={from}
+            onChange={e => setFrom(e.target.value)}
+            className="w-full h-9 text-sm focus-visible:ring-tt-accent"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-tt-text-secondary mb-1.5">
+            To Date (Optional)
+          </label>
+          <Input
+            type="date"
+            value={to}
+            onChange={e => setTo(e.target.value)}
+            className="w-full h-9 text-sm focus-visible:ring-tt-accent"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ExportCard
+          title="Multi-Bucket Statement"
+          description="Transactions segmented by bucket, including starting/closing balances and individual summaries."
+          csvUrl={multiCsvUrl}
+          pdfUrl={multiPdfUrl}
+        />
+        <ExportCard
+          title="Consolidated Export"
+          description="A flat, chronological list of all transactions across all buckets, formatted for spreadsheet analysis."
+          csvUrl={csvUrl}
+          pdfUrl={pdfUrl}
+        />
       </div>
     </section>
   )

@@ -58,6 +58,8 @@ Rails.application.routes.draw do
   scope :exports do
     get :csv, to: "exports#csv", as: :export_csv
     get :pdf, to: "exports#pdf", as: :export_pdf
+    get :multi_csv, to: "exports#multi_csv", as: :export_multi_csv
+    get :multi_pdf, to: "exports#multi_pdf", as: :export_multi_pdf
   end
 
   scope :imports do

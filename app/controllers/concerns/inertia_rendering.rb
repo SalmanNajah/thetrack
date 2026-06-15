@@ -25,10 +25,11 @@ module InertiaRendering
             admin: current_user.admin?,
             super_admin: current_user.try(:super_admin?) || false,
             low_balance_threshold: current_user.low_balance_threshold.to_f,
-            default_unsigned_to_positive: current_user.default_unsigned_to_positive
+            default_unsigned_to_positive: current_user.default_unsigned_to_positive,
+            notes: current_user.notes
           }
         },
-        nav_buckets: buckets.map { |b| { id: b.id, name: b.name, slug: b.slug } }
+        nav_buckets: buckets.map { |b| { id: b.id, name: b.name, slug: b.slug, notes: b.notes } }
       }
     end
   end

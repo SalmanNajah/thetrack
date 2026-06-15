@@ -13,7 +13,8 @@ class BucketSerializer
       id: @bucket.id,
       name: @bucket.name,
       slug: @bucket.slug,
-      balance: is_super ? @bucket.balance.to_s : "•••"
+      balance: is_super ? @bucket.balance.to_s : "•••",
+      notes: @bucket.notes
     }
 
     if @options[:admin]

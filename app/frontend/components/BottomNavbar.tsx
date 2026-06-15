@@ -9,11 +9,13 @@ import {
   Wallet,
   Banknote,
   CircleDollarSign,
+  Receipt,
 } from "lucide-react";
 import { classNames } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { Odometer } from "@/components/Odometer";
 import { Drawer } from "vaul";
+import { NotesContent } from "@/components/NotesContent";
 import type { Bucket } from "@/types";
 
 function BucketIcon({ slug, className }: { slug: string; className?: string }) {
@@ -39,8 +41,32 @@ export function BottomNavbar({
 }) {
   const { url } = usePage();
   const [open, setOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [defaultBucketSlug, setDefaultBucketSlug] = useState<string | undefined>(undefined);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
+
+  useEffect(() => {
+    if (open) setNotesOpen(false);
+  }, [open]);
+
+  useEffect(() => {
+    if (notesOpen) setOpen(false);
+  }, [notesOpen]);
+
+  useEffect(() => {
+    function handleOpenNotes(e: Event) {
+      const customEvent = e as CustomEvent<{ bucketSlug?: string }>;
+      if (customEvent?.detail?.bucketSlug) {
+        setDefaultBucketSlug(customEvent.detail.bucketSlug);
+      } else {
+        setDefaultBucketSlug(undefined);
+      }
+      setNotesOpen(true);
+    }
+    window.addEventListener("open-notes", handleOpenNotes);
+    return () => window.removeEventListener("open-notes", handleOpenNotes);
+  }, []);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -97,6 +123,17 @@ export function BottomNavbar({
 
   return (
     <>
+      <div
+        onClick={() => {
+          setOpen(false);
+          setNotesOpen(false);
+        }}
+        className={classNames(
+          "fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ease-in-out",
+          (open || notesOpen) ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+      />
+
       <div className="fixed bottom-0 left-0 right-0 z-60 bg-tt-surface border-t border-tt-border h-[calc(64px+env(safe-area-inset-bottom))] pt-2.5 pb-[calc(4px+env(safe-area-inset-bottom))] flex items-center justify-around">
         <Link
           href="/dashboard"
@@ -127,7 +164,6 @@ export function BottomNavbar({
             </button>
           </Drawer.Trigger>
           <Drawer.Portal>
-            <Drawer.Overlay className="fixed inset-0 z-40 bg-black/20" />
             <Drawer.Content
               className="fixed z-50 bottom-0 left-0 right-0 max-h-[80vh] bg-tt-surface border-t border-tt-border rounded-t-2xl outline-none"
             >
@@ -241,6 +277,33 @@ export function BottomNavbar({
                     </button>
                   )}
                 </div>
+              </div>
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
+
+        <Drawer.Root open={notesOpen} onOpenChange={setNotesOpen} modal={false}>
+          <Drawer.Trigger asChild>
+            <button
+              className={classNames(
+                "flex flex-1 flex-col items-center justify-center h-full text-[11px] font-medium transition-colors focus:outline-none cursor-pointer",
+                notesOpen ? "text-tt-positive" : "text-tt-text-secondary"
+              )}
+            >
+              <Receipt className="size-5 mb-0.5" />
+              Notes
+            </button>
+          </Drawer.Trigger>
+          <Drawer.Portal>
+            <Drawer.Content
+              className="fixed z-50 bottom-0 left-0 right-0 max-h-[80vh] bg-tt-surface border-t border-tt-border rounded-t-2xl outline-none"
+            >
+              <div className="mx-auto mt-3 mb-2 h-1 w-10 rounded-full bg-tt-text-tertiary/30" />
+              <div className="px-4 pb-[calc(--spacing(5)+64px+env(safe-area-inset-bottom))] overflow-y-auto max-h-[calc(80vh-40px)] flex flex-col">
+                <div className="px-3 pb-1 flex flex-row items-center justify-between">
+                  <h2 className="text-base font-semibold tracking-tight text-tt-text">Workspace Notes</h2>
+                </div>
+                <NotesContent defaultBucketSlug={defaultBucketSlug} />
               </div>
             </Drawer.Content>
           </Drawer.Portal>

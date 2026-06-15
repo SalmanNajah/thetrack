@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   root "home#index"
 
   get "/dashboard", to: "dashboard#index"
+  post "/notes", to: "notes#update"
 
   resources :buckets, only: [ :index, :show, :create, :destroy ], param: :slug
 

@@ -3,7 +3,7 @@ import { router } from "@inertiajs/react";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency, groupByDate, formatDate } from "@/lib/format";
 import { classNames } from "@/lib/utils";
-import { ArrowLeftRight, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeftRight, RotateCcw, ChevronDown, ChevronUp, Loader2, Check, AlertCircle } from "lucide-react";
 import type { TransactionRecord } from "@/types";
 
 function FeedEntry({
@@ -22,6 +22,86 @@ function FeedEntry({
   const amount = parseFloat(txn.amount);
   const isPositive = amount > 0;
   const isTransfer = !!txn.transfer_group_id;
+
+  const [notes, setNotes] = useState(txn.notes || "");
+  const [savingStatus, setSavingStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (savingStatus !== "saving") {
+      setNotes(txn.notes || "");
+    }
+  }, [txn.notes, savingStatus]);
+
+  const saveNote = (value: string) => {
+    if (value === (txn.notes || "")) return;
+    setSavingStatus("saving");
+
+    router.post(
+      "/notes",
+      {
+        type: "transaction",
+        id: txn.id,
+        content: value,
+      },
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => setSavingStatus("saved"),
+        onError: () => setSavingStatus("error"),
+      }
+    );
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setNotes(val);
+    setSavingStatus("idle");
+
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      saveNote(val);
+    }, 800);
+  };
+
+  const handleBlur = () => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveNote(notes);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, []);
+
+  const renderStatus = () => {
+    switch (savingStatus) {
+      case "saving":
+        return (
+          <div className="flex items-center gap-1 text-[10px] text-tt-text-secondary select-none">
+            <Loader2 className="size-3 animate-spin text-tt-accent" />
+            <span>Saving…</span>
+          </div>
+        );
+      case "saved":
+        return (
+          <div className="flex items-center gap-1 text-[10px] text-tt-positive select-none">
+            <Check className="size-3" />
+            <span>Saved</span>
+          </div>
+        );
+      case "error":
+        return (
+          <div className="flex items-center gap-1 text-[10px] text-tt-negative select-none">
+            <AlertCircle className="size-3" />
+            <span>Failed to save</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   const isHighlighted = highlightId === String(txn.id);
 
@@ -130,41 +210,57 @@ function FeedEntry({
         className={classNames(
           "overflow-hidden transition-all duration-200 ease-in-out",
           expanded
-            ? "max-h-24 opacity-100 mb-2 mt-1"
+            ? "max-h-60 opacity-100 mb-2 mt-1"
             : "max-h-0 opacity-0 pointer-events-none",
         )}
       >
-        <div className="bg-tt-surface/30 border border-tt-border-subtle/50 p-3 flex items-center justify-between gap-4">
-          <div className="text-[12px] text-tt-text-secondary">
-            <div>
-              <span className="text-tt-text-tertiary">Type: </span>
-              <span className="capitalize">
-                {txn.kind || (isTransfer ? "transfer" : "entry")}
-              </span>
-            </div>
-            {txn.reversed && (
-              <div className="mt-0.5 text-tt-text-tertiary italic">
-                This transaction has been reversed
+        <div className="bg-tt-surface/30 border border-tt-border-subtle/50 p-3 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="text-[12px] text-tt-text-secondary">
+              <div>
+                <span className="text-tt-text-tertiary">Type: </span>
+                <span className="capitalize">
+                  {txn.kind || (isTransfer ? "transfer" : "entry")}
+                </span>
               </div>
+              {txn.reversed && (
+                <div className="mt-0.5 text-tt-text-tertiary italic">
+                  This transaction has been reversed
+                </div>
+              )}
+            </div>
+
+            {!txn.reversed && txn.kind !== "reversal" && txn.kind !== "initial" && txn.kind !== "adjustment" && !txn.reversal_of_id && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.post(
+                    `/transactions/${txn.id}/reverse`,
+                    {},
+                    { preserveScroll: true },
+                  );
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-tt-negative bg-tt-negative/10 border border-tt-negative/20 hover:bg-tt-negative/20 active:scale-[0.97] transition-all cursor-pointer"
+              >
+                <RotateCcw className="size-3.5" />
+                Undo Transaction
+              </button>
             )}
           </div>
 
-          {!txn.reversed && txn.kind !== "reversal" && txn.kind !== "initial" && txn.kind !== "adjustment" && !txn.reversal_of_id && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                router.post(
-                  `/transactions/${txn.id}/reverse`,
-                  {},
-                  { preserveScroll: true },
-                );
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-tt-negative bg-tt-negative/10 border border-tt-negative/20 hover:bg-tt-negative/20 active:scale-[0.97] transition-all cursor-pointer"
-            >
-              <RotateCcw className="size-3.5" />
-              Undo Transaction
-            </button>
-          )}
+          <div className="border-t border-tt-border/60 pt-2 flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-tt-text-secondary uppercase tracking-wider">Notes</span>
+              {renderStatus()}
+            </div>
+            <textarea
+              value={notes}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="Add a note to this transaction…"
+              className="w-full resize-none rounded-md border border-tt-border bg-tt-surface p-2 text-[12px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-1 focus:ring-tt-accent h-16 font-sans leading-relaxed"
+            />
+          </div>
         </div>
       </div>
     </div>

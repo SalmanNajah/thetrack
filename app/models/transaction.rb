@@ -79,6 +79,10 @@ class Transaction < ApplicationRecord
   end
 
   def prevent_update
+    if (changed - [ "notes", "updated_at" ]).empty?
+      return
+    end
+
     errors.add(:base, "Transactions are immutable and cannot be modified")
     throw :abort
   end

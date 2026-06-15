@@ -1,6 +1,6 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Settings, LogOut, Plus, Home, HelpCircle } from "lucide-react";
+import { Settings, LogOut, Plus, Home, HelpCircle, Receipt } from "lucide-react";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency } from "@/lib/format";
 import { classNames } from "@/lib/utils";
@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
+import { NotesContent } from "@/components/NotesContent";
 
 const KEYBOARD_SHORTCUTS = [
   { label: "Open search modal", key: "⌘K" },
@@ -42,6 +43,22 @@ export function BucketSidebar({
   }>().props;
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [defaultBucketSlug, setDefaultBucketSlug] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    function handleOpenNotes(e: Event) {
+      const customEvent = e as CustomEvent<{ bucketSlug?: string }>;
+      if (customEvent?.detail?.bucketSlug) {
+        setDefaultBucketSlug(customEvent.detail.bucketSlug);
+      } else {
+        setDefaultBucketSlug(undefined);
+      }
+      setNotesOpen(true);
+    }
+    window.addEventListener("open-notes", handleOpenNotes);
+    return () => window.removeEventListener("open-notes", handleOpenNotes);
+  }, []);
 
   useEffect(() => {
     function handleGlobalKeyDown(e: globalThis.KeyboardEvent) {
@@ -228,6 +245,23 @@ export function BucketSidebar({
       <div className="border-t border-dashed border-tt-border" />
 
       <div className="px-4 py-3 flex flex-col gap-1">
+        <button
+          onClick={() => {
+            setDefaultBucketSlug(undefined);
+            setNotesOpen(true);
+          }}
+          className="flex w-full items-center gap-2 px-2 py-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border border-transparent transition-colors cursor-pointer text-left focus:outline-none"
+        >
+          <Receipt className="size-3.5" />
+          Notes
+        </button>
+        <button
+          onClick={() => setShortcutsOpen(true)}
+          className="flex w-full items-center gap-2 px-2 py-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border border-transparent transition-colors cursor-pointer text-left focus:outline-none"
+        >
+          <HelpCircle className="size-3.5" />
+          Shortcuts
+        </button>
         <Link
           href="/settings"
           className={classNames(
@@ -240,13 +274,6 @@ export function BucketSidebar({
           <Settings className="size-3.5" />
           Settings
         </Link>
-        <button
-          onClick={() => setShortcutsOpen(true)}
-          className="flex w-full items-center gap-2 px-2 py-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border border-transparent transition-colors cursor-pointer text-left focus:outline-none"
-        >
-          <HelpCircle className="size-3.5" />
-          Shortcuts
-        </button>
         <Link
           href="/users/sign_out"
           method="delete"
@@ -274,6 +301,20 @@ export function BucketSidebar({
                   <Kbd>{key}</Kbd>
                 </div>
               ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={notesOpen} onOpenChange={setNotesOpen}>
+          <DialogContent className="sm:max-w-md h-[460px] p-0 flex flex-col gap-0 overflow-hidden">
+            <DialogHeader className="px-4 pt-4 pb-2 flex-row items-center gap-2 border-b border-dashed">
+              <Receipt className="size-4 text-tt-accent shrink-0" />
+              <DialogTitle className="text-[15px] font-semibold">
+                Workspace Notes
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 min-h-0 px-4">
+              <NotesContent defaultBucketSlug={defaultBucketSlug} />
             </div>
           </DialogContent>
         </Dialog>

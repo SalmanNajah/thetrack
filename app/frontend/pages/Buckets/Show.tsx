@@ -16,6 +16,7 @@ import {
   PenLine,
   MoreHorizontal,
   Search,
+  Receipt,
 } from "lucide-react";
 
 type PageProps = {
@@ -238,6 +239,20 @@ export default function Show() {
 
               {overflowOpen && (
                 <div className="absolute right-0 mt-1 w-48 border border-tt-border bg-tt-surface p-1 z-50 shadow-sm flex flex-col gap-0.5">
+                  <button
+                    onClick={() => {
+                      setOverflowOpen(false);
+                      window.dispatchEvent(
+                        new CustomEvent("open-notes", {
+                          detail: { bucketSlug: bucket.slug, tab: "bucket" },
+                        })
+                      );
+                    }}
+                    className="flex w-full items-center gap-2 px-2.5 py-2 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left font-medium cursor-pointer"
+                  >
+                    <Receipt className="size-3.5 text-tt-text-tertiary" />
+                    Bucket Notes
+                  </button>
                   <a
                     href={`/exports/csv?bucket_slug=${bucket.slug}&tz=${tz}`}
                     className="flex w-full items-center gap-2 px-2.5 py-2 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-tt-bg transition-colors text-left font-medium"

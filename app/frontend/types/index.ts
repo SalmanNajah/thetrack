@@ -10,6 +10,7 @@ export type AuthUser = {
   name: string | null
   admin: boolean
   super_admin: boolean
+  notes?: string | null
 }
 
 export type Bucket = {
@@ -17,6 +18,7 @@ export type Bucket = {
   name: string
   slug: string
   balance: string
+  notes?: string | null
 }
 
 export type TransactionRecord = {
@@ -32,6 +34,7 @@ export type TransactionRecord = {
   reversed?: boolean
   reversal_of_id?: number | null
   reversed_by_id?: number | null
+  notes?: string | null
 }
 
 export type Currency = "INR" | "USD" | "EUR" | "GBP" | "JPY" | "AED" | "CAD" | "AUD" | "SGD" | "CHF" | "CNY" | "KRW" | "SAR" | "BRL" | "ZAR"

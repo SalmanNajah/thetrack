@@ -63,7 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_063659) do
     t.index ["user_id"], name: "index_transactions_on_user_id"
     t.check_constraint "amount <> 0::numeric", name: "chk_transactions_amount_nonzero"
     t.check_constraint "amount >= '-9999999999.99'::numeric AND amount <= 9999999999.99", name: "chk_transactions_amount_range"
-    t.check_constraint "kind::text = ANY (ARRAY['manual'::character varying, 'transfer'::character varying, 'adjustment'::character varying, 'initial'::character varying, 'reversal'::character varying, 'recurring'::character varying]::text[])", name: "chk_transactions_kind_valid"
+    t.check_constraint "kind::text = ANY (ARRAY['manual'::character varying::text, 'transfer'::character varying::text, 'adjustment'::character varying::text, 'initial'::character varying::text, 'reversal'::character varying::text, 'recurring'::character varying::text])", name: "chk_transactions_kind_valid"
   end
 
   create_table "users", force: :cascade do |t|
@@ -94,7 +94,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_063659) do
     t.index ["email_verified_at"], name: "index_users_on_email_verified_at"
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-    t.check_constraint "currency::text = ANY (ARRAY['INR'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying, 'JPY'::character varying, 'AED'::character varying, 'CAD'::character varying, 'AUD'::character varying, 'SGD'::character varying, 'CHF'::character varying, 'CNY'::character varying, 'KRW'::character varying, 'SAR'::character varying, 'BRL'::character varying, 'ZAR'::character varying]::text[])", name: "chk_users_currency_valid"
+    t.check_constraint "currency::text = ANY (ARRAY['INR'::character varying::text, 'USD'::character varying::text, 'EUR'::character varying::text, 'GBP'::character varying::text, 'JPY'::character varying::text, 'AED'::character varying::text, 'CAD'::character varying::text, 'AUD'::character varying::text, 'SGD'::character varying::text, 'CHF'::character varying::text, 'CNY'::character varying::text, 'KRW'::character varying::text, 'SAR'::character varying::text, 'BRL'::character varying::text, 'ZAR'::character varying::text])", name: "chk_users_currency_valid"
     t.check_constraint "otp_attempts >= 0", name: "chk_users_otp_attempts_nonneg"
   end
 

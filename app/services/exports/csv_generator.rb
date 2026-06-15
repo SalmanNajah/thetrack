@@ -41,9 +41,17 @@ module Exports
 
     def transactions
       scope = if @bucket
-        @bucket.transactions.with_closing_balance.includes(:bucket)
+        subquery = @bucket.transactions.select(
+          "transactions.*",
+          "SUM(amount) OVER (PARTITION BY bucket_id ORDER BY occurred_at ASC, id ASC) AS closing_balance"
+        )
+        Transaction.from("(#{subquery.to_sql}) AS transactions").includes(:bucket)
       else
-        @user.transactions.with_closing_balance.includes(:bucket)
+        subquery = @user.transactions.select(
+          "transactions.*",
+          "SUM(amount) OVER (PARTITION BY user_id ORDER BY occurred_at ASC, id ASC) AS closing_balance"
+        )
+        Transaction.from("(#{subquery.to_sql}) AS transactions").includes(:bucket)
       end
 
       scope = scope.where("occurred_at >= ?", @from.beginning_of_day) if @from

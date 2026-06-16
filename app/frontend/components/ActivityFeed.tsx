@@ -23,15 +23,47 @@ function FeedEntry({
   const isPositive = amount > 0;
   const isTransfer = !!txn.transfer_group_id;
 
+  const [description, setDescription] = useState(txn.description || "");
+  const [savingDescStatus, setSavingDescStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [descFocused, setDescFocused] = useState(false);
+  const saveDescTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [notes, setNotes] = useState(txn.notes || "");
   const [savingStatus, setSavingStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [notesFocused, setNotesFocused] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (savingStatus !== "saving") {
+    if (!descFocused && savingDescStatus !== "saving") {
+      setDescription(txn.description || "");
+    }
+  }, [txn.description, savingDescStatus, descFocused]);
+
+  useEffect(() => {
+    if (!notesFocused && savingStatus !== "saving") {
       setNotes(txn.notes || "");
     }
-  }, [txn.notes, savingStatus]);
+  }, [txn.notes, savingStatus, notesFocused]);
+
+  const saveDescription = (value: string) => {
+    if (value === (txn.description || "")) return;
+    setSavingDescStatus("saving");
+
+    router.put(
+      `/transactions/${txn.id}`,
+      {
+        transaction: {
+          description: value,
+        },
+      },
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => setSavingDescStatus("saved"),
+        onError: () => setSavingDescStatus("error"),
+      }
+    );
+  };
 
   const saveNote = (value: string) => {
     if (value === (txn.notes || "")) return;
@@ -53,6 +85,22 @@ function FeedEntry({
     );
   };
 
+  const handleDescChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setDescription(val);
+    setSavingDescStatus("idle");
+
+    if (saveDescTimeoutRef.current) clearTimeout(saveDescTimeoutRef.current);
+    saveDescTimeoutRef.current = setTimeout(() => {
+      saveDescription(val);
+    }, 800);
+  };
+
+  const handleDescBlur = () => {
+    if (saveDescTimeoutRef.current) clearTimeout(saveDescTimeoutRef.current);
+    saveDescription(description);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     setNotes(val);
@@ -71,9 +119,38 @@ function FeedEntry({
 
   useEffect(() => {
     return () => {
+      if (saveDescTimeoutRef.current) clearTimeout(saveDescTimeoutRef.current);
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
   }, []);
+
+  const renderDescStatus = () => {
+    switch (savingDescStatus) {
+      case "saving":
+        return (
+          <div className="flex items-center gap-1 text-[10px] text-tt-text-secondary select-none">
+            <Loader2 className="size-3 animate-spin text-tt-accent" />
+            <span>Saving…</span>
+          </div>
+        );
+      case "saved":
+        return (
+          <div className="flex items-center gap-1 text-[10px] text-tt-positive select-none">
+            <Check className="size-3" />
+            <span>Saved</span>
+          </div>
+        );
+      case "error":
+        return (
+          <div className="flex items-center gap-1 text-[10px] text-tt-negative select-none">
+            <AlertCircle className="size-3" />
+            <span>Failed to save</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   const renderStatus = () => {
     switch (savingStatus) {
@@ -210,23 +287,20 @@ function FeedEntry({
         className={classNames(
           "overflow-hidden transition-all duration-200 ease-in-out",
           expanded
-            ? "max-h-60 opacity-100 mb-2 mt-1"
+            ? "max-h-[450px] opacity-100 mb-3 mt-1"
             : "max-h-0 opacity-0 pointer-events-none",
         )}
       >
-        <div className="bg-tt-surface/30 border border-tt-border-subtle/50 p-3 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-4">
-            <div className="text-[12px] text-tt-text-secondary">
-              <div>
-                <span className="text-tt-text-tertiary">Type: </span>
-                <span className="capitalize">
-                  {txn.kind || (isTransfer ? "transfer" : "entry")}
-                </span>
-              </div>
+        <div className="mx-2 bg-tt-surface border border-tt-border rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-4 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-tt-bg text-tt-text-secondary border border-tt-border/60">
+                {txn.kind || (isTransfer ? "Transfer" : "Manual")}
+              </span>
               {txn.reversed && (
-                <div className="mt-0.5 text-tt-text-tertiary italic">
-                  This transaction has been reversed
-                </div>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-tt-negative/10 text-tt-negative border border-tt-negative/20">
+                  Reversed
+                </span>
               )}
             </div>
 
@@ -240,7 +314,7 @@ function FeedEntry({
                     { preserveScroll: true },
                   );
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-tt-negative bg-tt-negative/10 border border-tt-negative/20 hover:bg-tt-negative/20 active:scale-[0.97] transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-tt-negative hover:bg-tt-negative/5 active:scale-[0.97] transition-all cursor-pointer border border-tt-negative/20 bg-transparent"
               >
                 <RotateCcw className="size-3.5" />
                 Undo Transaction
@@ -248,17 +322,45 @@ function FeedEntry({
             )}
           </div>
 
-          <div className="border-t border-tt-border/60 pt-2 flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-tt-text-secondary uppercase tracking-wider">Notes</span>
+              <span className="text-[10px] font-bold tracking-wider uppercase text-tt-text-tertiary">Description</span>
+              {renderDescStatus()}
+            </div>
+            <input
+              type="text"
+              value={description}
+              onChange={handleDescChange}
+              onFocus={() => setDescFocused(true)}
+              onBlur={() => {
+                setDescFocused(false);
+                handleDescBlur();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+              placeholder={isTransfer ? "Transfer" : "Transaction description…"}
+              className="w-full rounded-md border border-tt-border/65 bg-tt-bg/35 px-3 py-2 text-[12px] text-tt-text placeholder:text-tt-text-tertiary focus:bg-tt-surface focus:outline-none focus:ring-1 focus:ring-tt-accent/40 focus:border-tt-accent transition-all duration-150 font-sans"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-tt-text-tertiary">Notes</span>
               {renderStatus()}
             </div>
             <textarea
               value={notes}
               onChange={handleChange}
-              onBlur={handleBlur}
+              onFocus={() => setNotesFocused(true)}
+              onBlur={() => {
+                setNotesFocused(false);
+                handleBlur();
+              }}
               placeholder="Add a note to this transaction…"
-              className="w-full resize-none rounded-md border border-tt-border bg-tt-surface p-2 text-[12px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-1 focus:ring-tt-accent h-16 font-sans leading-relaxed"
+              className="w-full resize-none border border-tt-border/65 bg-tt-bg/35 p-3 text-[12px] text-tt-text placeholder:text-tt-text-tertiary focus:bg-tt-surface focus:outline-none focus:ring-1 focus:ring-tt-accent/40 focus:border-tt-accent h-20 font-sans leading-relaxed transition-all duration-150"
             />
           </div>
         </div>

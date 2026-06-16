@@ -52,4 +52,33 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to new_user_session_url
   end
+
+  test "should update transaction description and notes for current user" do
+    sign_in @user
+
+    patch transaction_url(@transaction), params: {
+      transaction: {
+        description: "New Chai Description",
+        notes: "Some notes about this Chai transaction"
+      }
+    }
+
+    assert_redirected_to dashboard_url
+    @transaction.reload
+    assert_equal "New Chai Description", @transaction.description
+    assert_equal "Some notes about this Chai transaction", @transaction.notes
+  end
+
+  test "should not update another user's transaction" do
+    other_user = users(:two)
+    sign_in other_user
+
+    patch transaction_url(@transaction), params: {
+      transaction: {
+        description: "Hacked Description"
+      }
+    }
+
+    assert_response :not_found
+  end
 end

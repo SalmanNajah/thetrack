@@ -100,6 +100,21 @@ class TransactionsController < ApplicationController
     render json: TransactionSerializer.collection(transactions)
   end
 
+  def update
+    transaction = current_user.transactions.find(params[:id])
+
+    if transaction.update(transaction_params)
+      redirect_back fallback_location: dashboard_path
+    else
+      redirect_back fallback_location: dashboard_path, alert: transaction.errors.full_messages.to_sentence
+    end
+  end
+
+  private
+
+  def transaction_params
+    params.require(:transaction).permit(:description, :notes)
+  end
 
   def parse_decimal(value)
     return nil if value.blank?

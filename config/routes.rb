@@ -28,7 +28,7 @@ Rails.application.routes.draw do
 
   resources :buckets, only: [ :index, :show, :create, :destroy ], param: :slug
 
-  resources :transactions, only: [ :create ] do
+  resources :transactions, only: [ :create, :update ] do
     member do
       post :reverse
     end

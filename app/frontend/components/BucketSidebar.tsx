@@ -1,6 +1,6 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Settings, LogOut, Plus, Home, HelpCircle, Receipt, SlidersHorizontal } from "lucide-react";
+import { Settings, LogOut, Plus, Home, HelpCircle, Receipt, Settings2 } from "lucide-react";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency } from "@/lib/format";
 import { classNames } from "@/lib/utils";
@@ -168,7 +168,7 @@ export function BucketSidebar({
             className="p-0.5 text-tt-text-tertiary hover:text-tt-text transition-colors cursor-pointer"
             title="Manage buckets"
           >
-            <SlidersHorizontal className="size-3" />
+            <Settings2 className="size-3" />
           </button>
         </div>
 

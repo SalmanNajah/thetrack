@@ -19,6 +19,7 @@ export type Bucket = {
   slug: string
   balance: string
   notes?: string | null
+  pinned: boolean
 }
 
 export type TransactionRecord = {

@@ -14,7 +14,8 @@ class BucketSerializer
       name: @bucket.name,
       slug: @bucket.slug,
       balance: is_super ? @bucket.balance.to_s : "•••",
-      notes: @bucket.notes
+      notes: @bucket.notes,
+      pinned: @bucket.pinned
     }
 
     if @options[:admin]

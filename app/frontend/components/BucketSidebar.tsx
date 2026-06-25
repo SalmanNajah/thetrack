@@ -1,6 +1,6 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Settings, LogOut, Plus, Home, HelpCircle, Receipt } from "lucide-react";
+import { Settings, LogOut, Plus, Home, HelpCircle, Receipt, SlidersHorizontal } from "lucide-react";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency } from "@/lib/format";
 import { classNames } from "@/lib/utils";
@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
+import { ManageBucketsDialog } from "@/components/ManageBucketsDialog";
 
 const KEYBOARD_SHORTCUTS = [
   { label: "Open search modal", key: "⌘K" },
@@ -42,6 +43,7 @@ export function BucketSidebar({
   }>().props;
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [manageBucketsOpen, setManageBucketsOpen] = useState(false);
 
   useEffect(() => {
     function handleGlobalKeyDown(e: globalThis.KeyboardEvent) {
@@ -157,9 +159,20 @@ export function BucketSidebar({
           Dashboard
         </Link>
 
-        <div className="border-t border-dashed border-tt-border/60 my-2" />
+        <div className="flex items-center justify-between px-5 py-1.5">
+          <span className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary">
+            Buckets
+          </span>
+          <button
+            onClick={() => setManageBucketsOpen(true)}
+            className="p-0.5 text-tt-text-tertiary hover:text-tt-text transition-colors cursor-pointer"
+            title="Manage buckets"
+          >
+            <SlidersHorizontal className="size-3" />
+          </button>
+        </div>
 
-        {buckets.map((bucket) => {
+        {buckets.filter((b) => b.pinned).map((bucket) => {
           const isActive = bucket.slug === activeBucketSlug;
           const bucketBalance = parseFloat(bucket.balance) || 0;
           const isLow =
@@ -286,6 +299,13 @@ export function BucketSidebar({
             </div>
           </DialogContent>
         </Dialog>
+
+        <ManageBucketsDialog
+          open={manageBucketsOpen}
+          onOpenChange={setManageBucketsOpen}
+          buckets={buckets}
+          currencySymbol={currencySymbol}
+        />
 
       </div>
     </div>

@@ -26,7 +26,9 @@ Rails.application.routes.draw do
   get "/dashboard", to: "dashboard#index"
   post "/notes", to: "notes#update"
 
-  resources :buckets, only: [ :index, :show, :create, :destroy ], param: :slug
+  resources :buckets, only: [ :index, :show, :create, :update, :destroy ], param: :slug do
+    post :reorder, on: :collection
+  end
 
   resources :transactions, only: [ :create, :update ] do
     member do

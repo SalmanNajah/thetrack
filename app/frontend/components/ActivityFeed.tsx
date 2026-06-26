@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { Odometer } from "@/components/Odometer";
 import { formatCurrency, groupByDate, formatTime } from "@/lib/format";
 import { classNames } from "@/lib/utils";
@@ -18,6 +18,10 @@ function FeedEntry({
   highlightId: string | null;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const { url } = usePage();
+  const searchParams = new URL(url, "http://localhost").searchParams;
+  const isCombined = (searchParams.get("buckets")?.split(",").filter(Boolean).length ?? 0) > 1;
+
   const elementRef = useRef<HTMLDivElement>(null);
   const amount = parseFloat(txn.amount);
   const isPositive = amount > 0;
@@ -279,7 +283,7 @@ function FeedEntry({
           </span>
           {closingBalance && (
             <span className="mt-0.5 text-[11px] text-tt-text-tertiary flex items-center gap-0.5">
-              Closing balance:{" "}
+              {isCombined ? "Combined balance: " : "Closing balance: "}
               <span className="text-tt-text-secondary">
                 <Odometer value={closingBalance} />
               </span>

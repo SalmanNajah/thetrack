@@ -47,6 +47,52 @@ export function BottomNavbar({
   setNotesOpen: (open: boolean) => void;
 }) {
   const { url } = usePage();
+  const searchParams = new URL(url, "http://localhost").searchParams;
+  const rawBuckets = searchParams.get("buckets")?.split(",").filter(Boolean) || [];
+  const selectedBucketSlugs = rawBuckets.map(raw => {
+    const clean = raw.trim().toLowerCase();
+    const found = buckets.find(b => b.slug.toLowerCase() === clean || b.name.toLowerCase() === clean);
+    return found ? found.slug : null;
+  }).filter((slug): slug is string => !!slug);
+
+  function handleCheckboxToggle(slug: string, e: React.ChangeEvent<HTMLInputElement>) {
+    e.stopPropagation();
+
+    let currentBuckets = [...selectedBucketSlugs];
+    if (currentBuckets.length === 0 && currentSlug) {
+      currentBuckets = [currentSlug];
+    }
+
+    let newBuckets: string[];
+    if (currentBuckets.includes(slug)) {
+      newBuckets = currentBuckets.filter((s) => s !== slug);
+    } else {
+      newBuckets = [...currentBuckets, slug];
+    }
+
+    const pinnedBuckets = buckets.filter((b) => b.pinned);
+
+    if (newBuckets.length === pinnedBuckets.length || newBuckets.length === 0) {
+      router.visit("/dashboard", {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => setOpen(false),
+      });
+    } else if (newBuckets.length === 1) {
+      router.visit(`/buckets/${newBuckets[0]}`, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => setOpen(false),
+      });
+    } else {
+      router.visit(`/dashboard?buckets=${newBuckets.join(",")}`, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => setOpen(false),
+      });
+    }
+  }
+
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
@@ -434,6 +480,7 @@ export function BottomNavbar({
                     <div className="pt-2 pb-3 space-y-2">
                       {items.filter((b) => b.pinned).map((b) => {
                         const isActive = b.slug === currentSlug;
+                        const isSelected = selectedBucketSlugs.includes(b.slug) || (selectedBucketSlugs.length === 0 && isActive);
                         const bucketBalance = parseFloat(b.balance) || 0;
 
                         return (
@@ -441,36 +488,52 @@ export function BottomNavbar({
                             key={b.id}
                             className={classNames(
                               "group relative flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent transition-all",
-                              isActive ? "bg-tt-positive/5 border-tt-positive/20" : "hover:bg-tt-bg"
+                              isActive && selectedBucketSlugs.length === 0
+                                ? "bg-tt-positive/5 border-tt-positive/20"
+                                : "hover:bg-tt-bg"
                             )}
                           >
-                            <Link
-                              href={`/buckets/${b.slug}`}
-                              onClick={() => setOpen(false)}
-                              className="flex-1 flex items-center justify-between focus:outline-none"
-                            >
-                              <div className="flex items-center gap-3">
-                                <BucketIcon
-                                  slug={b.slug}
-                                  className={classNames(
-                                    "size-4 shrink-0",
-                                    isActive ? "text-tt-positive" : "text-tt-text-tertiary"
-                                  )}
-                                />
+                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={(e) => handleCheckboxToggle(b.slug, e)}
+                                className="size-4 rounded border-tt-border text-tt-text focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer shrink-0"
+                              />
+                              <Link
+                                href={`/buckets/${b.slug}`}
+                                onClick={() => setOpen(false)}
+                                className="flex-1 flex items-center justify-between focus:outline-none min-w-0"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <BucketIcon
+                                    slug={b.slug}
+                                    className={classNames(
+                                      "size-4 shrink-0",
+                                      isActive && selectedBucketSlugs.length === 0
+                                        ? "text-tt-positive"
+                                        : "text-tt-text-tertiary"
+                                    )}
+                                  />
+                                  <span className={classNames(
+                                    "text-[14px] truncate",
+                                    isActive && selectedBucketSlugs.length === 0
+                                      ? "text-tt-text font-semibold"
+                                      : "text-tt-text-secondary"
+                                  )}>
+                                    {b.name}
+                                  </span>
+                                </div>
                                 <span className={classNames(
-                                  "text-[14px]",
-                                  isActive ? "text-tt-text font-semibold" : "text-tt-text-secondary"
+                                  "text-[13px] font-medium font-mono ml-2",
+                                  isActive && selectedBucketSlugs.length === 0
+                                    ? "text-tt-positive"
+                                    : "text-tt-text-secondary"
                                 )}>
-                                  {b.name}
+                                  <Odometer value={formatCurrency(bucketBalance.toFixed(2), currencySymbol)} />
                                 </span>
-                              </div>
-                              <span className={classNames(
-                                "text-[13px] font-medium font-mono",
-                                isActive ? "text-tt-positive" : "text-tt-text-secondary"
-                              )}>
-                                <Odometer value={formatCurrency(bucketBalance.toFixed(2), currencySymbol)} />
-                              </span>
-                            </Link>
+                              </Link>
+                            </div>
                           </div>
                         );
                       })}

@@ -36,11 +36,55 @@ export function BucketSidebar({
   currencySymbol,
   activeBucketSlug,
 }: BucketSidebarProps) {
+  const { url } = usePage();
   const {
     auth: { user },
   } = usePage<{
     auth: { user: AuthUser & { low_balance_threshold?: number } };
   }>().props;
+
+  const searchParams = new URL(url, "http://localhost").searchParams;
+  const rawBuckets = searchParams.get("buckets")?.split(",").filter(Boolean) || [];
+  const selectedBucketSlugs = rawBuckets.map(raw => {
+    const clean = raw.trim().toLowerCase();
+    const found = buckets.find(b => b.slug.toLowerCase() === clean || b.name.toLowerCase() === clean);
+    return found ? found.slug : null;
+  }).filter((slug): slug is string => !!slug);
+
+  function handleCheckboxToggle(slug: string, e: React.ChangeEvent<HTMLInputElement>) {
+    e.stopPropagation();
+
+    let currentBuckets = [...selectedBucketSlugs];
+    if (currentBuckets.length === 0 && activeBucketSlug) {
+      currentBuckets = [activeBucketSlug];
+    }
+
+    let newBuckets: string[];
+    if (currentBuckets.includes(slug)) {
+      newBuckets = currentBuckets.filter((s) => s !== slug);
+    } else {
+      newBuckets = [...currentBuckets, slug];
+    }
+
+    const pinnedBuckets = buckets.filter((b) => b.pinned);
+
+    if (newBuckets.length === pinnedBuckets.length || newBuckets.length === 0) {
+      router.visit("/dashboard", {
+        preserveState: true,
+        preserveScroll: true,
+      });
+    } else if (newBuckets.length === 1) {
+      router.visit(`/buckets/${newBuckets[0]}`, {
+        preserveState: true,
+        preserveScroll: true,
+      });
+    } else {
+      router.visit(`/dashboard?buckets=${newBuckets.join(",")}`, {
+        preserveState: true,
+        preserveScroll: true,
+      });
+    }
+  }
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [manageBucketsOpen, setManageBucketsOpen] = useState(false);
@@ -105,7 +149,6 @@ export function BucketSidebar({
           ? "text-[1.875rem]"
           : "text-[2.5rem]";
 
-  const { url } = usePage();
   const isOnDashboard = url.startsWith("/dashboard");
   const isOnSettings = url.startsWith("/settings");
 
@@ -150,7 +193,7 @@ export function BucketSidebar({
           href="/dashboard"
           className={classNames(
             "flex items-center gap-2.5 px-5 py-2.5 text-[13px] font-medium transition-all duration-100 mb-0.5 border-y",
-            isOnDashboard
+            isOnDashboard && selectedBucketSlugs.length === 0
               ? "bg-white text-tt-text border-tt-border"
               : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border-transparent",
           )}
@@ -174,27 +217,38 @@ export function BucketSidebar({
 
         {buckets.filter((b) => b.pinned).map((bucket) => {
           const isActive = bucket.slug === activeBucketSlug;
+          const isSelected = selectedBucketSlugs.includes(bucket.slug) || (selectedBucketSlugs.length === 0 && isActive);
           const bucketBalance = parseFloat(bucket.balance) || 0;
           const isLow =
             user.low_balance_threshold !== undefined &&
             bucketBalance < user.low_balance_threshold;
 
           return (
-            <Link
+            <div
               key={bucket.id}
-              href={`/buckets/${bucket.slug}`}
               className={classNames(
                 "flex items-center justify-between px-5 py-2.5 transition-all duration-100 group border-y",
-                isActive
+                isActive && selectedBucketSlugs.length === 0
                   ? "bg-white text-tt-text border-tt-border"
                   : "text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border-transparent",
               )}
             >
-              <span className="text-[13px] font-medium truncate">
-                {bucket.name}
-              </span>
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={(e) => handleCheckboxToggle(bucket.slug, e)}
+                  className="size-3.5 rounded border-tt-border text-tt-text focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer shrink-0"
+                />
+                <Link
+                  href={`/buckets/${bucket.slug}`}
+                  className="text-[13px] font-medium truncate flex-1 block py-0.5"
+                >
+                  {bucket.name}
+                </Link>
+              </div>
               <span className={classNames(
-                "text-[12px] shrink-0 ml-2",
+                "text-[12px] shrink-0 ml-2 select-none",
                 isLow ? "text-[#da8a09] font-medium" : "text-tt-text-secondary group-hover:text-tt-text"
               )}>
                 <Odometer
@@ -204,7 +258,7 @@ export function BucketSidebar({
                   )}
                 />
               </span>
-            </Link>
+            </div>
           );
         })}
 

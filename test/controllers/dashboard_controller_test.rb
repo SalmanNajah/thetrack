@@ -13,4 +13,14 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     get dashboard_url
     assert_response :success
   end
+
+  test "should get index with combined buckets filter when authenticated" do
+    user = users(:one)
+    sign_in user
+    bucket_a = user.buckets.create!(name: "Bucket A")
+    bucket_b = user.buckets.create!(name: "Bucket B")
+
+    get dashboard_url, params: { buckets: "#{bucket_a.slug},#{bucket_b.slug}" }
+    assert_response :success
+  end
 end

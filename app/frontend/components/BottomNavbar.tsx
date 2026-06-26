@@ -59,10 +59,6 @@ export function BottomNavbar({
     e.stopPropagation();
 
     let currentBuckets = [...selectedBucketSlugs];
-    if (currentBuckets.length === 0 && currentSlug) {
-      currentBuckets = [currentSlug];
-    }
-
     let newBuckets: string[];
     if (currentBuckets.includes(slug)) {
       newBuckets = currentBuckets.filter((s) => s !== slug);
@@ -74,12 +70,6 @@ export function BottomNavbar({
 
     if (newBuckets.length === pinnedBuckets.length || newBuckets.length === 0) {
       router.visit("/dashboard", {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => setOpen(false),
-      });
-    } else if (newBuckets.length === 1) {
-      router.visit(`/buckets/${newBuckets[0]}`, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => setOpen(false),
@@ -501,7 +491,7 @@ export function BottomNavbar({
                                 className="size-4 rounded border-tt-border text-tt-text focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer shrink-0"
                               />
                               <Link
-                                href={`/buckets/${b.slug}`}
+                                href={`/dashboard?buckets=${b.slug}`}
                                 onClick={() => setOpen(false)}
                                 className="flex-1 flex items-center justify-between focus:outline-none min-w-0"
                               >

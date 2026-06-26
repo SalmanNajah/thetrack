@@ -55,10 +55,6 @@ export function BucketSidebar({
     e.stopPropagation();
 
     let currentBuckets = [...selectedBucketSlugs];
-    if (currentBuckets.length === 0 && activeBucketSlug) {
-      currentBuckets = [activeBucketSlug];
-    }
-
     let newBuckets: string[];
     if (currentBuckets.includes(slug)) {
       newBuckets = currentBuckets.filter((s) => s !== slug);
@@ -70,11 +66,6 @@ export function BucketSidebar({
 
     if (newBuckets.length === pinnedBuckets.length || newBuckets.length === 0) {
       router.visit("/dashboard", {
-        preserveState: true,
-        preserveScroll: true,
-      });
-    } else if (newBuckets.length === 1) {
-      router.visit(`/buckets/${newBuckets[0]}`, {
         preserveState: true,
         preserveScroll: true,
       });
@@ -241,7 +232,7 @@ export function BucketSidebar({
                   className="size-3.5 rounded border-tt-border text-tt-text focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer shrink-0"
                 />
                 <Link
-                  href={`/buckets/${bucket.slug}`}
+                  href={`/dashboard?buckets=${bucket.slug}`}
                   className="text-[13px] font-medium truncate flex-1 block py-0.5"
                 >
                   {bucket.name}

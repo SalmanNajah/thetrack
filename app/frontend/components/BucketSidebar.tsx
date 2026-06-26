@@ -245,7 +245,7 @@ export function BucketSidebar({
           onClick={() => {
             window.dispatchEvent(new CustomEvent("open-notes"));
           }}
-          className="flex w-full items-center gap-2 px-2 py-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border border-transparent transition-colors cursor-pointer text-left focus:outline-none"
+          className="lg:hidden flex w-full items-center gap-2 px-2 py-1.5 text-[12px] text-tt-text-secondary hover:text-tt-text hover:bg-white/50 border border-transparent transition-colors cursor-pointer text-left focus:outline-none"
         >
           <Receipt className="size-3.5" />
           Notes

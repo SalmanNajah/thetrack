@@ -152,8 +152,8 @@ export function NotesContent({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 pt-2 pb-4">
-      <div className="flex items-center justify-between border-b border-tt-border pb-2 px-1">
+    <div className="flex flex-col flex-1 min-h-0 pt-3 pb-4">
+      <div className="flex items-center justify-between pb-2 px-1">
         <div className="flex gap-4">
           <button
             onClick={() => handleSwitchTarget("global", selectedBucketSlug)}
@@ -207,7 +207,7 @@ export function NotesContent({
               ? "Write down anything important for your workspace…"
               : "Write notes, goals, or rules for this bucket…"
           }
-          className="w-full flex-1 min-h-[220px] resize-none border border-tt-border bg-tt-surface p-3 text-[13px] text-tt-text placeholder:text-tt-text-tertiary focus:outline-none focus:ring-1 focus:ring-tt-accent focus:border-tt-accent font-sans leading-relaxed"
+          className="w-full flex-1 min-h-[220px] resize-none border-0 bg-tt-bg/60 p-2 text-[13px] text-tt-text placeholder:text-tt-text-tertiary/60 focus:outline-none focus:ring-0 font-sans leading-relaxed"
         />
       </div>
     </div>

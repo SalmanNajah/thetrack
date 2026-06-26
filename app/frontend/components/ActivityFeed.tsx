@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { router } from "@inertiajs/react";
 import { Odometer } from "@/components/Odometer";
-import { formatCurrency, groupByDate, formatDate } from "@/lib/format";
+import { formatCurrency, groupByDate, formatTime } from "@/lib/format";
 import { classNames } from "@/lib/utils";
 import { ArrowLeftRight, RotateCcw, ChevronDown, ChevronUp, Loader2, Check, AlertCircle } from "lucide-react";
 import type { TransactionRecord } from "@/types";
@@ -203,10 +203,19 @@ function FeedEntry({
     ? formatCurrency(txn.closing_balance, currencySymbol)
     : null;
 
-  const rowDateStr = formatDate(txn.occurred_at);
+  const rowTimeStr = formatTime(txn.occurred_at);
 
   return (
-    <div ref={elementRef}>
+    <div
+      ref={elementRef}
+      className={classNames(
+        "transition-all duration-200 ease-in-out",
+        isHighlighted ? "animate-highlight-fade" : "",
+        expanded
+          ? "bg-tt-surface shadow-[0_3px_10px_rgba(0,0,0,0.02)] my-3 px-3.5 py-3.5"
+          : "hover:bg-tt-border-subtle px-3.5 -mx-3.5 py-3"
+      )}
+    >
       <div
         role="button"
         tabIndex={0}
@@ -219,14 +228,7 @@ function FeedEntry({
             setExpanded(!expanded);
           }
         }}
-        className={classNames(
-          "flex items-center justify-between py-3 cursor-pointer select-none px-2 -mx-2 transition-colors duration-150 outline-none",
-          isHighlighted
-            ? "animate-highlight-fade"
-            : expanded
-              ? "bg-tt-surface/50"
-              : "hover:bg-tt-surface/20",
-        )}
+        className="flex items-center justify-between cursor-pointer select-none outline-none"
       >
         <div className="min-w-0 flex-1 flex items-center gap-1.5">
           {isTransfer && (
@@ -251,15 +253,18 @@ function FeedEntry({
                   : "text-tt-text-tertiary",
               )}
             >
-              {bucketLabel && <span>{bucketLabel} · </span>}
-              <span>{rowDateStr}</span>
+              {bucketLabel ? (
+                <span>{bucketLabel} · {rowTimeStr}</span>
+              ) : (
+                <span>{rowTimeStr}</span>
+              )}
             </p>
           </div>
         </div>
         <div className="ml-4 shrink-0 flex flex-col items-end">
           <span
             className={classNames(
-              "text-sm font-medium tracking-tight flex items-center gap-0.5",
+              "text-sm font-semibold tracking-tight flex items-center gap-0.5",
               txn.reversed
                 ? "line-through text-tt-text-tertiary opacity-60"
                 : isPositive
@@ -287,18 +292,18 @@ function FeedEntry({
         className={classNames(
           "overflow-hidden transition-all duration-200 ease-in-out",
           expanded
-            ? "max-h-[450px] opacity-100 mb-3 mt-1"
+            ? "max-h-[450px] opacity-100 mt-3 pt-3.5 border-t border-tt-border/60"
             : "max-h-0 opacity-0 pointer-events-none",
         )}
       >
-        <div className="mx-2 bg-tt-surface border border-tt-border rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.03)] p-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-tt-bg text-tt-text-secondary border border-tt-border/60">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium tracking-wide bg-tt-bg text-tt-text-secondary border border-tt-border/60">
                 {txn.kind || (isTransfer ? "Transfer" : "Manual")}
               </span>
               {txn.reversed && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-tt-negative/10 text-tt-negative border border-tt-negative/20">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium tracking-wide bg-tt-negative/10 text-tt-negative border border-tt-negative/20">
                   Reversed
                 </span>
               )}
@@ -314,9 +319,9 @@ function FeedEntry({
                     { preserveScroll: true },
                   );
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-tt-negative hover:bg-tt-negative/5 active:scale-[0.97] transition-all cursor-pointer border border-tt-negative/20 bg-transparent"
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-tt-negative hover:text-red-700 hover:underline transition-all cursor-pointer bg-transparent border-0"
               >
-                <RotateCcw className="size-3.5" />
+                <RotateCcw className="size-3" />
                 Undo Transaction
               </button>
             )}
@@ -324,7 +329,7 @@ function FeedEntry({
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-tt-text-tertiary">Description</span>
+              <span className="text-[10px] font-semibold tracking-wider uppercase text-tt-text-secondary/70">Description</span>
               {renderDescStatus()}
             </div>
             <input
@@ -342,13 +347,13 @@ function FeedEntry({
                 }
               }}
               placeholder={isTransfer ? "Transfer" : "Transaction description…"}
-              className="w-full rounded-md border border-tt-border/65 bg-tt-bg/35 px-3 py-2 text-[12px] text-tt-text placeholder:text-tt-text-tertiary focus:bg-tt-surface focus:outline-none focus:ring-1 focus:ring-tt-accent/40 focus:border-tt-accent transition-all duration-150 font-sans"
+              className="w-full rounded-md bg-tt-bg/60 border border-tt-border hover:border-tt-text-tertiary/50 focus:bg-tt-surface focus:outline-none focus:ring-0 focus:border-tt-border px-2.5 py-1.5 text-[12px] text-tt-text placeholder:text-tt-text-tertiary transition-all duration-150 font-sans"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-tt-text-tertiary">Notes</span>
+              <span className="text-[10px] font-semibold tracking-wider uppercase text-tt-text-secondary/70">Notes</span>
               {renderStatus()}
             </div>
             <textarea
@@ -360,7 +365,7 @@ function FeedEntry({
                 handleBlur();
               }}
               placeholder="Add a note to this transaction…"
-              className="w-full resize-none border border-tt-border/65 bg-tt-bg/35 p-3 text-[12px] text-tt-text placeholder:text-tt-text-tertiary focus:bg-tt-surface focus:outline-none focus:ring-1 focus:ring-tt-accent/40 focus:border-tt-accent h-20 font-sans leading-relaxed transition-all duration-150"
+              className="w-full rounded-md resize-none bg-tt-bg/60 border border-tt-border hover:border-tt-text-tertiary/50 focus:bg-tt-surface focus:outline-none focus:ring-0 focus:border-tt-border p-2.5 text-[12px] text-tt-text placeholder:text-tt-text-tertiary h-20 font-sans leading-relaxed transition-all duration-150"
             />
           </div>
         </div>
@@ -390,15 +395,27 @@ function DateGroup({
 
   return (
     <div>
-      <p className="px-0 pt-6 pb-2 text-[12px] font-medium tracking-wide uppercase text-tt-text-tertiary">
-        {date}
-      </p>
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex w-full items-center justify-between pt-5 pb-1.5 focus:outline-none group text-left cursor-pointer"
+      >
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-tt-text-secondary/80 group-hover:text-tt-text transition-colors">
+            {date}
+          </span>
+          {collapsed ? (
+            <ChevronDown className="size-3 text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors" />
+          ) : (
+            <ChevronUp className="size-3 text-tt-text-tertiary group-hover:text-tt-text-secondary transition-colors" />
+          )}
+        </div>
+      </button>
 
       {!collapsed &&
         transactions.map((txn, index) => (
           <div key={txn.id}>
             {index > 0 && (
-              <div className="border-t border-dashed border-tt-text-tertiary/15 my-0.5" />
+              <div className="border-t border-tt-border/40 my-0.5" />
             )}
             <FeedEntry
               txn={txn}
@@ -409,29 +426,21 @@ function DateGroup({
           </div>
         ))}
 
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="flex w-full items-center justify-between py-2.5 text-[12px] text-tt-text-secondary hover:text-tt-text transition-colors focus:outline-none"
-      >
-        <span className="capitalize">{date.toLowerCase()} total</span>
+      <div className="flex w-full items-center justify-between py-2 text-[11px] font-semibold text-tt-text-tertiary uppercase tracking-wider select-none">
+        <span>{date === "Today" || date === "Yesterday" ? `${date} net` : "Net flow"}</span>
         <span className={classNames(
-          "flex items-center gap-1 tracking-tight font-medium",
+          "flex items-center gap-0.5 tracking-tight font-medium text-xs",
           total > 0 ? "text-tt-positive" : total < 0 ? "text-tt-negative" : "text-tt-text-secondary"
         )}>
           <span>{total > 0 ? "+" : total < 0 ? "-" : ""}</span>
           <Odometer
             value={formatCurrency(Math.abs(total).toFixed(2), currencySymbol)}
           />
-          {collapsed ? (
-            <ChevronDown className="size-3 ml-0.5" />
-          ) : (
-            <ChevronUp className="size-3 ml-0.5" />
-          )}
         </span>
-      </button>
+      </div>
 
-      <div className="mt-1 mb-6">
-        <div className="border-t border-dashed border-tt-text-tertiary/35" />
+      <div className="mt-2 mb-4">
+        <div className="border-t border-tt-border/50" />
       </div>
     </div>
   );

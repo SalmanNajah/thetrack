@@ -120,7 +120,7 @@ export function WorkspaceLayout({
             </div>
           )}
 
-          <main className="mx-auto max-w-2xl px-6 pb-48 md:pb-20 lg:max-w-none">
+          <main className="mx-auto max-w-2xl px-6 pb-48 md:pb-20 lg:max-w-3xl">
             {children}
           </main>
         </div>

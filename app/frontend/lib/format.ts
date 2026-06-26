@@ -43,6 +43,16 @@ export function formatDate(iso: string): string {
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+export function formatTime(iso: string): string {
+  const date = new Date(iso)
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+
 export function groupByDate<T extends { occurred_at: string }>(items: T[]): [string, T[]][] {
   const groups = new Map<string, T[]>()
   for (const item of items) {

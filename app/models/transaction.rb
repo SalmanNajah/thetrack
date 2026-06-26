@@ -27,6 +27,12 @@ class Transaction < ApplicationRecord
       "SUM(amount) OVER (PARTITION BY bucket_id ORDER BY occurred_at ASC, id ASC) AS closing_balance"
     )
   }
+  scope :with_overall_closing_balance, -> {
+    select(
+      "transactions.*",
+      "SUM(amount) OVER (PARTITION BY user_id ORDER BY occurred_at ASC, id ASC) AS closing_balance"
+    )
+  }
 
   before_destroy :prevent_destruction, unless: :allow_destruction?
   before_update :prevent_update, unless: :allow_update?

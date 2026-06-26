@@ -131,18 +131,12 @@ export function WorkspaceLayout({
           className="hidden lg:flex fixed right-0 top-0 bottom-0 flex-col bg-tt-sidebar-bg border-l border-tt-border"
           style={{ width: "var(--tt-right-sidebar-width)" }}
         >
-          <div className="flex-1 flex flex-col p-4 pt-5 min-h-0">
-            <div className="flex-1 min-h-0 flex flex-col bg-tt-surface border border-tt-border">
-              <div className="px-4 pt-3 pb-2 flex items-center justify-between border-b border-dashed border-tt-border">
-                <div className="flex items-center gap-2">
-                  <Receipt className="size-3.5 text-tt-accent shrink-0" />
-                  <h2 className="text-[14px] font-semibold text-tt-text">Notes</h2>
-                </div>
-              </div>
-              <div className="flex-1 min-h-0 px-3 overflow-y-auto">
-                <NotesContent defaultBucketSlug={defaultBucketSlug} />
-              </div>
-            </div>
+          <div className="px-5 pt-5 pb-2 flex items-center gap-2 border-b border-dashed border-tt-border">
+            <Receipt className="size-3.5 text-tt-accent shrink-0" />
+            <h2 className="text-[14px] font-semibold text-tt-text">Notes</h2>
+          </div>
+          <div className="flex-1 min-h-0 px-4 overflow-y-auto">
+            <NotesContent defaultBucketSlug={defaultBucketSlug} />
           </div>
         </div>
       )}

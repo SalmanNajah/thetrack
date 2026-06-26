@@ -207,7 +207,7 @@ export function NotesContent({
               ? "Write down anything important for your workspace…"
               : "Write notes, goals, or rules for this bucket…"
           }
-          className="w-full flex-1 min-h-[220px] resize-none border-0 bg-tt-bg/60 p-2 text-[13px] text-tt-text placeholder:text-tt-text-tertiary/60 focus:outline-none focus:ring-0 font-sans leading-relaxed"
+          className="w-full flex-1 min-h-[400px] resize-none border-0 p-2 text-[13px] text-tt-text placeholder:text-tt-text-tertiary/60 focus:outline-none focus:ring-tt-border font-sans"
         />
       </div>
     </div>

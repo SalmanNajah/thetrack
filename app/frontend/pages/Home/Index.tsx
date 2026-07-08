@@ -593,7 +593,7 @@ export default function Index() {
         whileInView="visible"
         viewport={{ once: true, amount: 0.15 }}
         variants={STAGGER_CONTAINER}
-        className="relative py-6 sm:py-24 border-t border-b border-tt-border bg-[#fdfdfc]/50"
+        className="relative py-6 sm:py-24 border-t border-b border-tt-border bg-[#fdfdfc]/50 scroll-mt-20"
       >
         <div className="relative mx-auto max-w-5xl px-6 flex flex-col md:flex-row gap-12 items-start justify-between">
           <motion.div

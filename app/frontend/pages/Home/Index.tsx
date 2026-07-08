@@ -46,13 +46,13 @@ const STAGGER_CONTAINER = {
   visible: { transition: { staggerChildren: 0.2 } },
 };
 
-function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
+export function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1d] border-b border-[#2a2a2e] shadow-lg">
       <div className="mx-auto flex max-w-5xl items-center justify-between p-6">
-        <span className="text-[15px] font-semibold tracking-tight text-white">
+        <Link href="/" className="text-[15px] font-semibold tracking-tight text-white hover:opacity-90 transition-opacity">
           TheTrack
-        </span>
+        </Link>
         <div className="flex items-center gap-4">
           {isLoggedIn ? (
             <Link
@@ -73,7 +73,7 @@ function LandingNav({ isLoggedIn }: { isLoggedIn: boolean }) {
                 href="/users/sign_up"
                 className="bg-white text-[#1a1a1d] px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-all rounded-full"
               >
-                Get started
+                Sign up
               </Link>
             </>
           )}
@@ -479,7 +479,7 @@ function InteractiveDemo() {
   );
 }
 
-function LandingFooter() {
+export function LandingFooter() {
   return (
     <footer className="border-t border-[#2a2a2e] bg-[#1a1a1d] px-6">
       <div className="mx-auto max-w-5xl py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -487,18 +487,12 @@ function LandingFooter() {
           TheTrack
         </span>
         <div className="flex flex-wrap gap-5 text-xs text-white/60">
-          <Link href="/" className="hover:text-white transition-colors">
-            Home
+          <Link href="/terms" className="hover:text-white transition-colors">
+            Terms of Service
           </Link>
-          <a href="#demo" className="hover:text-white transition-colors">
-            Demo
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Terms
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Privacy
-          </a>
+          <Link href="/privacy" className="hover:text-white transition-colors">
+            Privacy Policy
+          </Link>
         </div>
       </div>
     </footer>
@@ -551,14 +545,35 @@ export default function Index() {
               stays.
             </motion.p>
 
-            {isLoggedIn && (
+            {!isLoggedIn ? (
+              <motion.div
+                variants={REVEAL_VARIANT}
+                className="mt-8 flex items-center justify-center gap-4"
+              >
+                <Link
+                  href="/users/sign_up"
+                  className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-full hover:bg-[#18181b]/90 transition-all shadow-sm"
+                >
+                  Get started
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="bg-transparent border border-tt-border text-[#18181b]/80 hover:text-[#18181b] hover:border-tt-text/30 px-6 py-2.5 text-sm font-semibold rounded-full hover:bg-white/40 transition-all cursor-pointer"
+                >
+                  See demo
+                </button>
+              </motion.div>
+            ) : (
               <motion.div
                 variants={REVEAL_VARIANT}
                 className="mt-8 flex items-center justify-center gap-4"
               >
                 <Link
                   href="/dashboard"
-                  className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-full"
+                  className="bg-[#18181b] text-white px-6 py-2.5 text-sm font-semibold rounded-full hover:bg-[#18181b]/90 transition-all shadow-sm"
                 >
                   Go to dashboard →
                 </Link>

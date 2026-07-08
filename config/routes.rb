@@ -22,6 +22,8 @@ Rails.application.routes.draw do
   end
 
   root "home#index"
+  get "/terms", to: "home#terms", as: :terms
+  get "/privacy", to: "home#privacy", as: :privacy
 
   get "/dashboard", to: "dashboard#index"
   post "/notes", to: "notes#update"

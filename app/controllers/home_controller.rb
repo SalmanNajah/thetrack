@@ -9,4 +9,22 @@ class HomeController < ApplicationController
       }
     }
   end
+
+  def terms
+    render inertia: "Home/Terms", props: {
+      meta: {
+        title: "Terms of Service — TheTrack",
+        description: "Terms of Service for TheTrack personal finance system."
+      }
+    }
+  end
+
+  def privacy
+    render inertia: "Home/Privacy", props: {
+      meta: {
+        title: "Privacy Policy — TheTrack",
+        description: "Privacy Policy for TheTrack personal finance system."
+      }
+    }
+  end
 end

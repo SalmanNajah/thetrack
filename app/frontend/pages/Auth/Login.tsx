@@ -36,7 +36,7 @@ export default function Login() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-tt-text-secondary"
+            className="mb-1.5 block text-[13px] font-medium text-tt-text"
           >
             Email
           </label>
@@ -62,7 +62,7 @@ export default function Login() {
         <div>
           <label
             htmlFor="password"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-tt-text-secondary"
+            className="mb-1.5 block text-[13px] font-medium text-tt-text"
           >
             Password
           </label>
@@ -121,7 +121,7 @@ export default function Login() {
 
       <div className="my-5 flex items-center gap-3">
         <div className="h-px flex-1 bg-tt-border-subtle" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-tt-text-tertiary">
+        <span className="text-[12px] font-medium text-tt-text-tertiary">
           or
         </span>
         <div className="h-px flex-1 bg-tt-border-subtle" />

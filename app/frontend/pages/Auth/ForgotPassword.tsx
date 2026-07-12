@@ -39,7 +39,7 @@ export default function ForgotPassword() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-tt-text-secondary"
+            className="mb-1.5 block text-[13px] font-medium text-tt-text"
           >
             Email
           </label>

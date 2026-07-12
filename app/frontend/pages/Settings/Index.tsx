@@ -59,7 +59,7 @@ function ProfileSection({ user }: { user: PageProps['user'] }) {
 
   return (
     <section>
-      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+      <h2 className="text-[14px] font-semibold text-tt-text mb-1">
         Account
       </h2>
       <div>
@@ -133,7 +133,7 @@ function PreferencesSection({
 
   return (
     <section>
-      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+      <h2 className="text-[14px] font-semibold text-tt-text mb-1">
         Preferences
       </h2>
       <div>
@@ -189,7 +189,7 @@ function SignConventionSection({ defaultUnsignedToPositive }: { defaultUnsignedT
 
   return (
     <section>
-      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+      <h2 className="text-[14px] font-semibold text-tt-text mb-1">
         Input Behavior
       </h2>
       <div>
@@ -254,7 +254,7 @@ function DangerZone({ stats }: { stats: PageProps['stats'] }) {
 
   return (
     <section>
-      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-negative mb-1">
+      <h2 className="text-[14px] font-semibold text-tt-negative mb-1">
         Danger Zone
       </h2>
       <div className="rounded-xl border border-dotted border-tt-negative/25 overflow-hidden">
@@ -362,7 +362,7 @@ function SecuritySection({ user }: { user: PageProps['user'] }) {
 
   return (
     <section>
-      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+      <h2 className="text-[14px] font-semibold text-tt-text mb-1">
         Security
       </h2>
       <div>
@@ -516,7 +516,7 @@ function DataSection() {
 
   return (
     <section>
-      <h2 className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary mb-1">
+      <h2 className="text-[14px] font-semibold text-tt-text mb-1">
         Data
       </h2>
       <div className="mb-4 grid grid-cols-2 gap-4">

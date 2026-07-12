@@ -231,7 +231,7 @@ export function ManageBucketsDialog({
 
         <div className="py-2 max-h-[60vh] overflow-y-auto scrollbar-none">
           <div className="px-4 pb-1.5 flex items-center justify-between">
-            <span className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary">
+            <span className="text-[11px] font-medium text-tt-text-secondary">
               Visible in sidebar
             </span>
             <span className="text-[10px] text-tt-text-tertiary tabular-nums">

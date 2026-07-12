@@ -43,7 +43,7 @@ export default function ResetPassword() {
         <div>
           <label
             htmlFor="password"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-tt-text-secondary"
+            className="mb-1.5 block text-[13px] font-medium text-tt-text"
           >
             New password
           </label>
@@ -73,7 +73,7 @@ export default function ResetPassword() {
         <div>
           <label
             htmlFor="password_confirmation"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-tt-text-secondary"
+            className="mb-1.5 block text-[13px] font-medium text-tt-text"
           >
             Confirm new password
           </label>

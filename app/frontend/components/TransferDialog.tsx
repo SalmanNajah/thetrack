@@ -125,7 +125,7 @@ export function TransferDialog({
         <form onSubmit={handleSubmit} className="pt-1">
           <div className="relative rounded-2xl border border-tt-border overflow-visible bg-tt-surface">
             <div className="rounded-xl bg-tt-bg px-4 py-3.5">
-              <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-2">From</p>
+              <p className="text-[12px] font-semibold text-tt-text-secondary mb-2">From</p>
               <div className="flex items-center justify-between">
                 <Select value={fromBucketId} onValueChange={(val) => {
                   setFromBucketId(val)
@@ -165,7 +165,7 @@ export function TransferDialog({
             <div className="border-t border-tt-border" />
 
             <div className="rounded-xl bg-tt-bg px-4 py-3.5">
-              <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-2">To</p>
+              <p className="text-[12px] font-semibold text-tt-text-secondary mb-2">To</p>
               <div className="flex items-center justify-between">
                 <Select value={toBucketId} onValueChange={setToBucketId}>
                   <SelectTrigger className="w-auto gap-1.5 border-0 bg-transparent p-0 h-auto text-[15px] font-semibold text-tt-text shadow-none focus:ring-0">

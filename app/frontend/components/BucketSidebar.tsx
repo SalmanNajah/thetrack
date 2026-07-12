@@ -167,8 +167,8 @@ export function BucketSidebar({
       <div className="border-t border-dashed border-tt-border" />
 
       <div className="px-5 py-4 flex flex-col gap-1">
-        <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary">
-          total balance
+        <p className="text-[12px] font-semibold text-tt-text-secondary">
+          Total balance
         </p>
         <p
           className={`${balanceFontSize} font-semibold leading-none tracking-tighter text-tt-text overflow-hidden`}
@@ -194,7 +194,7 @@ export function BucketSidebar({
         </Link>
 
         <div className="flex items-center justify-between px-5 py-1.5">
-          <span className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary">
+          <span className="text-[12px] font-semibold text-tt-text-secondary">
             Buckets
           </span>
           <button

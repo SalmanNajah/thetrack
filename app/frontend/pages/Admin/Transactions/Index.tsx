@@ -73,11 +73,11 @@ export default function Index() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#eee]">
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa]">Description</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden sm:table-cell">User</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden md:table-cell">Bucket</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa]">Amount</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden lg:table-cell">Date</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666]">Description</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666] hidden sm:table-cell">User</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666] hidden md:table-cell">Bucket</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666]">Amount</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] hidden lg:table-cell">Date</th>
                 </tr>
               </thead>
               <tbody>

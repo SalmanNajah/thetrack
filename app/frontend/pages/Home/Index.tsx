@@ -321,8 +321,8 @@ function InteractiveDemo() {
     <div className="w-full text-left">
       <div>
         <div className="flex items-center gap-2">
-          <p className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary">
-            Total Balance
+          <p className="text-[12px] font-medium text-tt-text-secondary">
+            Total balance
           </p>
           <button
             type="button"
@@ -352,8 +352,8 @@ function InteractiveDemo() {
               : "border-tt-border-subtle bg-transparent hover:bg-white/40"
           }`}
         >
-          <p className="text-[10px] text-tt-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
-            <Wallet className="size-3 text-tt-text-tertiary" />
+          <p className="text-[12px] font-medium text-tt-text-secondary flex items-center gap-1.5">
+            <Wallet className="size-3 text-tt-text-secondary" />
             Income
           </p>
           <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
@@ -369,8 +369,8 @@ function InteractiveDemo() {
               : "border-tt-border-subtle bg-transparent hover:bg-white/40"
           }`}
         >
-          <p className="text-[10px] text-tt-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
-            <Banknote className="size-3 text-tt-text-tertiary" />
+          <p className="text-[12px] font-medium text-tt-text-secondary flex items-center gap-1.5">
+            <Banknote className="size-3 text-tt-text-secondary" />
             Daily
           </p>
           <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
@@ -386,8 +386,8 @@ function InteractiveDemo() {
               : "border-tt-border-subtle bg-transparent hover:bg-white/40"
           }`}
         >
-          <p className="text-[10px] text-tt-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
-            <TrendingUp className="size-3 text-tt-text-tertiary" />
+          <p className="text-[12px] font-medium text-tt-text-secondary flex items-center gap-1.5">
+            <TrendingUp className="size-3 text-tt-text-secondary" />
             Investments
           </p>
           <p className="sm:mt-1.5 text-[15px] font-semibold text-tt-text tracking-tight flex items-center">
@@ -398,8 +398,8 @@ function InteractiveDemo() {
       </div>
 
       <div className="mt-8">
-        <p className="text-[10px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-3">
-          Recent Transactions
+        <p className="text-[12px] font-medium text-tt-text-secondary mb-3">
+          Recent transactions
         </p>
         <div className="max-h-[220px] overflow-y-auto pr-1 scrollbar-none">
           <AnimatePresence initial={false}>
@@ -419,7 +419,7 @@ function InteractiveDemo() {
                   <span className="text-[13px] text-tt-text">
                     {txn.description}
                   </span>
-                  <span className="text-[9px] font-medium tracking-wider uppercase text-tt-text-tertiary bg-[#18181b]/5 px-1.5 py-0.5 rounded-sm select-none font-sans">
+                  <span className="text-[10px] font-medium text-tt-text-secondary bg-[#18181b]/5 px-1.5 py-0.5 rounded-sm select-none font-sans">
                     {txn.bucket}
                   </span>
                 </div>

@@ -87,7 +87,7 @@ export function OnboardingFlow({
           <div className="border-t border-dashed border-tt-text-tertiary/30" />
 
           <div className="px-5 py-4">
-            <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-2.5">
+            <p className="text-[12px] font-semibold text-tt-text-secondary mb-2.5">
               Pick your currency
             </p>
             <p className="text-[11px] text-tt-text-tertiary mb-3">
@@ -140,7 +140,7 @@ export function OnboardingFlow({
         <div className="border-t border-dashed border-tt-text-tertiary/30" />
 
         <div className="px-5 py-4">
-          <p className="text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary mb-2.5">
+          <p className="text-[12px] font-semibold text-tt-text-secondary mb-2.5">
             What do you have right now?
           </p>
           <div className="flex items-center gap-2 border border-dashed border-tt-text-tertiary/30 bg-tt-bg px-3 py-2">

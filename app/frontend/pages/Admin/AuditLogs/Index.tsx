@@ -120,7 +120,7 @@ export default function Index() {
                   {isExpanded && (
                     <div className="px-4 pb-3 pl-11">
                       <div className="rounded-md bg-[#fafaf8] border border-[#eee] p-3">
-                        <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa] mb-2">Raw Metadata</p>
+                        <p className="text-[12px] font-semibold text-[#666] mb-2">Raw metadata</p>
                         <pre className="text-[11px] text-[#666] font-mono whitespace-pre-wrap break-all leading-relaxed">
                           {JSON.stringify(log.metadata, null, 2)}
                         </pre>

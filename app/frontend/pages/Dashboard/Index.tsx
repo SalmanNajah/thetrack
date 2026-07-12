@@ -201,13 +201,13 @@ export default function Index() {
   const incomeBucket = buckets.find((b) => b.slug === "income");
 
   const headerLabel = selectedBucketSlugs.length === 0
-    ? "TOTAL BALANCE"
+    ? "Total balance"
     : selectedBucketSlugs.length === 1 && activeSingleBucket
       ? getBucketLabel(activeSingleBucket.slug)
       : selectedBucketSlugs
           .map((slug) => {
             const b = buckets.find((bucket) => bucket.slug === slug);
-            return (b ? b.name : slug).toUpperCase();
+            return b ? b.name : slug;
           })
           .join(" + ");
 
@@ -234,7 +234,7 @@ export default function Index() {
           <section className={classNames("select-none", isCombinedView ? "pt-4 pb-4" : "pt-4 pb-2")}>
             <div className="flex items-center justify-between gap-4">
               {isCombinedView ? (
-                <p className="text-[13px] font-medium tracking-wide uppercase text-tt-text-tertiary text-ellipsis overflow-hidden whitespace-nowrap max-w-[200px] sm:max-w-md">
+                <p className="text-[13px] font-medium text-tt-text-secondary text-ellipsis overflow-hidden whitespace-nowrap max-w-[200px] sm:max-w-md">
                   {headerLabel}
                 </p>
               ) : (

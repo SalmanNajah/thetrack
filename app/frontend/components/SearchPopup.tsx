@@ -124,8 +124,8 @@ export function SearchPopup({ open, onClose }: SearchPopupProps) {
           {!loading && results.length > 0 && (
             <>
               {!query.trim() && (
-                <p className="px-4 pt-3 pb-1.5 text-[10px] font-mono tracking-wider uppercase text-tt-text-tertiary border-b border-dashed border-tt-border-subtle/40">
-                  Recent Transactions
+                <p className="px-4 pt-3 pb-1.5 text-[11px] font-medium text-tt-text-secondary border-b border-dashed border-tt-border-subtle/40">
+                  Recent transactions
                 </p>
               )}
               {(() => {
@@ -142,7 +142,7 @@ export function SearchPopup({ open, onClose }: SearchPopupProps) {
                     if (currentMonth !== lastMonth) {
                       lastMonth = currentMonth;
                       monthHeader = (
-                        <p className="px-4 pt-4 pb-1 text-[11px] font-medium tracking-wider uppercase text-tt-text-tertiary border-b border-dashed border-tt-border-subtle/30 select-none">
+                        <p className="px-4 pt-4 pb-1 text-[11px] font-medium text-tt-text-secondary border-b border-dashed border-tt-border-subtle/30 select-none">
                           {currentMonth}
                         </p>
                       );

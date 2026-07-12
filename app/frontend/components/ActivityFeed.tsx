@@ -333,7 +333,7 @@ function FeedEntry({
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-tt-text-secondary/70">Description</span>
+              <span className="text-[12px] font-medium text-tt-text-secondary">Description</span>
               {renderDescStatus()}
             </div>
             <input
@@ -357,7 +357,7 @@ function FeedEntry({
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-tt-text-secondary/70">Notes</span>
+              <span className="text-[12px] font-medium text-tt-text-secondary">Notes</span>
               {renderStatus()}
             </div>
             <textarea
@@ -404,7 +404,7 @@ function DateGroup({
         className="flex w-full items-center justify-between pt-5 pb-1.5 focus:outline-none group text-left cursor-pointer"
       >
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-tt-text-secondary/80 group-hover:text-tt-text transition-colors">
+          <span className="text-[12px] font-semibold text-tt-text-secondary group-hover:text-tt-text transition-colors">
             {date}
           </span>
           {collapsed ? (
@@ -430,7 +430,7 @@ function DateGroup({
           </div>
         ))}
 
-      <div className="flex w-full items-center justify-between py-2 text-[11px] font-semibold text-tt-text-tertiary uppercase tracking-wider select-none">
+      <div className="flex w-full items-center justify-between py-2 text-[11px] font-medium text-tt-text-secondary select-none">
         <span>{date === "Today" || date === "Yesterday" ? `${date} net` : "Net flow"}</span>
         <span className={classNames(
           "flex items-center gap-0.5 tracking-tight font-medium text-xs",

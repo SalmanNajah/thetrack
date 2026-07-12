@@ -82,14 +82,14 @@ export default function Index() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#eee]">
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa]">User</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden sm:table-cell">Currency</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden md:table-cell">Balance</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden md:table-cell">Buckets</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden lg:table-cell">Txns</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden lg:table-cell">Status</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa]">Joined</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] w-24">Actions</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666]">User</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666] hidden sm:table-cell">Currency</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] hidden md:table-cell">Balance</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] hidden md:table-cell">Buckets</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] hidden lg:table-cell">Txns</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666] hidden lg:table-cell">Status</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666]">Joined</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] w-24">Actions</th>
                 </tr>
               </thead>
               <tbody>

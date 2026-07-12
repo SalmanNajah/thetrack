@@ -183,7 +183,7 @@ export default function Show() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-5 border-t border-[#eee]">
             <div>
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Balance</p>
+              <p className="text-[12px] font-medium text-[#777]">Balance</p>
               <p className="text-[14px] font-mono text-[#333] mt-0.5">
                 {isRedacted(total_balance) ? (
                   <RedactBar width="w-16" height="h-3" />
@@ -193,22 +193,22 @@ export default function Show() {
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Currency</p>
+              <p className="text-[12px] font-medium text-[#777]">Currency</p>
               <p className="text-[14px] text-[#333] mt-0.5">{user.currency_symbol} {user.currency}</p>
             </div>
             <div>
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Transactions</p>
+              <p className="text-[12px] font-medium text-[#777]">Transactions</p>
               <p className="text-[14px] text-[#333] mt-0.5 font-mono">{user.transactions_count}</p>
             </div>
             <div>
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Joined</p>
+              <p className="text-[12px] font-medium text-[#777]">Joined</p>
               <p className="text-[14px] text-[#333] mt-0.5">{formatDate(user.created_at)}</p>
             </div>
           </div>
         </div>
 
         <div className="mt-5">
-          <h2 className="text-[12px] font-medium tracking-wider uppercase text-[#999] mb-3">
+          <h2 className="text-[13px] font-semibold text-[#555] mb-3">
             Buckets ({buckets.length})
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -242,17 +242,17 @@ export default function Show() {
         </div>
 
         <div className="mt-5">
-          <h2 className="text-[12px] font-medium tracking-wider uppercase text-[#999] mb-3">
-            Recent Transactions ({recent_transactions.length})
+          <h2 className="text-[13px] font-semibold text-[#555] mb-3">
+            Recent transactions ({recent_transactions.length})
           </h2>
           <div className="rounded-md border border-[#e0dbd2] bg-white overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#eee]">
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa]">Description</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden sm:table-cell">Bucket</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa]">Amount</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden sm:table-cell">Date</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666]">Description</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666] hidden sm:table-cell">Bucket</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666]">Amount</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] hidden sm:table-cell">Date</th>
                 </tr>
               </thead>
               <tbody>

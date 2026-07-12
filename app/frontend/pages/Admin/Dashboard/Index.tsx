@@ -43,32 +43,32 @@ export default function Index() {
         <div className="mt-6 rounded-md border border-[#e0dbd2] bg-white">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-[#f0ede7]">
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Total Users</p>
+              <p className="text-[12px] font-medium text-[#777]">Total users</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.total_users}</p>
               <p className="text-[11px] text-[#bbb] mt-0.5">+{stats.new_users_7d} registered this week</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Active Users (DAU)</p>
+              <p className="text-[12px] font-medium text-[#777]">Active users (DAU)</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.active_users_24h}</p>
               <p className="text-[11px] text-[#bbb] mt-0.5">{stats.active_users_rate}% active rate</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Onboarded Users</p>
+              <p className="text-[12px] font-medium text-[#777]">Onboarded users</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.onboarded_users}</p>
               <p className="text-[11px] text-[#bbb] mt-0.5">{stats.onboarded_rate}% completion rate</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Total Buckets</p>
+              <p className="text-[12px] font-medium text-[#777]">Total buckets</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.total_buckets}</p>
               <p className="text-[11px] text-[#bbb] mt-0.5">Avg. {stats.avg_buckets} per user</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">Total Transactions</p>
+              <p className="text-[12px] font-medium text-[#777]">Total transactions</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.total_transactions.toLocaleString()}</p>
               <p className="text-[11px] text-[#bbb] mt-0.5">Avg. {stats.avg_transactions} per user</p>
             </div>
             <div className="p-4">
-              <p className="text-[10px] font-medium tracking-wider uppercase text-[#aaa]">New Transactions (7d)</p>
+              <p className="text-[12px] font-medium text-[#777]">New transactions (7d)</p>
               <p className="mt-1.5 text-2xl font-semibold text-[#1a1a1a] tracking-tight">{stats.new_transactions_7d.toLocaleString()}</p>
               <p className="text-[11px] text-[#bbb] mt-0.5">
                 {stats.transactions_growth_rate >= 0 ? '+' : ''}{stats.transactions_growth_rate}% week-over-week
@@ -79,8 +79,8 @@ export default function Index() {
 
         <div className="mt-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[12px] font-medium tracking-wider uppercase text-[#999]">
-              Recent Signups
+            <h2 className="text-[13px] font-semibold text-[#555]">
+              Recent signups
             </h2>
             <Link
               href="/admin/users"
@@ -94,11 +94,11 @@ export default function Index() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#eee]">
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa]">User</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden sm:table-cell">Currency</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden md:table-cell">Buckets</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa] hidden md:table-cell">Txns</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-medium tracking-wider uppercase text-[#aaa]">Joined</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666]">User</th>
+                  <th className="px-4 py-2.5 text-left text-[12px] font-semibold text-[#666] hidden sm:table-cell">Currency</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] hidden md:table-cell">Buckets</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666] hidden md:table-cell">Txns</th>
+                  <th className="px-4 py-2.5 text-right text-[12px] font-semibold text-[#666]">Joined</th>
                 </tr>
               </thead>
               <tbody>

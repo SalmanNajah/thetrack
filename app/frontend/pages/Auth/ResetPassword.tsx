@@ -1,4 +1,4 @@
-import { useForm, Link, usePage } from "@inertiajs/react";
+import { useForm, Link, usePage, Head } from "@inertiajs/react";
 import { FormEvent } from "react";
 import { AuthLayout } from "@/components/AuthLayout";
 
@@ -32,7 +32,11 @@ export default function ResetPassword() {
   }
 
   return (
-    <AuthLayout
+    <>
+      <Head>
+        <title>Reset Password</title>
+      </Head>
+      <AuthLayout
       title="Create new password"
       subtitle="Enter a new password for your account"
       flash={flash}
@@ -119,5 +123,6 @@ export default function ResetPassword() {
         </p>
       </div>
     </AuthLayout>
+    </>
   );
 }

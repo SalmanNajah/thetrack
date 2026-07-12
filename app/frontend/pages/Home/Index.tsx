@@ -509,7 +509,7 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-[#f4f1eb] text-[#18181b] overflow-x-hidden relative font-sans animate-fade-in">
       <Head>
-        <title>TheTrack — Know where your money is</title>
+        <title>Track</title>
         <meta
           name="description"
           content="Track where your money comes from, where it goes, and where it stays."

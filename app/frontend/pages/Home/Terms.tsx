@@ -10,7 +10,7 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-[#f4f1eb] text-[#18181b] overflow-x-hidden relative font-sans">
       <Head>
-        <title>Terms of Service — TheTrack</title>
+        <title>Terms of Service</title>
         <meta name="description" content="Terms of Service for TheTrack personal finance system." />
       </Head>
 

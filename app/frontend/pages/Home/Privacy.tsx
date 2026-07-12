@@ -10,7 +10,7 @@ export default function Privacy() {
   return (
     <div className="min-h-screen bg-[#f4f1eb] text-[#18181b] overflow-x-hidden relative font-sans">
       <Head>
-        <title>Privacy Policy — TheTrack</title>
+        <title>Privacy Policy</title>
         <meta name="description" content="Privacy Policy for TheTrack personal finance system." />
       </Head>
 

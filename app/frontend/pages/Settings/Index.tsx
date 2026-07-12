@@ -1,4 +1,4 @@
-import { usePage, router, useForm, Link } from '@inertiajs/react'
+import { usePage, router, useForm, Link, Head } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -586,7 +586,11 @@ export default function Index() {
   }, [flash?.notice, flash?.alert])
 
   return (
-    <WorkspaceLayout
+    <>
+      <Head>
+        <title>Settings</title>
+      </Head>
+      <WorkspaceLayout
       buckets={buckets || []}
       totalBalance={total_balance || "0"}
       currencySymbol={currency_symbol || "₹"}
@@ -611,6 +615,7 @@ export default function Index() {
         </div>
       </div>
     </WorkspaceLayout>
+    </>
   )
 }
 

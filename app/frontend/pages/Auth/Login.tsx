@@ -1,4 +1,4 @@
-import { useForm, Link, usePage } from "@inertiajs/react";
+import { useForm, Link, usePage, Head } from "@inertiajs/react";
 import { FormEvent } from "react";
 import { AuthLayout } from "@/components/AuthLayout";
 
@@ -27,7 +27,11 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout
+    <>
+      <Head>
+        <title>Sign In</title>
+      </Head>
+      <AuthLayout
       title="Welcome back"
       subtitle="Sign in to your account to continue"
       flash={flash}
@@ -175,5 +179,6 @@ export default function Login() {
         </p>
       </div>
     </AuthLayout>
+    </>
   );
 }

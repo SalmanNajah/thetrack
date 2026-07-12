@@ -1,4 +1,4 @@
-import { useForm, Link, usePage } from "@inertiajs/react";
+import { useForm, Link, usePage, Head } from "@inertiajs/react";
 import { FormEvent } from "react";
 import { AuthLayout } from "@/components/AuthLayout";
 
@@ -24,7 +24,11 @@ export default function LinkAccounts() {
   }
 
   return (
-    <AuthLayout
+    <>
+      <Head>
+        <title>Link Accounts</title>
+      </Head>
+      <AuthLayout
       title="Link Google account"
       subtitle="Complete setup by verifying your existing password"
       flash={flash}
@@ -97,5 +101,6 @@ export default function LinkAccounts() {
         </Link>
       </div>
     </AuthLayout>
+    </>
   );
 }

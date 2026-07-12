@@ -1,4 +1,4 @@
-import { usePage, router } from "@inertiajs/react";
+import { usePage, router, Head } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { WorkspaceLayout } from "@/components/WorkspaceLayout";
@@ -212,7 +212,11 @@ export default function Index() {
           .join(" + ");
 
   return (
-    <WorkspaceLayout
+    <>
+      <Head>
+        <title>Dashboard</title>
+      </Head>
+      <WorkspaceLayout
       buckets={buckets}
       totalBalance={total_balance}
       currencySymbol={currency_symbol}
@@ -429,5 +433,6 @@ export default function Index() {
         );
       })()}
     </WorkspaceLayout>
+    </>
   );
 }
